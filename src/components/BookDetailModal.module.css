@@ -186,8 +186,8 @@
 }
 
 .statusReading {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--color-reading-bg, #fef3c7);
+  color: var(--color-reading-text, #92400e);
 }
 
 .statusPending {

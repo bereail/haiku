@@ -508,9 +508,9 @@
 }
 
 .statusPillActive.statusPillReading {
-  background: #fef3c7;
-  border-color: #d97706;
-  color: #92400e;
+  background: var(--color-reading-bg, #fef3c7);
+  border-color: var(--color-reading-border, #d97706);
+  color: var(--color-reading-text, #92400e);
 }
 
 .statusPillActive.statusPillDone {

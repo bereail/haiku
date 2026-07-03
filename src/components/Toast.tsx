@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react'
 import styles from './Toast.module.css'
+import type { ToastItem } from '../types'
 
-function ToastItem({ toast, onRemove }) {
+interface ToastItemProps {
+  toast: ToastItem
+  onRemove: (id: number) => void
+}
+
+function Toast({ toast, onRemove }: ToastItemProps) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -20,8 +26,7 @@ function ToastItem({ toast, onRemove }) {
   return (
     <div
       className={`${styles.toast} ${isError ? styles.error : styles.success} ${visible ? styles.visible : ''}`}
-      role="alert"
-      aria-live="assertive"
+      role={isError ? 'alert' : 'status'}
     >
       {isError ? (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -38,12 +43,16 @@ function ToastItem({ toast, onRemove }) {
   )
 }
 
-export default function ToastContainer({ toasts, onRemove }) {
-  if (toasts.length === 0) return null
+interface ToastContainerProps {
+  toasts: ToastItem[]
+  onRemove: (id: number) => void
+}
+
+export default function ToastContainer({ toasts, onRemove }: ToastContainerProps) {
   return (
-    <div className={styles.container}>
+    <div className={styles.container} aria-live="polite" aria-atomic="false">
       {toasts.map(t => (
-        <ToastItem key={t.id} toast={t} onRemove={onRemove} />
+        <Toast key={t.id} toast={t} onRemove={onRemove} />
       ))}
     </div>
   )

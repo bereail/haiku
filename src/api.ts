@@ -9,9 +9,15 @@ async function request(path: string, options?: RequestInit) {
     },
     ...options,
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || 'Error en la solicitud')
-  return data
+  if (!res.ok) {
+    let message = 'Error en la solicitud'
+    try {
+      const data = await res.json()
+      message = data.error || message
+    } catch { /* body no es JSON válido */ }
+    throw new Error(message)
+  }
+  return res.json()
 }
 
 export const api = {

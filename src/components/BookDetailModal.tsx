@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
 import StarRating from './StarRating'
 import styles from './BookDetailModal.module.css'
+import { formatDate, getInitials, getBookStatus, hasScore } from '../utils'
+import type { Book } from '../types'
 
-const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
-
-function formatDate(str: string | undefined) {
-  if (!str) return ''
-  const match = str.match(/^(\d{4})-(\d{2})/)
-  if (!match) return ''
-  return `${MESES[parseInt(match[2]) - 1]} ${match[1]}`
+interface BookDetailModalProps {
+  book: Book
+  onEdit: () => void
+  onDelete: () => void
+  onClose: () => void
+  onMarkRead: () => void
 }
 
-export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMarkRead }) {
+export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMarkRead }: BookDetailModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
@@ -20,13 +21,7 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  const isPending = !book.startDate && !book.endDate
-  const isReading = book.startDate && !book.endDate
-  const isFinished = !!book.endDate
-
-  const progress = isReading && book.totalPages > 0 && book.currentPage > 0
-    ? Math.min(100, Math.round((Number(book.currentPage) / Number(book.totalPages)) * 100))
-    : null
+  const { isReading, isFinished, progress } = getBookStatus(book)
 
   const statusLabel = isFinished ? 'Leído' : isReading ? 'Leyendo' : 'Pendiente'
   const statusClass = isFinished
@@ -79,7 +74,7 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
                 style={{ backgroundColor: book.color || 'var(--color-accent)' }}
               >
                 <span className={styles.placeholderInitials}>
-                  {book.title.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()}
+                  {getInitials(book.title)}
                 </span>
               </div>
             )}
@@ -117,7 +112,7 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
                   <span className={styles.metaValue}>{formatDate(book.endDate)}</span>
                 </div>
               )}
-              {book.totalPages > 0 && (
+              {(book.totalPages ?? 0) > 0 && (
                 <div className={styles.metaRow}>
                   <span className={styles.metaLabel}>Páginas</span>
                   <span className={styles.metaValue}>
@@ -125,10 +120,10 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
                   </span>
                 </div>
               )}
-              {book.score > 0 && (
+              {hasScore(book) && (
                 <div className={styles.metaRow}>
                   <span className={styles.metaLabel}>Puntaje</span>
-                  <StarRating value={book.score} readonly size={15} />
+                  <StarRating value={book.score!} readonly size={15} />
                 </div>
               )}
               {book.wouldReread && (

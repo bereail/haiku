@@ -3,12 +3,30 @@ import StarRating from './StarRating'
 import ISBNScanner from './ISBNScanner'
 import { useBookSearch } from '../hooks/useBookSearch'
 import styles from './BookModal.module.css'
+import type { Book } from '../types'
 
 const COVER_MAX_PX = 500
 const COVER_QUALITY = 0.82
 const MAX_FILE_MB = 5
 
-const EMPTY = {
+type FormData = {
+  title: string
+  author: string
+  publisher: string
+  genre: string
+  year: string | number
+  startDate: string
+  endDate: string
+  notes: string
+  score: number
+  cover: string
+  color: string
+  totalPages: string | number
+  currentPage: string | number
+  wouldReread: boolean
+}
+
+const EMPTY: FormData = {
   title: '', author: '', publisher: '', genre: '',
   year: '', startDate: '', endDate: '', notes: '',
   score: 0, cover: '', color: '',
@@ -22,14 +40,23 @@ const COLORS = [
   '#344055', '#3d4a2d',
 ]
 
-function CoverImg({ src, alt, className }) {
+interface BookModalProps {
+  mode: 'add' | 'edit'
+  book?: Partial<Book>
+  onSave: (data: FormData) => Promise<void>
+  onClose: () => void
+}
+
+function CoverImg({ src, alt, className }: { src: string; alt: string; className: string }) {
   const [hasError, setHasError] = useState(false)
   if (hasError) return null
   return <img src={src} alt={alt} className={className} onError={() => setHasError(true)} />
 }
 
-export default function BookModal({ mode, book, onSave, onClose }) {
-  const [form, setForm] = useState(mode === 'edit' ? { ...EMPTY, ...book } : EMPTY)
+export default function BookModal({ mode, book, onSave, onClose }: BookModalProps) {
+  const [form, setForm] = useState<FormData>(
+    mode === 'edit' ? { ...EMPTY, ...book } : EMPTY
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [coverError, setCoverError] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -38,37 +65,37 @@ export default function BookModal({ mode, book, onSave, onClose }) {
   const [isbnLoading, setIsbnLoading] = useState(false)
   const [isbnError, setIsbnError] = useState('')
 
-  const overlayRef = useRef(null)
-  const suggestionsRef = useRef(null)
-  const titleRef = useRef(null)
-  const fileRef = useRef(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const suggestionsRef = useRef<HTMLUListElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const { suggestions, loading, search, searchByISBN, clear } = useBookSearch()
 
   useEffect(() => {
-    const handler = (e) => e.key === 'Escape' && !scannerOpen && onClose()
+    const handler = (e: KeyboardEvent) => e.key === 'Escape' && !scannerOpen && onClose()
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [onClose, scannerOpen])
 
   useEffect(() => {
-    const handler = (e) => {
+    const handler = (e: MouseEvent) => {
       if (
         suggestionsRef.current &&
-        !suggestionsRef.current.contains(e.target) &&
-        !titleRef.current?.contains(e.target)
+        !suggestionsRef.current.contains(e.target as Node) &&
+        !titleRef.current?.contains(e.target as Node)
       ) setShowSuggestions(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const set = (key, val) => {
+  const set = (key: keyof FormData, val: unknown) => {
     setForm(f => ({ ...f, [key]: val }))
     if (errors[key]) setErrors(e => ({ ...e, [key]: '' }))
   }
 
-  const fillFromResult = (result) => {
+  const fillFromResult = (result: { title?: string; author?: string; publisher?: string; year?: number | null; coverLarge?: string; cover?: string }) => {
     setForm(f => ({
       ...f,
       title: result.title || f.title,
@@ -80,21 +107,21 @@ export default function BookModal({ mode, book, onSave, onClose }) {
     setErrors({})
   }
 
-  const handleTitleChange = (e) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     set('title', val)
     search(val)
     setShowSuggestions(true)
   }
 
-  const handleSelectSuggestion = (s) => {
+  const handleSelectSuggestion = (s: Parameters<typeof fillFromResult>[0]) => {
     fillFromResult(s)
     setShowSuggestions(false)
     clear()
   }
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0]
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) return
     setCoverError('')
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
@@ -110,7 +137,9 @@ export default function BookModal({ mode, book, onSave, onClose }) {
         const canvas = document.createElement('canvas')
         canvas.width = Math.round(img.width * ratio)
         canvas.height = Math.round(img.height * ratio)
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
         set('cover', canvas.toDataURL('image/jpeg', COVER_QUALITY))
       }
       img.src = ev.target!.result as string
@@ -119,7 +148,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
     e.target.value = ''
   }
 
-  const handleIsbnSearch = async (e) => {
+  const handleIsbnSearch = async (e?: React.MouseEvent | React.KeyboardEvent) => {
     e?.preventDefault()
     const q = isbn.trim()
     if (!q) return
@@ -140,7 +169,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
     }
   }
 
-  const handleScan = async (code) => {
+  const handleScan = async (code: string) => {
     setScannerOpen(false)
     setIsbn(code)
     setIsbnLoading(true)
@@ -163,7 +192,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
     return e
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (isbnLoading) return
     const errs = validate()
@@ -171,6 +200,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
     onSave(form)
   }
 
+  const isReading = !!form.startDate && !form.endDate
   const hasSuggestions = showSuggestions && (loading || suggestions.length > 0)
 
   return (
@@ -206,7 +236,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
                       className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
                       value={form.title}
                       onChange={handleTitleChange}
-                      onFocus={() => form.title.length >= 2 && setShowSuggestions(true)}
+                      onFocus={() => String(form.title).length >= 2 && setShowSuggestions(true)}
                       placeholder="Escribí el título para buscar..."
                       autoFocus
                       autoComplete="off"
@@ -324,7 +354,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
 
               <div className={styles.divider} />
 
-              {/* Fechas */}
+              {/* Estado y fechas */}
               <div className={styles.section}>
                 <div className={styles.field}>
                   <span className={styles.label}>Estado</span>
@@ -404,6 +434,38 @@ export default function BookModal({ mode, book, onSave, onClose }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Progreso de lectura — solo visible cuando está leyendo */}
+                {isReading && (
+                  <div className={styles.row2}>
+                    <div className={styles.field}>
+                      <label className={styles.label} htmlFor="totalPages">Total de páginas</label>
+                      <input
+                        id="totalPages"
+                        className={styles.input}
+                        type="number"
+                        min="1"
+                        max="9999"
+                        value={form.totalPages || ''}
+                        onChange={e => set('totalPages', e.target.value)}
+                        placeholder="Ej: 320"
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <label className={styles.label} htmlFor="currentPage">Página actual</label>
+                      <input
+                        id="currentPage"
+                        className={styles.input}
+                        type="number"
+                        min="0"
+                        max={Number(form.totalPages) || 9999}
+                        value={form.currentPage || ''}
+                        onChange={e => set('currentPage', e.target.value)}
+                        placeholder="Ej: 150"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className={styles.divider} />
@@ -412,7 +474,7 @@ export default function BookModal({ mode, book, onSave, onClose }) {
               <div className={styles.section}>
                 <div className={styles.field}>
                   <label className={styles.label}>Puntaje</label>
-                  <StarRating value={form.score} onChange={v => set('score', v)} size={22} />
+                  <StarRating value={Number(form.score) || 0} onChange={v => set('score', v)} size={22} />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.label} htmlFor="notes">Anotaciones</label>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import styles from './StatsModal.module.css'
 import type { Book, Goal } from '../types'
+import { hasScore } from '../utils'
 
 const MS_PER_DAY = 86400000
 
@@ -16,9 +17,9 @@ function calcularStats(books: Book[]) {
   const leyendo = books.filter(b => b.startDate && !b.endDate)
   const pendientes = books.filter(b => !b.startDate && !b.endDate)
 
-  const scored = leidos.filter(b => b.score > 0)
+  const scored = leidos.filter(hasScore)
   const avgScore = scored.length
-    ? scored.reduce((s, b) => s + b.score, 0) / scored.length
+    ? scored.reduce((s, b) => s + (b.score ?? 0), 0) / scored.length
     : null
 
   const byYear: Record<string, number> = {}
@@ -48,7 +49,7 @@ function calcularStats(books: Book[]) {
     .sort((a, b) => a.days - b.days)
 
   const totalPages = books.reduce((s, b) => s + (Number(b.totalPages) || 0), 0)
-  const bestRated = [...leidos].filter(b => b.score > 0).sort((a, b) => b.score - a.score).slice(0, 3)
+  const bestRated = [...leidos].filter(hasScore).sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 3)
   const thisYear = leidos.filter(b => b.endDate?.startsWith(String(currentYear))).length
 
   return {

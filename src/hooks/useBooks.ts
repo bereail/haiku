@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import { formatDate } from '../utils'
 import type { Book } from '../types'
 
 const LEGACY_KEYS = ['librook_books', 'books']
@@ -77,13 +78,6 @@ export function useBooks(userEmail: string) {
   }
 
   const exportBooksHtml = () => {
-    const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
-    const fmtDate = (str?: string) => {
-      if (!str) return ''
-      const m = str.match(/^(\d{4})-(\d{2})/)
-      if (!m) return ''
-      return `${MESES[parseInt(m[2]) - 1]} ${m[1]}`
-    }
     const stars = (n?: number) => n && n > 0 ? '★'.repeat(n) + '☆'.repeat(5 - n) : ''
 
     const finished = [...books].filter(b => b.endDate).sort((a, b) => (b.endDate || '') > (a.endDate || '') ? 1 : -1)
@@ -96,7 +90,7 @@ export function useBooks(userEmail: string) {
       <td>${b.genre || ''}</td>
       <td>${b.year || ''}</td>
       <td class="stars">${stars(b.score)}</td>
-      <td>${fmtDate(b.endDate || b.startDate)}</td>
+      <td>${formatDate(b.endDate || b.startDate)}</td>
       <td class="fav">${b.wouldReread ? '★' : ''}</td>
     </tr>`
 

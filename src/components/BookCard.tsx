@@ -1,34 +1,17 @@
 import { useState } from 'react'
 import styles from './BookCard.module.css'
 import StarRating from './StarRating'
+import { formatDate, getInitials, getBookStatus, hasScore } from '../utils'
 import type { Book } from '../types'
 
-interface Props {
+interface BookCardProps {
   book: Book
   onView: () => void
   onEdit: () => void
   onDelete: () => void
 }
 
-const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-
-function formatDate(str: string | undefined) {
-  if (!str) return ''
-  const match = str.match(/^(\d{4})-(\d{2})/)
-  if (!match) return ''
-  return `${MESES[parseInt(match[2]) - 1]} ${match[1]}`
-}
-
-function darken(hex: string | undefined) {
-  if (!hex || !hex.startsWith('#')) return 'rgba(0,0,0,0.25)'
-  const n = parseInt(hex.slice(1), 16)
-  const r = Math.max(0, (n >> 16) - 40)
-  const g = Math.max(0, ((n >> 8) & 0xff) - 40)
-  const b = Math.max(0, (n & 0xff) - 40)
-  return `rgb(${r},${g},${b})`
-}
-
-export default function BookCard({ book, onEdit, onView, onDelete }: Props) {
+export default function BookCard({ book, onEdit, onView, onDelete }: BookCardProps) {
   const [flipped, setFlipped] = useState(false)
   const [confirmando, setConfirmando] = useState(false)
 
@@ -41,23 +24,33 @@ export default function BookCard({ book, onEdit, onView, onDelete }: Props) {
     }
   }
 
-  const isPending = !book.startDate && !book.endDate
-  const isReading = !!(book.startDate && !book.endDate)
-  const isFinished = !!book.endDate
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.target as HTMLElement).closest('[data-action]')) return
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (flipped) onView()
+      else setFlipped(true)
+    }
+    if (e.key === 'Escape' && flipped) {
+      setFlipped(false)
+      setConfirmando(false)
+    }
+  }
 
-  const progress = isReading && book.totalPages > 0 && book.currentPage > 0
-    ? Math.min(100, Math.round((Number(book.currentPage) / Number(book.totalPages)) * 100))
-    : null
+  const { isPending, isReading, isFinished, progress } = getBookStatus(book)
 
-  const initials = book.title
-    .split(' ')
-    .slice(0, 2)
-    .map(w => w?.[0] || '')
-    .join('')
-    .toUpperCase() || '?'
+  const initials = getInitials(book.title)
 
   return (
-    <div className={styles.wrapper} onClick={handleClick}>
+    <div
+      className={styles.wrapper}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role="article"
+      aria-label={book.title}
+      aria-expanded={flipped}
+      tabIndex={0}
+    >
       <div className={`${styles.inner} ${flipped ? styles.flipped : ''}`}>
 
         {/* FRONT */}
@@ -122,7 +115,7 @@ export default function BookCard({ book, onEdit, onView, onDelete }: Props) {
             <button
               data-action="close"
               className={styles.backClose}
-              onClick={(e) => { e.stopPropagation(); setFlipped(false) }}
+              onClick={(e) => { e.stopPropagation(); setConfirmando(false); setFlipped(false) }}
               aria-label="Volver"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -166,10 +159,10 @@ export default function BookCard({ book, onEdit, onView, onDelete }: Props) {
                 <span className={styles.rowValue}>{progress}%</span>
               </div>
             )}
-            {book.score > 0 && (
+            {hasScore(book) && (
               <div className={styles.row}>
                 <span className={styles.rowLabel}>Puntaje</span>
-                <StarRating value={book.score} readonly size={12} />
+                <StarRating value={book.score!} readonly size={12} />
               </div>
             )}
             {book.notes && (
@@ -225,4 +218,13 @@ export default function BookCard({ book, onEdit, onView, onDelete }: Props) {
       </div>
     </div>
   )
+}
+
+function darken(hex: string | undefined): string {
+  if (!hex || !hex.startsWith('#')) return 'rgba(0,0,0,0.25)'
+  const n = parseInt(hex.slice(1), 16)
+  const r = Math.max(0, (n >> 16) - 40)
+  const g = Math.max(0, ((n >> 8) & 0xff) - 40)
+  const b = Math.max(0, (n & 0xff) - 40)
+  return `rgb(${r},${g},${b})`
 }

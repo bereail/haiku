@@ -12,13 +12,16 @@ export function useAuth() {
     } catch { return null }
   })
 
+  const saveSession = (data: { token: string; email: string }) => {
+    localStorage.setItem(TOKEN_KEY, data.token)
+    const userData = { email: data.email }
+    localStorage.setItem(AUTH_KEY, JSON.stringify(userData))
+    setUser(userData)
+  }
+
   const register = async (email: string, password: string) => {
     try {
-      const data = await api.post('/auth/register', { email, password })
-      localStorage.setItem(TOKEN_KEY, data.token)
-      const userData = { email: data.email }
-      localStorage.setItem(AUTH_KEY, JSON.stringify(userData))
-      setUser(userData)
+      saveSession(await api.post('/auth/register', { email, password }))
       return { ok: true }
     } catch (err: unknown) {
       return { ok: false, error: (err as Error).message }
@@ -27,11 +30,7 @@ export function useAuth() {
 
   const login = async (email: string, password: string) => {
     try {
-      const data = await api.post('/auth/login', { email, password })
-      localStorage.setItem(TOKEN_KEY, data.token)
-      const userData = { email: data.email }
-      localStorage.setItem(AUTH_KEY, JSON.stringify(userData))
-      setUser(userData)
+      saveSession(await api.post('/auth/login', { email, password }))
       return { ok: true }
     } catch (err: unknown) {
       return { ok: false, error: (err as Error).message }

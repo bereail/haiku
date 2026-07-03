@@ -4,6 +4,13 @@
   aspect-ratio: 2/3;
   min-height: 240px;
   position: relative;
+  outline: none;
+}
+
+.wrapper:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-lg);
 }
 
 .inner {
