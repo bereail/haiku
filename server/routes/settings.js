@@ -37,4 +37,37 @@ router.put('/goal', auth, async (req, res) => {
   }
 })
 
+router.get('/profile', auth, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT display_name, COALESCE(display_name, split_part(email, '@', 1)) AS alias
+       FROM users WHERE id = $1`,
+      [req.userId]
+    )
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' })
+    res.json({ displayName: r.rows[0].display_name, alias: r.rows[0].alias })
+  } catch (err) {
+    console.error('settings profile get error', err)
+    res.status(500).json({ error: 'Error al obtener el perfil' })
+  }
+})
+
+router.put('/profile', auth, async (req, res) => {
+  const trimmed = (req.body.displayName || '').trim()
+  if (trimmed.length > 30)
+    return res.status(400).json({ error: 'El alias no puede superar los 30 caracteres' })
+  const displayName = trimmed || null
+  try {
+    const r = await pool.query(
+      `UPDATE users SET display_name = $1 WHERE id = $2
+       RETURNING display_name, COALESCE(display_name, split_part(email, '@', 1)) AS alias`,
+      [displayName, req.userId]
+    )
+    res.json({ displayName: r.rows[0].display_name, alias: r.rows[0].alias })
+  } catch (err) {
+    console.error('settings profile put error', err)
+    res.status(500).json({ error: 'Error al guardar el alias' })
+  }
+})
+
 module.exports = router

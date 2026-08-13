@@ -12,6 +12,15 @@ export function formatDate(str: string | undefined): string {
   return `${MESES[parseInt(match[2]) - 1]} ${match[1]}`
 }
 
+export function formatDateTime(iso: string | undefined): string {
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('es-AR', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
+
 export function getInitials(title: string): string {
   return title
     .split(' ')

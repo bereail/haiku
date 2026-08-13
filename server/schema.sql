@@ -48,3 +48,35 @@ CREATE TABLE IF NOT EXISTS user_settings (
   goal_year   INTEGER     DEFAULT EXTRACT(YEAR FROM NOW())::int,
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migración: alias público de usuario para la comunidad
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+
+CREATE TABLE IF NOT EXISTS community_posts (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  book_id     UUID REFERENCES books(id) ON DELETE SET NULL,
+  book_title  TEXT NOT NULL,
+  book_author TEXT,
+  book_cover  TEXT,
+  book_score  INTEGER,
+  reflection  TEXT NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (user_id, book_id)
+);
+
+CREATE TABLE IF NOT EXISTS community_comments (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id    UUID NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body       TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS community_likes (
+  post_id    UUID NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (post_id, user_id)
+);

@@ -22,13 +22,17 @@ function dbToBook(row) {
     currentPage: row.current_page,
     createdAt: row.created_at,
     wouldReread: row.would_reread || false,
+    communityPostId: row.community_post_id || null,
   }
 }
 
 router.get('/', auth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM books WHERE user_id = $1 ORDER BY created_at DESC',
+      `SELECT b.*, cp.id AS community_post_id
+       FROM books b
+       LEFT JOIN community_posts cp ON cp.book_id = b.id AND cp.user_id = b.user_id
+       WHERE b.user_id = $1 ORDER BY b.created_at DESC`,
       [req.userId]
     )
     res.json(result.rows.map(dbToBook))

@@ -13,7 +13,12 @@ export default defineConfig({
   base: '/librook/',
   server: {
     proxy: {
-      '/librook-api': {
+      '/librook-api': process.env.VITE_LOCAL_API === '1' ? {
+        // Backend local (server/): no usa el prefijo /librook-api en sus rutas
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/librook-api/, ''),
+      } : {
         target: 'https://ailonline.com.ar',
         changeOrigin: true,
         secure: false,

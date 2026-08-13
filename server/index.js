@@ -16,6 +16,7 @@ app.use('/books',     require('./routes/books'))
 app.use('/admin',     require('./routes/admin'))
 app.use('/analytics', require('./routes/analytics'))
 app.use('/settings',  require('./routes/settings'))
+app.use('/community', require('./routes/community'))
 
 app.get('/health', (_, res) => res.json({ ok: true }))
 

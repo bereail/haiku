@@ -3,11 +3,13 @@ import { useBooks } from './hooks/useBooks'
 import { useGoal } from './hooks/useGoal'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useToast } from './hooks/useToast'
+import { api } from './api'
 import LibraryPage from './pages/LibraryPage'
 import BookModal from './components/BookModal'
 import BookDetailModal from './components/BookDetailModal'
 import BookSearchModal from './components/BookSearchModal'
 import StatsModal from './components/StatsModal'
+import CommunityModal from './components/CommunityModal'
 import ToastContainer from './components/Toast'
 import type { Book } from './types'
 
@@ -25,7 +27,7 @@ interface ModalState {
 }
 
 export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpenAdmin }: Props) {
-  const { books, addBook, updateBook, deleteBook, exportBooks, exportBooksHtml, importBooks } = useBooks(user.email)
+  const { books, loading, error, reload, addBook, updateBook, deleteBook, setBookCommunityPost, exportBooks, exportBooksHtml, importBooks } = useBooks(user.email)
   const isAdmin = !!onOpenAdmin
   const { goal, updateCount: updateGoal } = useGoal()
   const { toasts, addToast, removeToast } = useToast()
@@ -34,10 +36,38 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const [detailBook, setDetailBook] = useState<Book | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
+  const [communityOpen, setCommunityOpen] = useState(false)
+  const [sharingBookId, setSharingBookId] = useState<string | null>(null)
 
   const openAdd = useCallback(() => setModal({ mode: 'add' }), [])
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const openStats = useCallback(() => setStatsOpen(true), [])
+  const openCommunity = useCallback(() => setCommunityOpen(true), [])
+
+  const handleToggleCommunity = async (book: Book, share: boolean) => {
+    if (share && !book.notes) {
+      addToast('Agregá una anotación al libro antes de compartirlo', 'error')
+      return
+    }
+    setSharingBookId(book.id)
+    try {
+      if (share) {
+        const post = await api.post('/community/posts', { bookId: book.id, reflection: book.notes })
+        setBookCommunityPost(book.id, post.id)
+        setDetailBook(prev => prev && prev.id === book.id ? { ...prev, communityPostId: post.id } : prev)
+        addToast('Compartido con la comunidad')
+      } else {
+        await api.delete(`/community/posts/${book.communityPostId}`)
+        setBookCommunityPost(book.id, null)
+        setDetailBook(prev => prev && prev.id === book.id ? { ...prev, communityPostId: null } : prev)
+        addToast('Se dejó de compartir')
+      }
+    } catch (err) {
+      addToast((err as Error).message, 'error')
+    } finally {
+      setSharingBookId(null)
+    }
+  }
 
   useKeyboardShortcuts([
     { key: 'n', handler: openAdd },
@@ -90,6 +120,9 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
     <>
       <LibraryPage
         books={books}
+        loading={loading}
+        error={error}
+        onRetry={reload}
         dark={dark}
         goal={goal}
         onToggleTheme={onToggleTheme}
@@ -100,6 +133,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onEditBook={(book) => setModal({ mode: 'edit', book })}
         onDeleteBook={handleDelete}
         onShowStats={openStats}
+        onOpenCommunity={openCommunity}
         isAdmin={isAdmin}
         onExportHtml={exportBooksHtml}
         onExport={isAdmin ? exportBooks : undefined}
@@ -160,6 +194,15 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
               addToast((err as Error).message, 'error')
             }
           }}
+          onToggleCommunity={share => handleToggleCommunity(detailBook, share)}
+          sharingToCommunity={sharingBookId === detailBook.id}
+        />
+      )}
+
+      {communityOpen && (
+        <CommunityModal
+          onClose={() => setCommunityOpen(false)}
+          onToast={addToast}
         />
       )}
 

@@ -334,6 +334,52 @@
   background: var(--color-error-pale);
 }
 
+.shareCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-secondary);
+  background: none;
+  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.shareCheck input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.shareCheck:has(input:not(:disabled)):hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-pale);
+}
+
+.shareCheck:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.shareCheck:has(input:checked) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-pale);
+}
+
+.shareCheck:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .editBtnLg {
   flex: 1;
   padding: 0.5rem 1rem;

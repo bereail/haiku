@@ -610,6 +610,54 @@
   }
 }
 
+/* ─── Loading & Error States ─────────────────────────── */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 4.5rem 1rem;
+  color: var(--color-text-muted);
+}
+
+.spinner {
+  color: var(--color-accent);
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 0.88rem;
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3.5rem 1rem;
+  text-align: center;
+  color: var(--color-error);
+}
+
+.errorTitle {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.errorSub {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
 /* ─── Empty States ───────────────────────────────────── */
 .empty {
   display: flex;

@@ -10,9 +10,11 @@ interface BookDetailModalProps {
   onDelete: () => void
   onClose: () => void
   onMarkRead: () => void
+  onToggleCommunity: (share: boolean) => void
+  sharingToCommunity?: boolean
 }
 
-export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMarkRead }: BookDetailModalProps) {
+export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMarkRead, onToggleCommunity, sharingToCommunity }: BookDetailModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
@@ -175,6 +177,21 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
               <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)}>
                 Eliminar
               </button>
+              <label className={styles.shareCheck} title={!book.notes ? 'Agregá una anotación para poder compartir' : undefined}>
+                <input
+                  type="checkbox"
+                  checked={!!book.communityPostId}
+                  disabled={sharingToCommunity || (!book.communityPostId && !book.notes)}
+                  onChange={e => onToggleCommunity(e.target.checked)}
+                />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.8"/>
+                  <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/>
+                  <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M8.6 10.6l6.8-3.7M8.6 13.4l6.8 3.7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+                {book.communityPostId ? 'Compartido en Comunidad' : 'Compartir en Comunidad'}
+              </label>
               <button className={styles.editBtnLg} onClick={onEdit}>
                 Editar libro
               </button>

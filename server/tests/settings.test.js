@@ -89,3 +89,53 @@ describe('PUT /settings/goal', () => {
     expect(res.status).toBe(401)
   })
 })
+
+describe('GET /settings/profile', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it('devuelve el alias del usuario', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ display_name: 'Bere', alias: 'Bere' }] })
+
+    const res = await request(app)
+      .get('/settings/profile')
+      .set('Authorization', `Bearer ${authToken()}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.alias).toBe('Bere')
+  })
+
+  it('requiere autenticación', async () => {
+    const res = await request(app).get('/settings/profile')
+    expect(res.status).toBe(401)
+  })
+})
+
+describe('PUT /settings/profile', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it('guarda el alias del usuario', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ display_name: 'Bere', alias: 'Bere' }] })
+
+    const res = await request(app)
+      .put('/settings/profile')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ displayName: 'Bere' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.alias).toBe('Bere')
+  })
+
+  it('devuelve 400 si el alias supera los 30 caracteres', async () => {
+    const res = await request(app)
+      .put('/settings/profile')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ displayName: 'a'.repeat(31) })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('requiere autenticación', async () => {
+    const res = await request(app).put('/settings/profile').send({ displayName: 'Bere' })
+    expect(res.status).toBe(401)
+  })
+})

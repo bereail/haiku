@@ -9,11 +9,14 @@ const MIGRATED_KEY = 'librook_migrated_v3'
 export function useBooks(userEmail: string) {
   const [books, setBooks] = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     if (!userEmail) return
     let cancelled = false
     setLoading(true)
+    setError(null)
 
     api.get('/books')
       .then(async (serverBooks: Book[]) => {
@@ -44,11 +47,13 @@ export function useBooks(userEmail: string) {
         return serverBooks
       })
       .then((data: Book[]) => { if (!cancelled) setBooks(data) })
-      .catch(() => {})
+      .catch((err) => { if (!cancelled) setError((err as Error).message || 'No se pudo cargar tu biblioteca') })
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [userEmail])
+  }, [userEmail, reloadToken])
+
+  const reload = () => setReloadToken(t => t + 1)
 
   const addBook = async (book: Omit<Book, 'id' | 'createdAt'>) => {
     const newBook = await api.post('/books', book)
@@ -64,6 +69,10 @@ export function useBooks(userEmail: string) {
   const deleteBook = async (id: string) => {
     await api.delete(`/books/${id}`)
     setBooks(prev => prev.filter(b => b.id !== id))
+  }
+
+  const setBookCommunityPost = (id: string, communityPostId: string | null) => {
+    setBooks(prev => prev.map(b => b.id === id ? { ...b, communityPostId } : b))
   }
 
   const exportBooks = () => {
@@ -185,5 +194,5 @@ export function useBooks(userEmail: string) {
     reader.readAsText(file)
   })
 
-  return { books, loading, addBook, updateBook, deleteBook, exportBooks, exportBooksHtml, importBooks }
+  return { books, loading, error, reload, addBook, updateBook, deleteBook, setBookCommunityPost, exportBooks, exportBooksHtml, importBooks }
 }

@@ -128,6 +128,9 @@ function Pagination({ currentPage, totalPages, onChange }: {
 
 interface LibraryPageProps {
   books: Book[]
+  loading: boolean
+  error: string | null
+  onRetry: () => void
   dark: boolean
   goal: Goal
   onToggleTheme: () => void
@@ -138,6 +141,7 @@ interface LibraryPageProps {
   onEditBook: (book: Book) => void
   onDeleteBook: (id: string) => void
   onShowStats: () => void
+  onOpenCommunity: () => void
   isAdmin: boolean
   onExportHtml: () => void
   onExport?: () => void
@@ -147,9 +151,9 @@ interface LibraryPageProps {
 }
 
 export default function LibraryPage({
-  books, dark, goal, onToggleTheme, onLogout,
+  books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
   onAddBook, onSearchBooks, onViewBook, onEditBook, onDeleteBook,
-  onShowStats, isAdmin, onExportHtml, onExport, onImport, onOpenAdmin, modal,
+  onShowStats, onOpenCommunity, isAdmin, onExportHtml, onExport, onImport, onOpenAdmin, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -295,6 +299,20 @@ export default function LibraryPage({
 
               <button
                 className={styles.iconBtn}
+                onClick={onOpenCommunity}
+                title="Comunidad"
+                aria-label="Comunidad"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="9" cy="7" r="3.2" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M2.5 20a6.5 6.5 0 0113 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  <circle cx="17.5" cy="8.5" r="2.6" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M15 14.2a5.2 5.2 0 016.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </button>
+
+              <button
+                className={styles.iconBtn}
                 onClick={onExportHtml}
                 title="Exportar biblioteca (HTML)"
                 aria-label="Exportar biblioteca"
@@ -407,6 +425,20 @@ export default function LibraryPage({
 
                   <button
                     className={styles.menuItem}
+                    onClick={() => { onOpenCommunity(); setMenuOpen(false) }}
+                    role="menuitem"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="9" cy="7" r="3.2" stroke="currentColor" strokeWidth="1.8"/>
+                      <path d="M2.5 20a6.5 6.5 0 0113 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      <circle cx="17.5" cy="8.5" r="2.6" stroke="currentColor" strokeWidth="1.8"/>
+                      <path d="M15 14.2a5.2 5.2 0 016.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                    <span>Comunidad</span>
+                  </button>
+
+                  <button
+                    className={styles.menuItem}
                     onClick={() => { onExportHtml(); setMenuOpen(false) }}
                     role="menuitem"
                   >
@@ -477,6 +509,28 @@ export default function LibraryPage({
       </header>
 
       <main className={styles.main}>
+        {loading ? (
+          <div className={styles.loadingState} role="status" aria-live="polite">
+            <svg className={styles.spinner} width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" strokeOpacity="0.2"/>
+              <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <p className={styles.loadingText}>Cargando tu biblioteca…</p>
+          </div>
+        ) : error ? (
+          <div className={styles.errorState} role="alert">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" opacity="0.35" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            <p className={styles.errorTitle}>No pudimos cargar tu biblioteca</p>
+            <p className={styles.errorSub}>{error}</p>
+            <button className={styles.emptyWelcomeBtn} onClick={onRetry}>
+              Reintentar
+            </button>
+          </div>
+        ) : (
+        <>
 
         {goal.count > 0 && (
           <GoalBar books={books} goal={goal} />
@@ -683,6 +737,8 @@ export default function LibraryPage({
               onChange={setCurrentPage}
             />
           </>
+        )}
+        </>
         )}
 
         <button
