@@ -37,6 +37,15 @@ export function useAuth() {
     }
   }
 
+  const guestLogin = async () => {
+    try {
+      saveSession(await api.post('/auth/demo-login', {}))
+      return { ok: true }
+    } catch (err: unknown) {
+      return { ok: false, error: (err as Error).message }
+    }
+  }
+
   const forgotPassword = async (email: string) => {
     try {
       await api.post('/auth/forgot-password', { email })
@@ -61,5 +70,5 @@ export function useAuth() {
     setUser(null)
   }
 
-  return { user, login, register, forgotPassword, resetPassword, logout }
+  return { user, login, register, forgotPassword, resetPassword, guestLogin, logout }
 }

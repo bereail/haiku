@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const pool = require('../db')
+const { DEMO_EMAIL, seedDemoBooks } = require('../demoData')
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -20,6 +21,30 @@ function makeJwt(user) {
     { expiresIn: '7d' }
   )
 }
+
+// Loguea con una cuenta demo compartida y funcional, sin exponer ninguna contraseña.
+router.post('/demo-login', async (req, res) => {
+  try {
+    let result = await pool.query('SELECT id, email FROM users WHERE email = $1', [DEMO_EMAIL])
+    let user = result.rows[0]
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(24).toString('hex')
+      const hash = await bcrypt.hash(randomPassword, 12)
+      const inserted = await pool.query(
+        'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+        [DEMO_EMAIL, hash]
+      )
+      user = inserted.rows[0]
+      await seedDemoBooks(user.id)
+    }
+
+    res.json({ token: makeJwt(user), email: user.email })
+  } catch (err) {
+    console.error('demo-login error', err)
+    res.status(500).json({ error: 'Error al ingresar como invitado' })
+  }
+})
 
 router.post('/register', async (req, res) => {
   const { email, password } = req.body

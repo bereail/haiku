@@ -33,7 +33,7 @@ function trackView(path: string, userEmail?: string) {
 }
 
 export default function App() {
-  const { user, login, register, forgotPassword, resetPassword, logout } = useAuth()
+  const { user, login, register, forgotPassword, resetPassword, guestLogin, logout } = useAuth()
   const { dark, toggle: toggleTheme } = useTheme()
   const [adminOpen, setAdminOpen] = useState(false)
 
@@ -61,7 +61,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <LoginPage onLogin={login} onRegister={register} onForgotPassword={forgotPassword} />
+    return <LoginPage onLogin={login} onRegister={register} onForgotPassword={forgotPassword} onGuestLogin={guestLogin} />
   }
 
   if (adminOpen && user.email === ADMIN_EMAIL) {

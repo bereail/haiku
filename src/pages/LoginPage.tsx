@@ -5,9 +5,10 @@ interface Props {
   onLogin: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   onRegister: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   onForgotPassword: (email: string) => Promise<{ ok: boolean; error?: string }>
+  onGuestLogin: () => Promise<{ ok: boolean; error?: string }>
 }
 
-export default function LoginPage({ onLogin, onRegister, onForgotPassword }: Props) {
+export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGuestLogin }: Props) {
   const [modo, setModo] = useState<'login' | 'registro' | 'recuperar'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,6 +17,17 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword }: Pro
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [guestLoading, setGuestLoading] = useState(false)
+
+  const handleGuest = async () => {
+    setError('')
+    setGuestLoading(true)
+    const result = await onGuestLogin()
+    if (!result.ok) {
+      setError(result.error || 'Error al ingresar como invitado')
+      setGuestLoading(false)
+    }
+  }
 
   const esRegistro = modo === 'registro'
   const esRecuperar = modo === 'recuperar'
@@ -179,6 +191,17 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword }: Pro
             {success && esRecuperar && (
               <button type="button" className={styles.btn} onClick={() => cambiarModo('login')}>
                 Ir al inicio de sesión
+              </button>
+            )}
+
+            {!esRegistro && !esRecuperar && !success && (
+              <button
+                type="button"
+                className={styles.btnGhost}
+                onClick={handleGuest}
+                disabled={loading || guestLoading}
+              >
+                {guestLoading ? <span className={styles.spinner} aria-hidden="true" /> : 'Ver sin cuenta'}
               </button>
             )}
           </div>

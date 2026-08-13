@@ -13,6 +13,8 @@ SCP="scp -P $PORT"
 echo "==> Copiando archivos del servidor al VPS..."
 $SCP server/index.js          $USER@$HOST:$API_DIR/index.js
 $SCP server/schema.sql        $USER@$HOST:$API_DIR/schema.sql
+$SCP server/demoData.js       $USER@$HOST:$API_DIR/demoData.js
+$SCP server/reset-demo.js     $USER@$HOST:$API_DIR/reset-demo.js
 $SCP server/routes/auth.js    $USER@$HOST:$API_DIR/routes/auth.js
 $SCP server/routes/books.js   $USER@$HOST:$API_DIR/routes/books.js
 $SCP server/routes/admin.js   $USER@$HOST:$API_DIR/routes/admin.js
