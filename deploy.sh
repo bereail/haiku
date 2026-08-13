@@ -70,20 +70,14 @@ echo "==> Reiniciando API..."
 $SSH "sudo systemctl restart librook-api && sleep 1 && sudo systemctl status librook-api --no-pager | head -6"
 
 echo "==> Copiando frontend al directorio web..."
-# Detecta el directorio del frontend leyendo la config de nginx
-WEBROOT=$($SSH "grep -r 'root.*librook' /etc/nginx/sites-enabled/ /etc/nginx/conf.d/ 2>/dev/null | grep -v '#' | awk '{print \$2}' | tr -d ';' | head -1")
-if [ -z "$WEBROOT" ]; then
-  WEBROOT=$($SSH "find /var/www -name 'index.html' 2>/dev/null | grep -i librook | head -1 | xargs dirname" 2>/dev/null)
-fi
-if [ -z "$WEBROOT" ]; then
-  echo "AVISO: no se pudo detectar el webroot de nginx."
-  echo "Copiá manualmente la carpeta dist/ al servidor:"
-  echo "  scp -P $PORT -r dist/* $USER@$HOST:/ruta/a/librook/"
-else
-  echo "==> Webroot detectado: $WEBROOT"
-  $SCP -r dist/. $USER@$HOST:$WEBROOT/
-  echo "==> Frontend copiado correctamente."
-fi
+# Confirmado con `nginx -T`: el bloque "location /librook/" usa alias hacia esta ruta.
+# (La detección automática anterior buscaba "root" en la config, pero nginx usa "alias" acá,
+# así que nunca lo encontraba y caía a un fallback que a veces elegía una carpeta vieja
+# equivocada que nginx ni siquiera sirve.)
+WEBROOT="/var/www/html/librook"
+echo "==> Webroot: $WEBROOT"
+$SCP -r dist/. $USER@$HOST:$WEBROOT/
+echo "==> Frontend copiado correctamente."
 
 echo ""
 echo "Deploy completado. Verificá en https://ailonline.com.ar/librook/"
