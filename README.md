@@ -1,5 +1,7 @@
 # Librook — Biblioteca personal de libros
 
+![Demo de Librook](docs/screenshots/demo.gif)
+
 Aplicación full-stack para llevar tu biblioteca de libros: qué leíste, qué estás leyendo y qué
 tenés pendiente, con búsqueda de catálogo real vía OpenLibrary y escaneo de ISBN por cámara.
 Incluye una sección de comunidad para compartir reflexiones sobre lo leído con otros usuarios.
