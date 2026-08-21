@@ -5,6 +5,7 @@ const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const pool = require('../db')
 const { DEMO_EMAIL, seedDemoBooks } = require('../demoData')
+const { rateLimit } = require('../rateLimit')
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -13,6 +14,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 })
+
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: 'Demasiados intentos. Probá de nuevo en unos minutos.' })
 
 function makeJwt(user) {
   return jwt.sign(
@@ -46,7 +49,7 @@ router.post('/demo-login', async (req, res) => {
   }
 })
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email y contraseña requeridos' })
   if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
@@ -68,7 +71,7 @@ router.post('/register', async (req, res) => {
   }
 })
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email y contraseña requeridos' })
 
@@ -91,7 +94,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Solicitar reset — envía email con link
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', authLimiter, async (req, res) => {
   const { email } = req.body
   if (!email) return res.status(400).json({ error: 'Email requerido' })
 
@@ -138,7 +141,7 @@ router.post('/forgot-password', async (req, res) => {
 })
 
 // Restablecer con token del link
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', authLimiter, async (req, res) => {
   const { token, password } = req.body
   if (!token || !password) return res.status(400).json({ error: 'Token y contraseña requeridos' })
   if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })

@@ -38,14 +38,6 @@ function fillDays(data: { date: string; count: number }[]) {
   })
 }
 
-function relTime(s: string) {
-  const diff = Date.now() - new Date(s).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'ahora'
-  if (m < 60) return `${m}m`
-  return `${Math.floor(m / 60)}h`
-}
-
 function fmtTime(s: string) {
   return new Date(s).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }

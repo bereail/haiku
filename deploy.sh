@@ -2,16 +2,23 @@
 # deploy.sh — Despliega Librook en el VPS
 # Uso: bash deploy.sh [usuario_ssh]
 # Ejemplo: bash deploy.sh root
+#
+# Requiere un archivo .env.deploy.local (no versionado, ver .env.deploy.local.example)
+# en la raíz del proyecto con VPS_HOST y VPS_PORT.
+
+set -e
+[ -f .env.deploy.local ] && source .env.deploy.local
 
 USER=${1:-root}
-HOST="138.36.238.175"
-PORT="5440"
+HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
+PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 API_DIR="/var/www/librook-api"
 SSH="ssh -p $PORT $USER@$HOST"
 SCP="scp -P $PORT"
 
 echo "==> Copiando archivos del servidor al VPS..."
 $SCP server/index.js          $USER@$HOST:$API_DIR/index.js
+$SCP server/rateLimit.js      $USER@$HOST:$API_DIR/rateLimit.js
 $SCP server/schema.sql        $USER@$HOST:$API_DIR/schema.sql
 $SCP server/demoData.js       $USER@$HOST:$API_DIR/demoData.js
 $SCP server/reset-demo.js     $USER@$HOST:$API_DIR/reset-demo.js
