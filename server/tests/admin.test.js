@@ -1,4 +1,5 @@
 process.env.JWT_SECRET = 'test-secret-key'
+process.env.ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
 
 jest.mock('../db', () => ({
   query: jest.fn(),
@@ -9,7 +10,7 @@ const express = require('express')
 const jwt = require('jsonwebtoken')
 const pool = require('../db')
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 
 const app = express()
 app.use(express.json())

@@ -6,7 +6,7 @@ import LibraryMain from './LibraryMain'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminPage from './pages/AdminPage'
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 
 function getSessionId() {
   let sid = sessionStorage.getItem('lbr_sid')

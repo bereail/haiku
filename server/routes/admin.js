@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs')
 const auth = require('../middleware/authMiddleware')
 const pool = require('../db')
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 
 function adminOnly(req, res, next) {
   if (req.userEmail !== ADMIN_EMAIL) return res.status(403).json({ error: 'Acceso denegado' })
