@@ -74,6 +74,29 @@
   background: var(--color-accent-pale);
 }
 
+/* Voice button (filled, primary) */
+.voiceBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.75rem;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: background var(--transition), transform 120ms ease;
+  white-space: nowrap;
+}
+
+.voiceBtn:hover {
+  background: var(--color-accent-light);
+}
+
+.voiceBtn:active {
+  transform: scale(0.97);
+}
+
 /* Add button (filled) */
 .addBtn {
   display: flex;
@@ -825,6 +848,36 @@
   }
 
   .fab:active {
+    transform: scale(0.93);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+}
+
+.voiceFab {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .voiceFab {
+    display: flex;
+    position: fixed;
+    bottom: 5.75rem;
+    right: 1.5rem;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.28);
+    z-index: 90;
+    border: none;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease;
+  }
+
+  .voiceFab:active {
     transform: scale(0.93);
     box-shadow: 0 2px 10px rgba(0,0,0,0.25);
   }

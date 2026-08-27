@@ -1,4 +1,4 @@
-import type { Book } from './types'
+import type { Book, ReadingStatus } from './types'
 
 export const MESES = [
   'enero','febrero','marzo','abril','mayo','junio',
@@ -30,14 +30,22 @@ export function getInitials(title: string): string {
     .toUpperCase() || '?'
 }
 
-export function getBookStatus(book: Pick<Book, 'startDate' | 'endDate' | 'totalPages' | 'currentPage'>) {
-  const isPending = !book.startDate && !book.endDate
-  const isReading = !!book.startDate && !book.endDate
-  const isFinished = !!book.endDate
+export function getBookStatus(book: Pick<Book, 'startDate' | 'endDate' | 'totalPages' | 'currentPage' | 'abandoned'>) {
+  const isAbandoned = !!book.abandoned && !book.endDate
+  const isPending = !isAbandoned && !book.startDate && !book.endDate
+  const isReading = !isAbandoned && !!book.startDate && !book.endDate
+  const isFinished = !isAbandoned && !!book.endDate
   const progress = isReading && (book.totalPages ?? 0) > 0 && (book.currentPage ?? 0) > 0
     ? Math.min(100, Math.round((Number(book.currentPage) / Number(book.totalPages)) * 100))
     : null
-  return { isPending, isReading, isFinished, progress }
+  return { isPending, isReading, isFinished, isAbandoned, progress }
+}
+
+export function readingStatus(book: Pick<Book, 'startDate' | 'endDate' | 'abandoned'>): ReadingStatus {
+  if (book.abandoned && !book.endDate) return 'abandoned'
+  if (book.endDate) return 'read'
+  if (book.startDate) return 'reading'
+  return 'pending'
 }
 
 export function hasScore(book: Pick<Book, 'score'>): boolean {

@@ -3,6 +3,7 @@ import { useBooks } from './hooks/useBooks'
 import { useGoal } from './hooks/useGoal'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useToast } from './hooks/useToast'
+import { draftToBookData, type VoiceDraft } from './hooks/useVoiceEntry'
 import { api } from './api'
 import LibraryPage from './pages/LibraryPage'
 import BookModal from './components/BookModal'
@@ -10,6 +11,7 @@ import BookDetailModal from './components/BookDetailModal'
 import BookSearchModal from './components/BookSearchModal'
 import StatsModal from './components/StatsModal'
 import CommunityModal from './components/CommunityModal'
+import VoiceEntryFlow from './components/VoiceEntryFlow'
 import ToastContainer from './components/Toast'
 import type { Book } from './types'
 
@@ -37,12 +39,14 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const [searchOpen, setSearchOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [communityOpen, setCommunityOpen] = useState(false)
+  const [voiceOpen, setVoiceOpen] = useState(false)
   const [sharingBookId, setSharingBookId] = useState<string | null>(null)
 
   const openAdd = useCallback(() => setModal({ mode: 'add' }), [])
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const openStats = useCallback(() => setStatsOpen(true), [])
   const openCommunity = useCallback(() => setCommunityOpen(true), [])
+  const openVoice = useCallback(() => setVoiceOpen(true), [])
 
   const handleToggleCommunity = async (book: Book, share: boolean) => {
     if (share && !book.notes) {
@@ -73,6 +77,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
     { key: 'n', handler: openAdd },
     { key: 'b', handler: openSearch },
     { key: 'e', handler: openStats },
+    { key: 'v', handler: openVoice },
   ])
 
   const handleAddFromSearch = (bookData: {
@@ -116,6 +121,26 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
     }
   }
 
+  const handleEditVoiceDraft = (draft: VoiceDraft) => {
+    setVoiceOpen(false)
+    setModal({ mode: 'add', book: draftToBookData(draft) })
+  }
+
+  const handleUpdateFromVoiceDuplicate = (existing: Book, draft: VoiceDraft) => {
+    setVoiceOpen(false)
+    setModal({ mode: 'edit', book: { ...existing, ...draftToBookData(draft) } })
+  }
+
+  const handleViewVoiceDuplicate = (existing: Book) => {
+    setVoiceOpen(false)
+    setDetailBook(existing)
+  }
+
+  const handleSearchManuallyFromVoice = () => {
+    setVoiceOpen(false)
+    setSearchOpen(true)
+  }
+
   return (
     <>
       <LibraryPage
@@ -129,6 +154,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onLogout={onLogout}
         onAddBook={openAdd}
         onSearchBooks={openSearch}
+        onVoiceEntry={openVoice}
         onViewBook={(book) => setDetailBook(book)}
         onEditBook={(book) => setModal({ mode: 'edit', book })}
         onDeleteBook={handleDelete}
@@ -203,6 +229,18 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         <CommunityModal
           onClose={() => setCommunityOpen(false)}
           onToast={addToast}
+        />
+      )}
+
+      {voiceOpen && (
+        <VoiceEntryFlow
+          books={books}
+          onSave={async (data) => { await addBook(data); addToast('¡Lectura registrada!') }}
+          onClose={() => setVoiceOpen(false)}
+          onEditDraft={handleEditVoiceDraft}
+          onSearchManually={handleSearchManuallyFromVoice}
+          onViewDuplicate={handleViewVoiceDuplicate}
+          onUpdateDuplicate={handleUpdateFromVoiceDuplicate}
         />
       )}
 
