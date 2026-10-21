@@ -31,9 +31,18 @@
   --transition: 200ms ease;
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Dirección visual "Segunda edición" (2026-10-21) — tokens nuevos, aditivos.
+     Los valores existentes de arriba no se tocan todavía: esto se aplica primero
+     solo al catálogo público, página por página, antes de migrar el resto. */
+  --font-read: 'Source Serif 4', Georgia, serif;
+  --color-slate: #52677a;
+  --color-slate-pale: #e9eff3;
 }
 
 [data-theme="dark"] {
+  --color-slate: #8fa6b8;
+  --color-slate-pale: #1c2730;
   --color-bg: #111010;
   --color-surface: #1c1b19;
   --color-surface-2: #252320;

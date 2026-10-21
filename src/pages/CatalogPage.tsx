@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalogSearch } from '../hooks/useCatalogSearch'
+import { useTheme } from '../hooks/useTheme'
 import styles from './CatalogPage.module.css'
 
 export default function CatalogPage() {
   const [query, setQuery] = useState('')
   const { localResults, externalResults, loading, localError, search, clear } = useCatalogSearch()
+  // Página pública, fuera de AuthenticatedApp: sin esto nunca se fijaba data-theme
+  // en <html> y una visita directa quedaba siempre en modo claro.
+  const { dark, toggle: toggleTheme } = useTheme()
 
   useEffect(() => {
     document.title = 'Catálogo — Librook'
@@ -26,6 +30,24 @@ export default function CatalogPage() {
         <div className={styles.headerInner}>
           <Link to="/" className={styles.logo}>Librook</Link>
           <nav className={styles.nav}>
+            <button
+              type="button"
+              className={styles.themeBtn}
+              onClick={toggleTheme}
+              aria-label={dark ? 'Modo claro' : 'Modo oscuro'}
+              title={dark ? 'Modo claro' : 'Modo oscuro'}
+            >
+              {dark ? (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
             <Link to="/" className={styles.loginLink}>Iniciar sesión</Link>
           </nav>
         </div>
@@ -40,7 +62,11 @@ export default function CatalogPage() {
           </p>
         </div>
 
-        <div className={styles.searchBox}>
+        <label className={styles.searchBox}>
+          <svg className={styles.searchIcon} width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
           <input
             type="text"
             className={styles.search}
@@ -49,13 +75,16 @@ export default function CatalogPage() {
             onChange={(e) => handleChange(e.target.value)}
             autoFocus
           />
-        </div>
+        </label>
 
-        {loading && <p className={styles.status}>Buscando…</p>}
-        {localError && <p className={styles.statusError}>{localError}</p>}
+        {loading && <p className={styles.status} role="status">Buscando…</p>}
+        {localError && <p className={styles.statusError} role="alert">{localError}</p>}
 
         {!loading && query.trim().length >= 2 && localResults.length === 0 && externalResults.length === 0 && (
-          <p className={styles.status}>No encontramos nada con ese título.</p>
+          <div className={styles.empty}>
+            <p className={styles.emptyTitle}>No encontramos «{query.trim()}» en el catálogo.</p>
+            <p className={styles.emptyHint}>Probá con otro título, o revisá que esté bien escrito — buscamos primero en Librook y después en Open Library.</p>
+          </div>
         )}
 
         {localResults.length > 0 && (
@@ -88,6 +117,7 @@ export default function CatalogPage() {
                 <div key={b.key} className={styles.cardExternal}>
                   <div className={styles.cover} style={b.cover ? { backgroundImage: `url(${b.cover})` } : undefined}>
                     {!b.cover && <span className={styles.coverFallback}>{b.title.slice(0, 2).toUpperCase()}</span>}
+                    <span className={styles.externalBadge}>Open Library</span>
                   </div>
                   <div className={styles.cardBody}>
                     <strong className={styles.cardTitle}>{b.title}</strong>
