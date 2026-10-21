@@ -2,6 +2,9 @@
 # deploy.sh — Despliega Librook en el VPS
 # Uso: bash deploy.sh [usuario_ssh]
 # Ejemplo: bash deploy.sh root
+#
+# Requiere un archivo .env.deploy.local (no versionado, ver .env.deploy.local.example)
+# en la raíz del proyecto con VPS_HOST y VPS_PORT.
 
 # Corta todo el script ante el primer comando que falle (scp, ssh, npm, psql, etc.) — antes no
 # estaba y un fallo silencioso (ej. una copia que no llega, o una migración que falla de
@@ -10,10 +13,11 @@
 # así que un re-run benigno YA termina con exit 0 por sí solo (verificado) — no hace falta
 # (ni conviene) esconder errores reales detrás de un "|| echo ya existía, OK".
 set -euo pipefail
+[ -f .env.deploy.local ] && source .env.deploy.local
 
 USER=${1:-root}
-HOST="138.36.238.175"
-PORT="5440"
+HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
+PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 API_DIR="/var/www/librook-api"
 SSH="ssh -p $PORT $USER@$HOST"
 SCP="scp -P $PORT"
@@ -62,6 +66,10 @@ $SCP server/middleware/authMiddleware.js  $USER@$HOST:$API_DIR/middleware/authMi
 $SCP server/middleware/blockDemoWrites.js $USER@$HOST:$API_DIR/middleware/blockDemoWrites.js
 $SCP server/middleware/rateLimiter.js     $USER@$HOST:$API_DIR/middleware/rateLimiter.js
 $SCP server/scripts/backfill-editions.js  $USER@$HOST:$API_DIR/scripts/backfill-editions.js
+# server/rateLimit.js (el rate limiter casero original) quedó reemplazado por
+# server/middleware/rateLimiter.js (usa express-rate-limit) — limpiamos el archivo viejo
+# del VPS para que no quede código muerto ahí.
+$SSH "rm -f $API_DIR/rateLimit.js"
 
 echo "==> Aplicando migración SQL (tabla user_settings)..."
 $SSH "psql \$(grep DATABASE_URL $API_DIR/.env | cut -d= -f2-) -c \"

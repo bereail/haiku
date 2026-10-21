@@ -24,6 +24,7 @@ type FormData = {
   totalPages: string | number
   currentPage: string | number
   wouldReread: boolean
+  abandoned: boolean
 }
 
 const EMPTY: FormData = {
@@ -32,6 +33,7 @@ const EMPTY: FormData = {
   score: 0, cover: '', color: '',
   totalPages: '', currentPage: '',
   wouldReread: false,
+  abandoned: false,
 }
 
 const COLORS = [
@@ -54,9 +56,7 @@ function CoverImg({ src, alt, className }: { src: string; alt: string; className
 }
 
 export default function BookModal({ mode, book, onSave, onClose }: BookModalProps) {
-  const [form, setForm] = useState<FormData>(
-    mode === 'edit' ? { ...EMPTY, ...book } : EMPTY
-  )
+  const [form, setForm] = useState<FormData>({ ...EMPTY, ...book })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [coverError, setCoverError] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -200,7 +200,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
     onSave(form)
   }
 
-  const isReading = !!form.startDate && !form.endDate
+  const isReading = !!form.startDate && !form.endDate && !form.abandoned
   const hasSuggestions = showSuggestions && (loading || suggestions.length > 0)
 
   return (
@@ -360,11 +360,14 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                   <span className={styles.label}>Estado</span>
                   <div className={styles.statusPills}>
                     {([
-                      { key: 'pending', label: 'Pendiente' },
-                      { key: 'reading', label: 'Leyendo' },
-                      { key: 'done',    label: 'Leído' },
+                      { key: 'pending',   label: 'Pendiente' },
+                      { key: 'reading',   label: 'Leyendo' },
+                      { key: 'done',      label: 'Leído' },
+                      { key: 'abandoned', label: 'Abandonado' },
                     ] as { key: string; label: string }[]).map(({ key, label }) => {
-                      const current = !form.startDate && !form.endDate ? 'pending' : !form.endDate ? 'reading' : 'done'
+                      const current = form.abandoned ? 'abandoned'
+                        : !form.startDate && !form.endDate ? 'pending'
+                        : !form.endDate ? 'reading' : 'done'
                       return (
                         <button
                           key={key}
@@ -372,15 +375,17 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                           className={[
                             styles.statusPill,
                             current === key ? styles.statusPillActive : '',
-                            key === 'pending' ? styles.statusPillPending : '',
-                            key === 'reading' ? styles.statusPillReading : '',
-                            key === 'done'    ? styles.statusPillDone    : '',
+                            key === 'pending'   ? styles.statusPillPending   : '',
+                            key === 'reading'   ? styles.statusPillReading   : '',
+                            key === 'done'      ? styles.statusPillDone      : '',
+                            key === 'abandoned' ? styles.statusPillAbandoned : '',
                           ].filter(Boolean).join(' ')}
                           onClick={() => {
                             const today = new Date().toISOString().slice(0, 10)
-                            if (key === 'pending') setForm(f => ({ ...f, startDate: '', endDate: '' }))
-                            else if (key === 'reading') setForm(f => ({ ...f, startDate: f.startDate || today, endDate: '' }))
-                            else setForm(f => ({ ...f, startDate: f.startDate || today, endDate: f.endDate || today }))
+                            if (key === 'pending') setForm(f => ({ ...f, startDate: '', endDate: '', abandoned: false }))
+                            else if (key === 'reading') setForm(f => ({ ...f, startDate: f.startDate || today, endDate: '', abandoned: false }))
+                            else if (key === 'done') setForm(f => ({ ...f, startDate: f.startDate || today, endDate: f.endDate || today, abandoned: false }))
+                            else setForm(f => ({ ...f, startDate: f.startDate || today, endDate: '', abandoned: true }))
                           }}
                         >
                           {label}

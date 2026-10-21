@@ -25,6 +25,7 @@ function dbToBook(row) {
     wouldReread: row.would_reread || false,
     communityPostId: row.community_post_id || null,
     editionId: row.edition_id || null,
+    abandoned: row.abandoned || false,
   }
 }
 
@@ -64,8 +65,8 @@ router.post('/', auth, blockDemoWrites, async (req, res) => {
     const result = await pool.query(
       `INSERT INTO books
         (user_id, title, author, cover, publisher, genre, isbn, pages, year, score, notes,
-         start_date, end_date, color, total_pages, current_page, would_reread, edition_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+         start_date, end_date, color, total_pages, current_page, would_reread, abandoned, edition_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        RETURNING *`,
       [
         req.userId, b.title, b.author || null, b.cover || null,
@@ -79,6 +80,7 @@ router.post('/', auth, blockDemoWrites, async (req, res) => {
         b.totalPages ? Number(b.totalPages) : null,
         b.currentPage ? Number(b.currentPage) : null,
         b.wouldReread ? true : false,
+        b.abandoned ? true : false,
         editionId,
       ]
     )
@@ -98,9 +100,9 @@ router.put('/:id', auth, blockDemoWrites, async (req, res) => {
       `UPDATE books SET
         title=$1, author=$2, cover=$3, publisher=$4, genre=$5, isbn=$6,
         pages=$7, year=$8, score=$9, notes=$10, start_date=$11, end_date=$12,
-        color=$13, total_pages=$14, current_page=$15, would_reread=$16, updated_at=NOW(),
-        edition_id=COALESCE($17::uuid, edition_id)
-       WHERE id=$18 AND user_id=$19
+        color=$13, total_pages=$14, current_page=$15, would_reread=$16, abandoned=$17,
+        updated_at=NOW(), edition_id=COALESCE($18::uuid, edition_id)
+       WHERE id=$19 AND user_id=$20
        RETURNING *`,
       [
         b.title, b.author || null, b.cover || null,
@@ -114,6 +116,7 @@ router.put('/:id', auth, blockDemoWrites, async (req, res) => {
         b.totalPages ? Number(b.totalPages) : null,
         b.currentPage ? Number(b.currentPage) : null,
         b.wouldReread ? true : false,
+        b.abandoned ? true : false,
         editionId,
         req.params.id, req.userId,
       ]

@@ -22,7 +22,7 @@ const SAMPLE_ROW = {
   cover: null, publisher: null, genre: null, isbn: null, pages: 96, year: 1943,
   score: 5, notes: null, start_date: '2024-01-01', end_date: '2024-01-10',
   color: null, total_pages: null, current_page: null, created_at: '2024-01-10T10:00:00Z',
-  updated_at: '2024-01-10T10:00:00Z', would_reread: true,
+  updated_at: '2024-01-10T10:00:00Z', would_reread: true, abandoned: false,
 }
 
 describe('GET /books', () => {
@@ -65,6 +65,19 @@ describe('POST /books', () => {
   it('requiere autenticación', async () => {
     const res = await request(app).post('/books').send({ title: 'Libro' })
     expect(res.status).toBe(401)
+  })
+
+  it('guarda un libro marcado como abandonado', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ ...SAMPLE_ROW, id: 'book-abandoned', end_date: null, abandoned: true }] })
+
+    const res = await request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'Libro abandonado', author: 'Autor', startDate: '2024-01-01', abandoned: true })
+
+    expect(res.status).toBe(200)
+    expect(res.body.abandoned).toBe(true)
+    expect(res.body.endDate).toBeNull()
   })
 })
 

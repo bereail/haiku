@@ -1,5 +1,7 @@
 # Librook — Biblioteca personal de libros
 
+![Demo de Librook](docs/screenshots/demo.gif)
+
 Aplicación full-stack para llevar tu biblioteca de libros: qué leíste, qué estás leyendo y qué
 tenés pendiente, con búsqueda de catálogo real vía OpenLibrary y escaneo de ISBN por cámara.
 Incluye una sección de comunidad para compartir reflexiones sobre lo leído con otros usuarios.
@@ -15,17 +17,22 @@ y la posibilidad de compartir esas reflexiones con otros lectores.
 
 ## Funcionalidades
 
+- **Registro por voz**: contá en lenguaje natural qué leíste ("Terminé Dune de Frank Herbert,
+  le doy cinco estrellas") y Librook interpreta título, autor, estado, puntaje, reseña y
+  progreso, busca el libro y te deja confirmar antes de guardar. Usa la Web Speech API nativa
+  del navegador (gratis, sin backend de por medio) y un parser de lenguaje natural propio, sin
+  depender de ningún servicio de IA pago.
 - **Agregar libros** por búsqueda en OpenLibrary, escaneo del código de barras (ISBN) con la
   **BarcodeDetector API nativa del navegador** (sin librerías externas), o carga manual.
-- **Biblioteca personal**: leídos, leyendo y pendientes, con progreso de página actual y
-  puntaje en estrellas.
+- **Biblioteca personal**: leídos, leyendo, pendientes y abandonados, con progreso de página
+  actual y puntaje en estrellas.
 - **Comunidad**: compartir una reflexión sobre un libro leído (con alias público editable),
   comentar y dar like a publicaciones de otros usuarios.
 - **Estadísticas**: resumen de lectura, meta anual con barra de progreso, libros por año,
   puntaje promedio, autores/géneros favoritos, lectura más rápida/lenta y páginas totales.
 - **Exportar/importar**: backup en JSON y una versión imprimible en HTML de la biblioteca.
 - **PWA instalable**, con modo oscuro y atajos de teclado (`N` nuevo libro, `B` buscar,
-  `E` estadísticas).
+  `V` registrar por voz, `E` estadísticas).
 - **Autenticación propia** (JWT + bcrypt) con recuperación de contraseña por email.
 - **Panel de administración**: gestión de usuarios y analíticas de uso propias (sin servicios
   de terceros).
@@ -53,8 +60,9 @@ Frontend y backend separados en el mismo repo:
 
 ```
 src/          # frontend: React 19 + TypeScript + Vite
-  hooks/       # useAuth, useBooks, useBookSearch, useCommunity, useGoal, useTheme, etc.
-  components/  # BookCard, BookModal, ISBNScanner, StatsModal, CommunityModal, etc.
+  hooks/       # useAuth, useBooks, useBookSearch, useVoiceEntry, useCommunity, useGoal, etc.
+  services/    # speechService, voiceBookParser, bookMatchService, reviewCleanup
+  components/  # BookCard, BookModal, ISBNScanner, VoiceEntryFlow, StatsModal, etc.
   pages/       # LoginPage, LibraryPage, AdminPage, ResetPasswordPage
   tests/       # tests con Vitest + Testing Library
 

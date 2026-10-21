@@ -37,7 +37,7 @@ export default function BookCard({ book, onEdit, onView, onDelete }: BookCardPro
     }
   }
 
-  const { isPending, isReading, isFinished, progress } = getBookStatus(book)
+  const { isPending, isReading, isFinished, isAbandoned, progress } = getBookStatus(book)
 
   const initials = getInitials(book.title)
 
@@ -93,6 +93,13 @@ export default function BookCard({ book, onEdit, onView, onDelete }: BookCardPro
               <div className={`${styles.badge} ${styles.badgePending}`} title="Pendiente">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            )}
+            {isAbandoned && (
+              <div className={`${styles.badge} ${styles.badgeAbandoned}`} title="Abandonado">
+                <svg width="9" height="9" viewBox="0 0 18 18" fill="none">
+                  <path d="M2 2l14 14M16 2L2 16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
               </div>
             )}

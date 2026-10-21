@@ -9,7 +9,7 @@ import AdminPage from './pages/AdminPage'
 import CatalogPage from './pages/CatalogPage'
 import WorkPage from './pages/WorkPage'
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL
 
 function getSessionId() {
   let sid = sessionStorage.getItem('lbr_sid')

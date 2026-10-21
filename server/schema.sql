@@ -42,6 +42,12 @@ CREATE TABLE IF NOT EXISTS books (
 -- Migración: agregar would_reread a bases existentes
 ALTER TABLE books ADD COLUMN IF NOT EXISTS would_reread BOOLEAN DEFAULT FALSE;
 
+-- Migración: estado "abandonado", independiente de start_date/end_date (un libro
+-- puede tener start_date y no end_date por estar "leyendo" o por haber sido abandonado).
+-- Nullable: no (default FALSE). No duplica start_date/end_date: cuando abandoned=true
+-- y end_date es NULL, el libro se considera abandonado en vez de "leyendo".
+ALTER TABLE books ADD COLUMN IF NOT EXISTS abandoned BOOLEAN DEFAULT FALSE;
+
 CREATE TABLE IF NOT EXISTS user_settings (
   user_id     UUID        PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   goal_count  INTEGER     DEFAULT 0,

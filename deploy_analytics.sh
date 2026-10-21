@@ -2,10 +2,16 @@
 # Uso: bash deploy_analytics.sh <usuario_ssh>
 # Ejemplo: bash deploy_analytics.sh root
 # O si tenés clave: bash deploy_analytics.sh ubuntu
+#
+# Requiere un archivo .env.deploy.local (no versionado, ver .env.deploy.local.example)
+# en la raíz del proyecto con VPS_HOST y VPS_PORT.
+
+set -e
+[ -f .env.deploy.local ] && source .env.deploy.local
 
 USER=${1:-root}
-HOST="138.36.238.175"
-PORT="5440"
+HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
+PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 REMOTE="/var/www/librook-api"
 SSH="ssh -p $PORT $USER@$HOST"
 SCP="scp -P $PORT"

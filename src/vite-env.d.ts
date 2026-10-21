@@ -12,7 +12,7 @@ interface BarcodeDetector {
   ): Promise<BarcodeDetectorResult[]>
 }
 
-declare var BarcodeDetector: {
+declare const BarcodeDetector: {
   prototype: BarcodeDetector
   new (options?: { formats: string[] }): BarcodeDetector
   getSupportedFormats(): Promise<string[]>

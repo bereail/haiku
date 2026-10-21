@@ -3,7 +3,7 @@ const auth = require('../middleware/authMiddleware')
 const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const MAX_REFLECTION_LEN = 2000
 const MAX_COMMENT_LEN = 500
 const DEFAULT_LIMIT = 20

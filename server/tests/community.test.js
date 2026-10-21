@@ -1,4 +1,5 @@
 process.env.JWT_SECRET = 'test-secret-key'
+process.env.ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
 
 jest.mock('../db', () => ({
   query: jest.fn(),
@@ -13,7 +14,7 @@ const app = express()
 app.use(express.json())
 app.use('/community', require('../routes/community'))
 
-const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 
 function authToken(userId = 'user-1', email = 'user@test.com') {
   return jwt.sign({ userId, email }, 'test-secret-key', { expiresIn: '1h' })

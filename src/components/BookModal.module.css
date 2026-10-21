@@ -483,10 +483,10 @@
 
 .statusPill {
   flex: 1;
-  padding: 0.55rem 0.4rem;
+  padding: 0.55rem 0.3rem;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   background: transparent;
@@ -517,6 +517,12 @@
   background: var(--color-accent-pale);
   border-color: var(--color-accent);
   color: var(--color-accent);
+}
+
+.statusPillActive.statusPillAbandoned {
+  background: var(--color-abandoned-bg, #fee2e2);
+  border-color: var(--color-abandoned-border, #b91c1c);
+  color: var(--color-abandoned-text, #991b1b);
 }
 
 /* Toggle "volvería a leer" */

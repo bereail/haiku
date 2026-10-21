@@ -18,7 +18,10 @@ export interface Book {
   createdAt?: string
   wouldReread?: boolean
   communityPostId?: string | null
+  abandoned?: boolean
 }
+
+export type ReadingStatus = 'pending' | 'reading' | 'read' | 'abandoned'
 
 export interface Goal {
   count: number

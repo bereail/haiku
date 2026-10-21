@@ -1,0 +1,52 @@
+name: Deploy Librook
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known_hosts
+        run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend via rsync
+        run: rsync -avzr --delete -e "ssh -p ${{ secrets.SSH_PORT }}" dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/librook/
+
+      - name: Deploy server files via rsync
+        run: |
+          rsync -avzr \
+            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            server/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/librook-api/
+
+      - name: Aplicar schema, instalar dependencias y reiniciar
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd /var/www/librook-api &&
+            npm install --omit=dev &&
+            DATABASE_URL=\$(grep DATABASE_URL .env | cut -d= -f2-) &&
+            psql \"\$DATABASE_URL\" -f schema.sql &&
+            systemctl restart librook-api
+          "

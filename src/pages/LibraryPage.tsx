@@ -11,6 +11,7 @@ const STATUS_FILTERS = [
   { key: 'reading', label: 'Leyendo' },
   { key: 'finished', label: 'Leídos' },
   { key: 'pending', label: 'Pendientes' },
+  { key: 'abandoned', label: 'Abandonados' },
 ]
 
 const SORT_OPTIONS = [
@@ -138,6 +139,7 @@ interface LibraryPageProps {
   onLogout: () => void
   onAddBook: () => void
   onSearchBooks: () => void
+  onVoiceEntry: () => void
   onViewBook: (book: Book) => void
   onEditBook: (book: Book) => void
   onDeleteBook: (id: string) => void
@@ -154,7 +156,7 @@ interface LibraryPageProps {
 
 export default function LibraryPage({
   books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
-  onAddBook, onSearchBooks, onViewBook, onEditBook, onDeleteBook,
+  onAddBook, onSearchBooks, onVoiceEntry, onViewBook, onEditBook, onDeleteBook,
   onShowStats, onOpenCommunity, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
@@ -200,8 +202,9 @@ export default function LibraryPage({
       const matchStatus =
         status === 'all' ||
         (status === 'finished' && b.endDate) ||
-        (status === 'reading' && b.startDate && !b.endDate) ||
-        (status === 'pending' && !b.startDate && !b.endDate)
+        (status === 'reading' && b.startDate && !b.endDate && !b.abandoned) ||
+        (status === 'pending' && !b.startDate && !b.endDate) ||
+        (status === 'abandoned' && !!b.abandoned && !b.endDate)
       const matchEditorial = !filterEditorial || b.publisher === filterEditorial
       const matchAutor = !filterAutor || b.author === filterAutor
       const matchGenero = !filterGenero || b.genre === filterGenero
@@ -242,6 +245,19 @@ export default function LibraryPage({
           <nav className={styles.nav}>
             {/* Primary actions — always visible */}
             <button
+              className={styles.voiceBtn}
+              onClick={onVoiceEntry}
+              aria-label="Registrar lectura por voz"
+              title="Registrar lectura por voz"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.8"/>
+                <path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+              <span className={styles.btnText}>Contame qué leíste</span>
+            </button>
+
+            <button
               className={styles.searchBtn}
               onClick={onSearchBooks}
               aria-label="Buscar en Open Library"
@@ -256,7 +272,7 @@ export default function LibraryPage({
             </button>
 
             <button
-              className={styles.addBtn}
+              className={styles.searchBtn}
               onClick={onAddBook}
               aria-keyshortcuts="n"
               title="Agregar libro (tecla N)"
@@ -715,9 +731,12 @@ export default function LibraryPage({
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
               </svg>
               <p className={styles.emptyWelcomeTitle}>Tu biblioteca está vacía</p>
-              <p className={styles.emptyWelcomeSub}>Buscá un libro para empezar a registrar tus lecturas</p>
-              <button className={styles.emptyWelcomeBtn} onClick={onSearchBooks}>
-                Buscar mi primer libro
+              <p className={styles.emptyWelcomeSub}>Contame qué leíste, o buscalo vos mismo/a</p>
+              <button className={styles.emptyWelcomeBtn} onClick={onVoiceEntry}>
+                🎙️ Contame qué leíste
+              </button>
+              <button className={styles.emptyWelcomeLink} onClick={onSearchBooks}>
+                Buscar un libro
               </button>
               <button className={styles.emptyWelcomeLink} onClick={onAddBook}>
                 O agregalo manualmente
@@ -767,6 +786,17 @@ export default function LibraryPage({
         >
           <svg width="22" height="22" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M8 1v14M1 8h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+          </svg>
+        </button>
+
+        <button
+          className={styles.voiceFab}
+          onClick={onVoiceEntry}
+          aria-label="Registrar lectura por voz"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.9"/>
+            <path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"/>
           </svg>
         </button>
       </main>
