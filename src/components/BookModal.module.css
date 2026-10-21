@@ -520,9 +520,9 @@
 }
 
 .statusPillActive.statusPillAbandoned {
-  background: var(--color-abandoned-bg, #fee2e2);
-  border-color: var(--color-abandoned-border, #b91c1c);
-  color: var(--color-abandoned-text, #991b1b);
+  background: var(--color-abandoned-bg);
+  border-color: var(--color-abandoned-border);
+  color: var(--color-abandoned-text);
 }
 
 /* Toggle "volvería a leer" */
