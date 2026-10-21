@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import styles from './LoginPage.module.css'
 
 interface Props {
@@ -205,6 +206,12 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
               </button>
             )}
           </div>
+
+          {!esRegistro && !esRecuperar && (
+            <p className={styles.toggle}>
+              <Link to="/catalog" className={styles.toggleBtn}>Explorar el catálogo público</Link>
+            </p>
+          )}
 
           <div className={styles.links}>
             {!esRegistro && !esRecuperar && (

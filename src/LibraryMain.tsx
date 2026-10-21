@@ -14,7 +14,7 @@ import ToastContainer from './components/Toast'
 import type { Book } from './types'
 
 interface Props {
-  user: { email: string }
+  user: { email: string; isDemo?: boolean }
   onLogout: () => void
   dark: boolean
   onToggleTheme: () => void
@@ -135,6 +135,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onShowStats={openStats}
         onOpenCommunity={openCommunity}
         isAdmin={isAdmin}
+        isDemo={user.isDemo}
         onExportHtml={exportBooksHtml}
         onExport={isAdmin ? exportBooks : undefined}
         onImport={isAdmin ? handleImport : undefined}

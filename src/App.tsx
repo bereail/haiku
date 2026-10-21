@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import LoginPage from './pages/LoginPage'
 import LibraryMain from './LibraryMain'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminPage from './pages/AdminPage'
+import CatalogPage from './pages/CatalogPage'
+import WorkPage from './pages/WorkPage'
 
 const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
 
@@ -33,6 +36,16 @@ function trackView(path: string, userEmail?: string) {
 }
 
 export default function App() {
+  return (
+    <Routes>
+      <Route path="/catalog" element={<CatalogPage />} />
+      <Route path="/catalog/obra/:id" element={<WorkPage />} />
+      <Route path="*" element={<AuthenticatedApp />} />
+    </Routes>
+  )
+}
+
+function AuthenticatedApp() {
   const { user, login, register, forgotPassword, resetPassword, guestLogin, logout } = useAuth()
   const { dark, toggle: toggleTheme } = useTheme()
   const [adminOpen, setAdminOpen] = useState(false)

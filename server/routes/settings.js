@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const auth = require('../middleware/authMiddleware')
+const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
 
 router.get('/goal', auth, async (req, res) => {
@@ -19,7 +20,7 @@ router.get('/goal', auth, async (req, res) => {
   }
 })
 
-router.put('/goal', auth, async (req, res) => {
+router.put('/goal', auth, blockDemoWrites, async (req, res) => {
   const { count, year } = req.body
   const c = Math.max(0, parseInt(count) || 0)
   const y = parseInt(year) || new Date().getFullYear()
@@ -52,7 +53,7 @@ router.get('/profile', auth, async (req, res) => {
   }
 })
 
-router.put('/profile', auth, async (req, res) => {
+router.put('/profile', auth, blockDemoWrites, async (req, res) => {
   const trimmed = (req.body.displayName || '').trim()
   if (trimmed.length > 30)
     return res.status(400).json({ error: 'El alias no puede superar los 30 caracteres' })

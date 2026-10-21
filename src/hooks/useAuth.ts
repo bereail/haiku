@@ -5,16 +5,16 @@ const TOKEN_KEY = 'librook_token'
 const AUTH_KEY = 'librook_auth'
 
 export function useAuth() {
-  const [user, setUser] = useState<{ email: string } | null>(() => {
+  const [user, setUser] = useState<{ email: string; isDemo?: boolean } | null>(() => {
     try {
       const stored = localStorage.getItem(AUTH_KEY)
       return stored ? JSON.parse(stored) : null
     } catch { return null }
   })
 
-  const saveSession = (data: { token: string; email: string }) => {
+  const saveSession = (data: { token: string; email: string; isDemo?: boolean }) => {
     localStorage.setItem(TOKEN_KEY, data.token)
-    const userData = { email: data.email }
+    const userData = { email: data.email, isDemo: !!data.isDemo }
     localStorage.setItem(AUTH_KEY, JSON.stringify(userData))
     setUser(userData)
   }

@@ -113,6 +113,24 @@ describe('POST /auth/login', () => {
   })
 })
 
+describe('Rate limiting', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it('bloquea después de superar el límite de intentos de login', async () => {
+    pool.query.mockResolvedValue({ rows: [] })
+
+    let lastStatus
+    for (let i = 0; i < 21; i++) {
+      const res = await request(app)
+        .post('/auth/login')
+        .send({ email: 'noexiste@test.com', password: 'secret123' })
+      lastStatus = res.status
+    }
+
+    expect(lastStatus).toBe(429)
+  })
+})
+
 describe('POST /auth/forgot-password', () => {
   beforeEach(() => jest.clearAllMocks())
 

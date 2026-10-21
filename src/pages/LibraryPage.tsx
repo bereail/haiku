@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import BookCard from '../components/BookCard'
 import styles from './LibraryPage.module.css'
 import type { Book, Goal } from '../types'
@@ -143,6 +144,7 @@ interface LibraryPageProps {
   onShowStats: () => void
   onOpenCommunity: () => void
   isAdmin: boolean
+  isDemo?: boolean
   onExportHtml: () => void
   onExport?: () => void
   onImport?: (file: File) => void
@@ -153,7 +155,7 @@ interface LibraryPageProps {
 export default function LibraryPage({
   books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
   onAddBook, onSearchBooks, onViewBook, onEditBook, onDeleteBook,
-  onShowStats, onOpenCommunity, isAdmin, onExportHtml, onExport, onImport, onOpenAdmin, modal,
+  onShowStats, onOpenCommunity, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -310,6 +312,17 @@ export default function LibraryPage({
                   <path d="M15 14.2a5.2 5.2 0 016.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                 </svg>
               </button>
+
+              <Link
+                to="/catalog"
+                className={styles.iconBtn}
+                title="Catálogo público"
+                aria-label="Catálogo público"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </Link>
 
               <button
                 className={styles.iconBtn}
@@ -507,6 +520,12 @@ export default function LibraryPage({
           </nav>
         </div>
       </header>
+
+      {isDemo && (
+        <div className={styles.demoBanner} role="status">
+          Estás viendo una biblioteca de ejemplo en modo solo lectura — registrate para guardar tus propios libros.
+        </div>
+      )}
 
       <main className={styles.main}>
         {loading ? (

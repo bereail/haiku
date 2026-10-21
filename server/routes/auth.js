@@ -5,6 +5,7 @@ const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const pool = require('../db')
 const { DEMO_EMAIL, seedDemoBooks } = require('../demoData')
+const { authLimiter } = require('../middleware/rateLimiter')
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -14,16 +15,16 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-function makeJwt(user) {
+function makeJwt(user, { isDemo = false } = {}) {
   return jwt.sign(
-    { userId: user.id, email: user.email },
+    { userId: user.id, email: user.email, isDemo },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   )
 }
 
 // Loguea con una cuenta demo compartida y funcional, sin exponer ninguna contraseña.
-router.post('/demo-login', async (req, res) => {
+router.post('/demo-login', authLimiter, async (req, res) => {
   try {
     let result = await pool.query('SELECT id, email FROM users WHERE email = $1', [DEMO_EMAIL])
     let user = result.rows[0]
@@ -39,14 +40,14 @@ router.post('/demo-login', async (req, res) => {
       await seedDemoBooks(user.id)
     }
 
-    res.json({ token: makeJwt(user), email: user.email })
+    res.json({ token: makeJwt(user, { isDemo: true }), email: user.email, isDemo: true })
   } catch (err) {
     console.error('demo-login error', err)
     res.status(500).json({ error: 'Error al ingresar como invitado' })
   }
 })
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email y contraseña requeridos' })
   if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
@@ -68,7 +69,7 @@ router.post('/register', async (req, res) => {
   }
 })
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) return res.status(400).json({ error: 'Email y contraseña requeridos' })
 
@@ -91,7 +92,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Solicitar reset — envía email con link
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', authLimiter, async (req, res) => {
   const { email } = req.body
   if (!email) return res.status(400).json({ error: 'Email requerido' })
 
@@ -138,7 +139,7 @@ router.post('/forgot-password', async (req, res) => {
 })
 
 // Restablecer con token del link
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', authLimiter, async (req, res) => {
   const { token, password } = req.body
   if (!token || !password) return res.status(400).json({ error: 'Token y contraseña requeridos' })
   if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })

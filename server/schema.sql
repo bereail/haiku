@@ -80,3 +80,63 @@ CREATE TABLE IF NOT EXISTS community_likes (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (post_id, user_id)
 );
+
+-- Migración: catálogo bibliográfico público (Fase 2).
+-- Aditiva por completo: no modifica ni elimina ninguna columna existente de `books`
+-- ni de `community_posts`. El ejemplar personal (notas, fechas, puntaje) se sigue
+-- guardando únicamente en `books`; estas tablas solo agregan un catálogo compartido
+-- opcional al que un libro puede o no estar vinculado.
+
+CREATE TABLE IF NOT EXISTS obras (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  canonical_title    TEXT NOT NULL,
+  subjects           TEXT[],
+  first_publish_year INTEGER,
+  ol_work_key        TEXT,
+  source             TEXT NOT NULL DEFAULT 'manual',
+  created_at         TIMESTAMPTZ DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS obras_ol_work_key_uq ON obras (ol_work_key) WHERE ol_work_key IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS autores (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  ol_author_key TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS autores_ol_key_uq ON autores (ol_author_key) WHERE ol_author_key IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS obra_autores (
+  obra_id  UUID NOT NULL REFERENCES obras(id) ON DELETE CASCADE,
+  autor_id UUID NOT NULL REFERENCES autores(id) ON DELETE CASCADE,
+  PRIMARY KEY (obra_id, autor_id)
+);
+CREATE INDEX IF NOT EXISTS obra_autores_autor_idx ON obra_autores (autor_id);
+
+CREATE TABLE IF NOT EXISTS ediciones (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  obra_id        UUID NOT NULL REFERENCES obras(id) ON DELETE CASCADE,
+  title          TEXT,
+  isbn_13        TEXT,
+  isbn_10        TEXT,
+  publisher      TEXT,
+  publish_year   INTEGER,
+  language       TEXT,
+  pages          INTEGER,
+  cover_url      TEXT,
+  ol_edition_key TEXT,
+  source         TEXT NOT NULL DEFAULT 'manual',
+  created_at     TIMESTAMPTZ DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ediciones_ol_key_uq ON ediciones (ol_edition_key) WHERE ol_edition_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ediciones_isbn13_uq ON ediciones (isbn_13) WHERE isbn_13 IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS ediciones_isbn10_uq ON ediciones (isbn_10) WHERE isbn_10 IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ediciones_obra_idx ON ediciones (obra_id);
+
+ALTER TABLE books ADD COLUMN IF NOT EXISTS edition_id UUID REFERENCES ediciones(id);
+CREATE INDEX IF NOT EXISTS books_edition_idx ON books (edition_id);
+
+ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS obra_id UUID REFERENCES obras(id);
+CREATE INDEX IF NOT EXISTS community_posts_obra_idx ON community_posts (obra_id);

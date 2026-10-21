@@ -41,7 +41,7 @@ describe('useAuth', () => {
       expect(res.ok).toBe(true)
     })
 
-    expect(result.current.user).toEqual({ email: 'user@test.com' })
+    expect(result.current.user).toEqual({ email: 'user@test.com', isDemo: false })
     expect(mockLocalStorage['librook_token']).toBe('jwt-123')
   })
 

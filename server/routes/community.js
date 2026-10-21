@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const auth = require('../middleware/authMiddleware')
+const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
 
 const ADMIN_EMAIL = 'berenicesolohaga@gmail.com'
@@ -85,7 +86,7 @@ router.get('/posts', auth, async (req, res) => {
   }
 })
 
-router.post('/posts', auth, async (req, res) => {
+router.post('/posts', auth, blockDemoWrites, async (req, res) => {
   const bookId = req.body.bookId
   const reflection = (req.body.reflection || '').trim()
   if (!reflection) return res.status(400).json({ error: 'La reflexión no puede estar vacía' })
@@ -94,24 +95,27 @@ router.post('/posts', auth, async (req, res) => {
 
   try {
     const book = await pool.query(
-      'SELECT title, author, cover, score FROM books WHERE id = $1 AND user_id = $2',
+      `SELECT b.title, b.author, b.cover, b.score, e.obra_id
+       FROM books b LEFT JOIN ediciones e ON e.id = b.edition_id
+       WHERE b.id = $1 AND b.user_id = $2`,
       [bookId, req.userId]
     )
     if (book.rows.length === 0) return res.status(404).json({ error: 'Libro no encontrado' })
     const b = book.rows[0]
 
     const result = await pool.query(
-      `INSERT INTO community_posts (user_id, book_id, book_title, book_author, book_cover, book_score, reflection)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO community_posts (user_id, book_id, book_title, book_author, book_cover, book_score, reflection, obra_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        ON CONFLICT (user_id, book_id) DO UPDATE SET
          reflection = EXCLUDED.reflection,
          book_title = EXCLUDED.book_title,
          book_author = EXCLUDED.book_author,
          book_cover = EXCLUDED.book_cover,
          book_score = EXCLUDED.book_score,
+         obra_id = EXCLUDED.obra_id,
          updated_at = NOW()
        RETURNING id`,
-      [req.userId, bookId, b.title, b.author, b.cover, b.score, reflection]
+      [req.userId, bookId, b.title, b.author, b.cover, b.score, reflection, b.obra_id]
     )
     const row = await getPostById(result.rows[0].id, req.userId, isAdmin(req))
     res.json(dbToPost(row))
@@ -121,7 +125,7 @@ router.post('/posts', auth, async (req, res) => {
   }
 })
 
-router.delete('/posts/:id', auth, async (req, res) => {
+router.delete('/posts/:id', auth, blockDemoWrites, async (req, res) => {
   try {
     const result = await pool.query(
       'DELETE FROM community_posts WHERE id = $1 AND (user_id = $2 OR $3::boolean) RETURNING id',
@@ -155,7 +159,7 @@ router.get('/posts/:id/comments', auth, async (req, res) => {
   }
 })
 
-router.post('/posts/:id/comments', auth, async (req, res) => {
+router.post('/posts/:id/comments', auth, blockDemoWrites, async (req, res) => {
   const body = (req.body.body || '').trim()
   if (!body) return res.status(400).json({ error: 'El comentario no puede estar vacío' })
   if (body.length > MAX_COMMENT_LEN)
@@ -181,7 +185,7 @@ router.post('/posts/:id/comments', auth, async (req, res) => {
   }
 })
 
-router.delete('/comments/:id', auth, async (req, res) => {
+router.delete('/comments/:id', auth, blockDemoWrites, async (req, res) => {
   try {
     const result = await pool.query(
       'DELETE FROM community_comments WHERE id = $1 AND (user_id = $2 OR $3::boolean) RETURNING id',
@@ -195,7 +199,7 @@ router.delete('/comments/:id', auth, async (req, res) => {
   }
 })
 
-router.post('/posts/:id/likes', auth, async (req, res) => {
+router.post('/posts/:id/likes', auth, blockDemoWrites, async (req, res) => {
   try {
     const post = await pool.query('SELECT id FROM community_posts WHERE id = $1', [req.params.id])
     if (post.rows.length === 0) return res.status(404).json({ error: 'Publicación no encontrada' })
@@ -212,7 +216,7 @@ router.post('/posts/:id/likes', auth, async (req, res) => {
   }
 })
 
-router.delete('/posts/:id/likes', auth, async (req, res) => {
+router.delete('/posts/:id/likes', auth, blockDemoWrites, async (req, res) => {
   try {
     await pool.query(
       'DELETE FROM community_likes WHERE post_id = $1 AND user_id = $2',
