@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import StarRating from './StarRating'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookDetailModal.module.css'
 import { formatDate, getInitials, getBookStatus, hasScore } from '../utils'
 import type { Book } from '../types'
@@ -16,12 +17,7 @@ interface BookDetailModalProps {
 
 export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMarkRead, onToggleCommunity, sharingToCommunity }: BookDetailModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  const dialogRef = useDialogA11y(onClose)
 
   const { isReading, isFinished, progress } = getBookStatus(book)
 
@@ -37,7 +33,7 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
       className={styles.overlay}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="detail-title" tabIndex={-1}>
         <div className={styles.header}>
           <div className={styles.headerText}>
             <h2 className={styles.title} id="detail-title">{book.title}</h2>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './AdminPage.module.css'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -270,6 +271,59 @@ function HorizBars({ data }: { data: { label: string; count: number }[] }) {
   )
 }
 
+function ResetPasswordModal({ target, password, onPasswordChange, error, loading, ok, onSubmit, onClose }: {
+  target: UserRow; password: string; onPasswordChange: (v: string) => void
+  error: string; loading: boolean; ok: boolean; onSubmit: () => void; onClose: () => void
+}) {
+  const dialogRef = useDialogA11y(onClose)
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div
+        ref={dialogRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reset-pwd-title"
+        tabIndex={-1}
+        onClick={e => e.stopPropagation()}
+      >
+        <div>
+          <p className={styles.modalTitle} id="reset-pwd-title">Resetear contraseña</p>
+          <p className={styles.modalSub}>{target.email}</p>
+        </div>
+        <div className={styles.modalField}>
+          <label className={styles.modalLabel} htmlFor="reset-pwd">Nueva contraseña</label>
+          <input
+            id="reset-pwd"
+            type="password"
+            className={styles.modalInput}
+            value={password}
+            onChange={e => onPasswordChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !loading && onSubmit()}
+            placeholder="Mínimo 6 caracteres"
+            autoFocus
+            disabled={loading || ok}
+          />
+        </div>
+        {error && <p className={styles.err} style={{ padding: 0 }} role="alert">{error}</p>}
+        {ok    && <p className={styles.modalOk} role="status">✓ Contraseña actualizada</p>}
+        <div className={styles.modalActions}>
+          <button className={styles.modalCancel} onClick={onClose}>Cerrar</button>
+          {!ok && (
+            <button
+              className={styles.modalSave}
+              onClick={onSubmit}
+              disabled={loading || password.length < 6}
+            >
+              {loading ? 'Guardando…' : 'Guardar'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function AdminPage({ onBack }: { onBack: () => void }) {
@@ -526,42 +580,16 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
 
       {/* ── MODAL RESET CONTRASEÑA ──────────────────────────────────────────── */}
       {resetTarget && (
-        <div className={styles.modalOverlay} onClick={closeReset}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div>
-              <p className={styles.modalTitle}>Resetear contraseña</p>
-              <p className={styles.modalSub}>{resetTarget.email}</p>
-            </div>
-            <div className={styles.modalField}>
-              <label className={styles.modalLabel} htmlFor="reset-pwd">Nueva contraseña</label>
-              <input
-                id="reset-pwd"
-                type="password"
-                className={styles.modalInput}
-                value={resetPwd}
-                onChange={e => setResetPwd(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && !resetLoad && submitReset()}
-                placeholder="Mínimo 6 caracteres"
-                autoFocus
-                disabled={resetLoad || resetOk}
-              />
-            </div>
-            {resetErr && <p className={styles.err} style={{ padding: 0 }} role="alert">{resetErr}</p>}
-            {resetOk  && <p className={styles.modalOk} role="status">✓ Contraseña actualizada</p>}
-            <div className={styles.modalActions}>
-              <button className={styles.modalCancel} onClick={closeReset}>Cerrar</button>
-              {!resetOk && (
-                <button
-                  className={styles.modalSave}
-                  onClick={submitReset}
-                  disabled={resetLoad || resetPwd.length < 6}
-                >
-                  {resetLoad ? 'Guardando…' : 'Guardar'}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <ResetPasswordModal
+          target={resetTarget}
+          password={resetPwd}
+          onPasswordChange={setResetPwd}
+          error={resetErr}
+          loading={resetLoad}
+          ok={resetOk}
+          onSubmit={submitReset}
+          onClose={closeReset}
+        />
       )}
     </div>
   )

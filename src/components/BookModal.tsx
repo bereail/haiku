@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import StarRating from './StarRating'
 import ISBNScanner from './ISBNScanner'
 import { useBookSearch } from '../hooks/useBookSearch'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookModal.module.css'
 import type { Book } from '../types'
 
@@ -71,12 +72,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { suggestions, loading, search, searchByISBN, clear } = useBookSearch()
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => e.key === 'Escape' && !scannerOpen && onClose()
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose, scannerOpen])
+  const dialogRef = useDialogA11y(onClose, !scannerOpen)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -207,10 +203,12 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
     <>
       <div className={styles.overlay} ref={overlayRef} onClick={e => e.target === overlayRef.current && onClose()}>
         <div
+          ref={dialogRef}
           className={styles.modal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="book-modal-title"
+          tabIndex={-1}
         >
           <div className={styles.modalHeader}>
             <h2 className={styles.modalTitle} id="book-modal-title">

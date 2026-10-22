@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useCommunity } from '../hooks/useCommunity'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import CommunityPostCard from './CommunityPostCard'
 import styles from './CommunityModal.module.css'
 import type { CommunityPost } from '../types'
@@ -21,12 +22,7 @@ export default function CommunityModal({ onClose, onToast }: CommunityModalProps
   const [aliasInput, setAliasInput] = useState('')
   const [savingAlias, setSavingAlias] = useState(false)
   const hasLoadedRef = useRef(false)
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  const dialogRef = useDialogA11y(onClose)
 
   useEffect(() => {
     if (hasLoadedRef.current) return
@@ -91,7 +87,7 @@ export default function CommunityModal({ onClose, onToast }: CommunityModalProps
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="community-title">
+      <div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="community-title" tabIndex={-1}>
         <div className={styles.header}>
           <div className={styles.headerText}>
             <h2 className={styles.title} id="community-title">Comunidad</h2>

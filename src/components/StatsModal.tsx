@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './StatsModal.module.css'
 import type { Book, Goal } from '../types'
 import { hasScore } from '../utils'
@@ -120,16 +121,19 @@ export default function StatsModal({ books, goal, onUpdateGoal, onClose }: Stats
   const [editingGoal, setEditingGoal] = useState(false)
   const [goalInput, setGoalInput] = useState(String(goal?.count || 0))
   const currentYear = new Date().getFullYear()
+  const dialogRef = useDialogA11y(onClose)
 
   const formatDays = (d: number) => d === 1 ? '1 día' : `${d} días`
 
   return (
     <div className={styles.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div
+        ref={dialogRef}
         className={styles.modal}
         role="dialog"
         aria-modal="true"
         aria-labelledby="stats-modal-title"
+        tabIndex={-1}
       >
         <div className={styles.header}>
           <h2 className={styles.title} id="stats-modal-title">Estadísticas</h2>

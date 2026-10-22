@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useBookSearch } from '../hooks/useBookSearch'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookSearchModal.module.css'
 
 function CoverImg({ src, alt }) {
@@ -14,13 +15,14 @@ export default function BookSearchModal({ onSelect, onClose }) {
   const { suggestions, loading, search } = useBookSearch()
   const inputRef = useRef(null)
   const overlayRef = useRef(null)
+  const dialogRef = useDialogA11y(onClose)
 
+  // Foco inicial en el input de búsqueda (no el primer elemento enfocable
+  // del diálogo, que sería el botón de cerrar) — declarado después del
+  // hook para ganar el foco sobre su fallback.
   useEffect(() => {
     inputRef.current?.focus()
-    const handler = (e) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [])
 
   useEffect(() => {
     search(query, soloEspanol ? { lang: 'spa' } : {})
@@ -40,10 +42,12 @@ export default function BookSearchModal({ onSelect, onClose }) {
   return (
     <div className={styles.overlay} ref={overlayRef} onClick={e => e.target === overlayRef.current && onClose()}>
       <div
+        ref={dialogRef}
         className={styles.modal}
         role="dialog"
         aria-modal="true"
         aria-labelledby="search-modal-title"
+        tabIndex={-1}
       >
         <div className={styles.header}>
           <div>
