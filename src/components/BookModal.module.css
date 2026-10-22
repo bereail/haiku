@@ -121,6 +121,15 @@
   gap: 0.875rem;
 }
 
+@media (max-width: 480px) {
+  /* Dos columnas no entran en un teléfono angosto — un <input type="date">
+     tiene un ancho mínimo nativo (día/mes/año + ícono) que no se achica
+     más allá de ~150px, así que la fila de fechas desbordaba el modal. */
+  .row2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -373,6 +382,7 @@
 
 .isbnInput {
   flex: 1;
+  min-width: 0;
   padding: 0.6rem 0.875rem;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
