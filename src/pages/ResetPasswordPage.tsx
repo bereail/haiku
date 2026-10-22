@@ -28,7 +28,7 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.left}>
+      <div className={styles.left} aria-hidden="true">
         <div className={styles.decoration}>
           <div className={styles.bookStack}>
             <div className={styles.book} style={{ '--c': '#2d4a3e', '--r': '-8deg', '--t': '0px' } as React.CSSProperties} />
