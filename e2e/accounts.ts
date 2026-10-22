@@ -9,6 +9,9 @@ const E2E_DIR = path.dirname(fileURLToPath(import.meta.url))
 export const ACCOUNTS = {
   lectora1: { email: 'lectora1@test.dev', password: 'test1234' },
   lectora2: { email: 'lectora2@test.dev', password: 'test1234' },
+  // Biblioteca con datos controlados para filtros, paginación y estadísticas
+  // (library-flows.spec la vacía y la vuelve a cargar en cada corrida).
+  lectora3: { email: 'lectora3@test.dev', password: 'test1234' },
   // Tiene que coincidir con ADMIN_EMAIL (server/.env) y VITE_ADMIN_EMAIL
   // (.env.development.local) del entorno local.
   admin: { email: 'admin@test.dev', password: 'admintest1234' },
