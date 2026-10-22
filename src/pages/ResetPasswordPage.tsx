@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styles from './LoginPage.module.css'
 
 interface Props {
@@ -13,6 +13,13 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const successRef = useRef<HTMLParagraphElement>(null)
+
+  // El formulario (y el botón que tenía el foco) desaparece al terminar: el foco
+  // pasa al mensaje para que el lector de pantalla lo anuncie.
+  useEffect(() => {
+    if (success) successRef.current?.focus()
+  }, [success])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,14 +86,16 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
                   autoComplete="new-password"
                 />
               </div>
-              {error && <p className={styles.error}>{error}</p>}
+              {error && <p className={styles.error} role="alert">{error}</p>}
               <button className={styles.btn} type="submit" disabled={loading}>
                 {loading ? <span className={styles.spinner} /> : 'Cambiar contraseña'}
               </button>
             </div>
           ) : (
             <div className={styles.fields}>
-              <p className={styles.successMsg}>¡Contraseña actualizada! Ya podés iniciar sesión.</p>
+              <p className={styles.successMsg} role="status" tabIndex={-1} ref={successRef}>
+                ¡Contraseña actualizada! Ya podés iniciar sesión.
+              </p>
               <button type="button" className={styles.btn} onClick={onDone}>
                 Ir al inicio de sesión
               </button>

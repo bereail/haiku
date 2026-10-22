@@ -66,7 +66,9 @@ test.describe('Recuperar contraseña', () => {
     await page.locator('#password').fill(newPassword)
     await page.locator('#confirm').fill(newPassword)
     await page.getByRole('button', { name: /guardar|cambiar|restablecer|actualizar/i }).click()
-    await expect(page.getByText('¡Contraseña actualizada!')).toBeVisible()
+    // El formulario (y su botón con foco) desaparece: el foco pasa al mensaje
+    // de éxito para que se anuncie, en vez de perderse en <body>.
+    await expect(page.getByRole('status').filter({ hasText: '¡Contraseña actualizada!' })).toBeFocused()
 
     expect((await login(request, START_PASSWORD)).status()).toBe(400)
     expect((await login(request, newPassword)).ok()).toBeTruthy()
@@ -104,8 +106,17 @@ test.describe('Recuperar contraseña', () => {
     await page.locator('#password').fill('hackeada123')
     await page.locator('#confirm').fill('hackeada123')
     await page.getByRole('button', { name: /guardar|cambiar|restablecer|actualizar/i }).click()
-    await expect(page.getByText('El enlace es inválido o ya expiró')).toBeVisible()
+    // role="alert": el lector de pantalla lo anuncia sin que haya que buscarlo
+    await expect(page.getByRole('alert')).toHaveText('El enlace es inválido o ya expiró')
     expect((await login(request, START_PASSWORD)).ok()).toBeTruthy()
+  })
+
+  test('UI: los errores de validación se anuncian (role=alert)', async ({ page }) => {
+    await page.goto(`${BASE_URL}?reset_token=${'0'.repeat(64)}`)
+    await page.locator('#password').fill('abcdef12')
+    await page.locator('#confirm').fill('distinta12')
+    await page.getByRole('button', { name: /guardar|cambiar|restablecer|actualizar/i }).click()
+    await expect(page.getByRole('alert')).toHaveText('Las contraseñas no coinciden')
   })
 
   test('API: un link vencido no sirve', async ({ page, request }) => {
