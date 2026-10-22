@@ -95,4 +95,22 @@ test.describe('Panel Admin', () => {
       await expect(page.getByText(NOTE)).toHaveCount(0)
     })
   })
+
+  test.describe('UI: analíticas', () => {
+    test.use({ storageState: storageStatePath('admin') })
+
+    test('el gráfico de los últimos 7 días cuenta las visitas de hoy', async ({ page, request }) => {
+      // Una visita registrada ahora tiene que aparecer en el día de hoy (antes
+      // las fechas viajaban como timestamp y nunca coincidían: siempre 0).
+      await request.post(`${API_URL}/analytics/track`, {
+        data: { session_id: `e2e-${Date.now()}`, path: '/e2e-analytics' },
+      })
+      await page.goto('')
+      await page.getByRole('button', { name: 'Panel admin' }).first().click()
+      const table = page.getByRole('table', { name: 'Visitas de los últimos 7 días' })
+      await expect(table.getByRole('row')).toHaveCount(8) // encabezado + 7 días
+      const today = table.getByRole('row').last().getByRole('cell')
+      await expect(today).not.toHaveText('0')
+    })
+  })
 })

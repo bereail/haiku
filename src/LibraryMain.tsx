@@ -5,6 +5,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { useToast } from './hooks/useToast'
 import { draftToBookData, type VoiceDraft } from './hooks/useVoiceEntry'
 import { api } from './api'
+import { todayLocal } from './utils'
 import LibraryPage from './pages/LibraryPage'
 import BookModal from './components/BookModal'
 import BookDetailModal from './components/BookDetailModal'
@@ -212,7 +213,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
           }}
           onClose={() => setDetailBook(null)}
           onMarkRead={async () => {
-            const today = new Date().toISOString().slice(0, 10)
+            const today = todayLocal()
             try {
               await updateBook(detailBook.id, { ...detailBook, endDate: today })
               setDetailBook(prev => prev ? { ...prev, endDate: today } : null)

@@ -12,6 +12,15 @@ export function formatDate(str: string | undefined): string {
   return `${MESES[parseInt(match[2]) - 1]} ${match[1]}`
 }
 
+// Fecha de hoy ('YYYY-MM-DD') en la zona horaria del usuario. No usar
+// toISOString().slice(0, 10): eso es la fecha UTC, y en Argentina después de las
+// 21 h devuelve el día siguiente.
+export function todayLocal(d: Date = new Date()): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
 export function formatDateTime(iso: string | undefined): string {
   if (!iso) return ''
   const date = new Date(iso)

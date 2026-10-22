@@ -4,6 +4,7 @@ import { parseVoiceEntry } from '../services/voiceBookParser'
 import { findBookMatches } from '../services/bookMatchService'
 import type { BookSuggestion } from './useBookSearch'
 import type { Book, ReadingStatus } from '../types'
+import { todayLocal } from '../utils'
 
 export type VoicePhase =
   | 'idle' | 'listening' | 'processing' | 'searching'
@@ -24,7 +25,7 @@ export interface VoiceDraft {
 }
 
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayLocal()
 }
 
 export function draftToBookData(draft: VoiceDraft): Omit<Book, 'id' | 'createdAt'> {

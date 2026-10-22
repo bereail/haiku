@@ -5,6 +5,7 @@ import { useBookSearch } from '../hooks/useBookSearch'
 import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookModal.module.css'
 import type { Book } from '../types'
+import { todayLocal } from '../utils'
 
 const COVER_MAX_PX = 500
 const COVER_QUALITY = 0.82
@@ -379,7 +380,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                             key === 'abandoned' ? styles.statusPillAbandoned : '',
                           ].filter(Boolean).join(' ')}
                           onClick={() => {
-                            const today = new Date().toISOString().slice(0, 10)
+                            const today = todayLocal()
                             if (key === 'pending') setForm(f => ({ ...f, startDate: '', endDate: '', abandoned: false }))
                             else if (key === 'reading') setForm(f => ({ ...f, startDate: f.startDate || today, endDate: '', abandoned: false }))
                             else if (key === 'done') setForm(f => ({ ...f, startDate: f.startDate || today, endDate: f.endDate || today, abandoned: false }))
@@ -407,7 +408,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                         <button
                           type="button"
                           className={styles.todayBtn}
-                          onClick={() => set('startDate', new Date().toISOString().slice(0, 10))}
+                          onClick={() => set('startDate', todayLocal())}
                         >
                           Hoy
                         </button>
@@ -429,7 +430,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                         <button
                           type="button"
                           className={styles.todayBtn}
-                          onClick={() => set('endDate', new Date().toISOString().slice(0, 10))}
+                          onClick={() => set('endDate', todayLocal())}
                         >
                           Hoy
                         </button>
