@@ -102,6 +102,7 @@ export default function CommunityModal({ onClose, onToast }: CommunityModalProps
                   value={aliasInput}
                   onChange={e => setAliasInput(e.target.value.slice(0, 30))}
                   placeholder="Tu alias"
+                  aria-label="Tu alias"
                   maxLength={30}
                   autoFocus
                 />
@@ -128,12 +129,21 @@ export default function CommunityModal({ onClose, onToast }: CommunityModalProps
 
         <div className={styles.body}>
           {loading && posts.length === 0 && (
-            <p className={styles.loadingMsg}>Cargando reflexiones…</p>
+            <div className={styles.loadingState} role="status" aria-live="polite">
+              <svg className={styles.spinner} width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" strokeOpacity="0.2"/>
+                <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <p className={styles.loadingMsg}>Cargando reflexiones…</p>
+            </div>
           )}
 
           {!loading && initialized && posts.length === 0 && (
             <div className={styles.empty}>
-              <p>Todavía no hay reflexiones compartidas.</p>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" opacity="0.18" aria-hidden="true">
+                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className={styles.emptyTitle}>Todavía no hay reflexiones compartidas</p>
               <p className={styles.emptySub}>Compartí una desde el detalle de un libro que hayas leído.</p>
             </div>
           )}

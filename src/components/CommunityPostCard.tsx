@@ -18,6 +18,7 @@ const MAX_COMMENT_LEN = 500
 export default function CommunityPostCard({
   post, onToggleLike, onDelete, loadComments, onAddComment, onDeleteComment,
 }: CommunityPostCardProps) {
+  const [coverFailed, setCoverFailed] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [comments, setComments] = useState<CommunityComment[] | null>(null)
   const [loadingComments, setLoadingComments] = useState(false)
@@ -59,8 +60,13 @@ export default function CommunityPostCard({
   return (
     <article className={styles.card}>
       <div className={styles.header}>
-        {post.bookCover ? (
-          <img src={post.bookCover} alt="" className={styles.cover} />
+        {post.bookCover && !coverFailed ? (
+          <img
+            src={post.bookCover}
+            alt=""
+            className={styles.cover}
+            onError={() => setCoverFailed(true)}
+          />
         ) : (
           <div className={styles.coverPlaceholder}>
             <span>{getInitials(post.bookTitle)}</span>
@@ -157,6 +163,7 @@ export default function CommunityPostCard({
               value={commentText}
               onChange={e => setCommentText(e.target.value.slice(0, MAX_COMMENT_LEN))}
               placeholder="Escribí un comentario..."
+              aria-label="Escribir comentario"
               rows={2}
               maxLength={MAX_COMMENT_LEN}
             />

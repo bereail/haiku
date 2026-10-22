@@ -71,6 +71,7 @@
 }
 
 .reflection {
+  font-family: var(--font-read);
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   line-height: 1.65;
@@ -168,13 +169,13 @@
 .confirmNo:hover { background: var(--color-surface-2); }
 
 .confirmYes {
-  border: none;
-  background: var(--color-error);
-  color: white;
+  border: 1.5px solid var(--color-error);
+  background: transparent;
+  color: var(--color-error);
   font-weight: 500;
 }
 
-.confirmYes:hover { opacity: 0.88; }
+.confirmYes:hover { background: var(--color-error-pale); }
 
 /* Comments */
 .commentsBox {
@@ -212,6 +213,7 @@
 }
 
 .commentText {
+  font-family: var(--font-read);
   font-size: 0.82rem;
   color: var(--color-text);
   line-height: 1.5;
