@@ -108,8 +108,8 @@ router.put('/users/:id/password', auth, adminOnly, async (req, res) => {
   try {
     const hash = await bcrypt.hash(password, 12)
     const result = await pool.query(
-      'UPDATE users SET password_hash = $1 WHERE id = $2 RETURNING id',
-      [hash, req.params.id]
+      'UPDATE users SET password_hash = $1, password_changed_at = $2 WHERE id = $3 RETURNING id',
+      [hash, new Date(), req.params.id]
     )
     if (result.rows.length === 0)
       return res.status(404).json({ error: 'Usuario no encontrado' })

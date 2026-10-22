@@ -172,7 +172,9 @@ router.post('/reset-password', authLimiter, async (req, res) => {
     const { id: tokenId, user_id: userId } = result.rows[0]
     const hash = await bcrypt.hash(password, 12)
 
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, userId])
+    // password_changed_at invalida las sesiones abiertas antes (ver sessionRevocation.js).
+    // La fecha la pone Node (no NOW() de Postgres) para que coincida con el reloj del iat.
+    await pool.query('UPDATE users SET password_hash = $1, password_changed_at = $2 WHERE id = $3', [hash, new Date(), userId])
     await pool.query('UPDATE password_reset_tokens SET used = TRUE WHERE id = $1', [tokenId])
 
     res.json({ ok: true })

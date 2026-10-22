@@ -173,6 +173,12 @@ $SSH "psql \$(grep DATABASE_URL $API_DIR/.env | cut -d= -f2-) -c \"
   CREATE INDEX IF NOT EXISTS community_posts_obra_idx ON community_posts (obra_id);
 \""
 
+echo "==> Aplicando migración SQL (revocación de sesiones al cambiar la contraseña)..."
+# Tiene que correr ANTES del restart: el authMiddleware nuevo consulta esta columna.
+$SSH "psql \$(grep DATABASE_URL $API_DIR/.env | cut -d= -f2-) -c \"
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ;
+\""
+
 echo "==> Instalando dependencias nuevas del backend (express-rate-limit)..."
 # deploy.sh nunca corrió npm install en el VPS — hasta ahora nunca hizo falta porque no se
 # agregaban dependencias nuevas. Esta versión agrega express-rate-limit, así que sin este paso

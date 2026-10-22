@@ -4,6 +4,12 @@ jest.mock('../db', () => ({
   query: jest.fn(),
 }))
 
+// La revocación de sesiones tiene sus propios tests (sessionRevocation.test.js); acá
+// se neutraliza para no alterar el orden de las respuestas mockeadas de la base.
+jest.mock('../middleware/sessionRevocation', () => ({
+  isRevoked: jest.fn().mockResolvedValue(false),
+}))
+
 const request = require('supertest')
 const express = require('express')
 const jwt = require('jsonwebtoken')

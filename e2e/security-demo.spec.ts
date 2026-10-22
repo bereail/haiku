@@ -77,28 +77,6 @@ test.describe('Modo demo: solo lectura', () => {
     expect(after.slice(before.length)).not.toContain(DEMO_EMAIL)
   })
 
-  test('API: aunque alguien conozca la contraseña de la demo, el login normal sigue siendo solo lectura', async ({ request }) => {
-    // Simula que la contraseña de la demo se filtró o se cambió (acá lo hace
-    // la admin local, que tiene ese permiso legítimo).
-    const users = await (await request.get(`${API_URL}/admin/users`, { headers: bearer('admin') })).json()
-    const demo = users.find((u: { email: string }) => u.email === DEMO_EMAIL)
-    const known = 'demo-pass-e2e-123'
-    expect((await request.put(`${API_URL}/admin/users/${demo.id}/password`, {
-      headers: bearer('admin'), data: { password: known },
-    })).ok()).toBeTruthy()
-
-    const login = await request.post(`${API_URL}/auth/login`, { data: { email: DEMO_EMAIL, password: known } })
-    expect(login.ok()).toBeTruthy()
-    const { token, isDemo } = await login.json()
-    expect(isDemo).toBe(true)
-
-    const write = await request.post(`${API_URL}/books`, {
-      headers: { Authorization: `Bearer ${token}` },
-      data: { title: 'Vandalismo en la demo compartida' },
-    })
-    expect(write.status()).toBe(403)
-  })
-
   test('API: no se puede registrar una cuenta con el email de la demo', async ({ request }) => {
     const res = await request.post(`${API_URL}/auth/register`, { data: { email: DEMO_EMAIL.toUpperCase(), password: 'cualquiera123' } })
     expect(res.ok()).toBeFalsy()
@@ -124,5 +102,29 @@ test.describe('Modo demo: solo lectura', () => {
       expect(await page.getByRole('article').count()).toBe(countBefore)
       await expect(page.getByRole('article', { name: 'Intento desde la demo' })).toHaveCount(0)
     })
+  })
+
+  test('API: aunque alguien conozca la contraseña de la demo, el login normal sigue siendo solo lectura', async ({ request }) => {
+    // Simula que la contraseña de la demo se filtró o se cambió (acá lo hace
+    // la admin local, que tiene ese permiso legítimo). Va al final del archivo:
+    // cambiar la contraseña revoca la sesión demo guardada (global-setup la
+    // renueva en la próxima corrida).
+    const users = await (await request.get(`${API_URL}/admin/users`, { headers: bearer('admin') })).json()
+    const demo = users.find((u: { email: string }) => u.email === DEMO_EMAIL)
+    const known = 'demo-pass-e2e-123'
+    expect((await request.put(`${API_URL}/admin/users/${demo.id}/password`, {
+      headers: bearer('admin'), data: { password: known },
+    })).ok()).toBeTruthy()
+
+    const login = await request.post(`${API_URL}/auth/login`, { data: { email: DEMO_EMAIL, password: known } })
+    expect(login.ok()).toBeTruthy()
+    const { token, isDemo } = await login.json()
+    expect(isDemo).toBe(true)
+
+    const write = await request.post(`${API_URL}/books`, {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { title: 'Vandalismo en la demo compartida' },
+    })
+    expect(write.status()).toBe(403)
   })
 })

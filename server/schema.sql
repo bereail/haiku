@@ -58,6 +58,9 @@ CREATE TABLE IF NOT EXISTS user_settings (
 -- Migración: alias público de usuario para la comunidad
 ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
 
+-- Invalida sesiones (JWT) emitidas antes del último cambio de contraseña.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS community_posts (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
