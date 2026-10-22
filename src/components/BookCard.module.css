@@ -270,9 +270,10 @@
   align-items: center;
   gap: 0.3rem;
   font-size: 0.66rem;
+  /* Sin opacity: con 0.7 el contraste bajaba a 2.8:1 (claro) / 3.2:1 (oscuro);
+     el token solo da 5.1:1 en ambos temas (WCAG AA pide 4.5:1). */
   color: var(--color-text-muted);
   margin-top: 0.15rem;
-  opacity: 0.7;
 }
 
 /* Actions */

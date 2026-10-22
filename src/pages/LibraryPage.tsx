@@ -247,7 +247,9 @@ export default function LibraryPage({
             <button
               className={styles.voiceBtn}
               onClick={onVoiceEntry}
-              aria-label="Registrar lectura por voz"
+              // El nombre accesible empieza con el texto visible (WCAG 2.5.3): quien
+              // usa control por voz dice "Contame qué leíste" y tiene que funcionar.
+              aria-label="Contame qué leíste: registrar lectura por voz"
               title="Registrar lectura por voz"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
