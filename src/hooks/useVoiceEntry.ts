@@ -5,6 +5,7 @@ import { findBookMatches } from '../services/bookMatchService'
 import type { BookSuggestion } from './useBookSearch'
 import type { Book, ReadingStatus } from '../types'
 import { todayLocal } from '../utils'
+import { findDuplicate } from '../services/bookDuplicates'
 
 export type VoicePhase =
   | 'idle' | 'listening' | 'processing' | 'searching'
@@ -49,23 +50,6 @@ export function draftToBookData(draft: VoiceDraft): Omit<Book, 'id' | 'createdAt
     default:
       return { ...base, startDate: '', endDate: '', abandoned: false }
   }
-}
-
-const COMBINING_MARKS = new RegExp('[\\u0300-\\u036f]', 'g')
-
-function normalizeForCompare(s: string): string {
-  return s.toLowerCase().normalize('NFD').replace(COMBINING_MARKS, '').trim()
-}
-
-function findDuplicate(books: Book[], title: string, author: string): Book | null {
-  const t = normalizeForCompare(title)
-  if (!t) return null
-  const a = normalizeForCompare(author)
-  return books.find(b => {
-    if (normalizeForCompare(b.title) !== t) return false
-    if (!a) return true
-    return normalizeForCompare(b.author || '') === a
-  }) || null
 }
 
 export interface UseVoiceEntryOptions {
