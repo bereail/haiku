@@ -368,8 +368,8 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
       {/* ── ANALYTICS ───────────────────────────────────────────────────────── */}
       {tab === 'analytics' && (
         <main className={styles.main}>
-          {aLoad && <p className={styles.msg}>Cargando analíticas…</p>}
-          {aErr  && <p className={styles.err}>{aErr}</p>}
+          {aLoad && <p className={styles.msg} role="status" aria-live="polite">Cargando analíticas…</p>}
+          {aErr  && <p className={styles.err} role="alert">{aErr}</p>}
 
           {data && (<>
 
@@ -459,15 +459,19 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
       {/* ── USERS ───────────────────────────────────────────────────────────── */}
       {tab === 'users' && (
         <main className={styles.main}>
-          {uLoad && <p className={styles.msg}>Cargando…</p>}
-          {uErr  && <p className={styles.err}>{uErr}</p>}
+          {uLoad && <p className={styles.msg} role="status" aria-live="polite">Cargando…</p>}
+          {uErr  && <p className={styles.err} role="alert">{uErr}</p>}
           {!uLoad && !uErr && users.length === 0 && (
             <p className={styles.msg}>No hay usuarios registrados.</p>
           )}
           {users.map(u => (
             <div key={u.id} className={styles.userCard}>
               <div className={styles.userCardHeader}>
-                <button className={styles.userToggle} onClick={() => toggleUser(u.id)}>
+                <button
+                  className={styles.userToggle}
+                  onClick={() => toggleUser(u.id)}
+                  aria-expanded={expanded === u.id}
+                >
                   <div className={styles.userInfo}>
                     <span className={styles.userEmail}>{u.email}</span>
                     <span className={styles.userMeta}>
@@ -542,8 +546,8 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
                 disabled={resetLoad || resetOk}
               />
             </div>
-            {resetErr && <p className={styles.err} style={{ padding: 0 }}>{resetErr}</p>}
-            {resetOk  && <p className={styles.modalOk}>✓ Contraseña actualizada</p>}
+            {resetErr && <p className={styles.err} style={{ padding: 0 }} role="alert">{resetErr}</p>}
+            {resetOk  && <p className={styles.modalOk} role="status">✓ Contraseña actualizada</p>}
             <div className={styles.modalActions}>
               <button className={styles.modalCancel} onClick={closeReset}>Cerrar</button>
               {!resetOk && (
