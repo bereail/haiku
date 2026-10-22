@@ -27,3 +27,9 @@ dist-ssr
 *.sln
 *.sw?
 server.tar.gz
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+e2e-debug.png
