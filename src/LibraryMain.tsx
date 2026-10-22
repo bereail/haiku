@@ -6,6 +6,7 @@ import { useToast } from './hooks/useToast'
 import { draftToBookData, type VoiceDraft } from './hooks/useVoiceEntry'
 import { api } from './api'
 import { todayLocal } from './utils'
+import { planQuickAdd, quickAddMessage, type QuickAddSource, type QuickTarget } from './services/quickAdd'
 import LibraryPage from './pages/LibraryPage'
 import BookModal from './components/BookModal'
 import BookDetailModal from './components/BookDetailModal'
@@ -81,27 +82,15 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
     { key: 'v', handler: openVoice },
   ])
 
-  const handleAddFromSearch = (bookData: {
-    title?: string; author?: string; publisher?: string
-    year?: number; coverLarge?: string; cover?: string
-  }) => {
-    setSearchOpen(false)
-    setModal({
-      mode: 'add',
-      book: {
-        title: bookData.title || '',
-        author: bookData.author || '',
-        publisher: bookData.publisher || '',
-        year: bookData.year,
-        cover: bookData.coverLarge || bookData.cover || '',
-        genre: '',
-        startDate: '',
-        endDate: '',
-        notes: '',
-        score: 0,
-        color: '',
-      },
-    })
+  // "Leído" / "Pendiente" en los resultados de Open Library: guardan directo,
+  // sin duplicar si el libro ya está (ver planQuickAdd). Los errores (red,
+  // demo de solo lectura, sesión vencida) se propagan para que el resultado
+  // los muestre y permita reintentar.
+  const handleQuickAdd = async (source: QuickAddSource, target: QuickTarget): Promise<string> => {
+    const plan = planQuickAdd(books, source, target, todayLocal())
+    if (plan.kind === 'create') await addBook(plan.data)
+    else if (plan.kind === 'update') await updateBook(plan.book.id, plan.data)
+    return quickAddMessage(plan, target)
   }
 
   const handleImport = async (file: File) => {
@@ -189,7 +178,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
 
       {searchOpen && (
         <BookSearchModal
-          onSelect={handleAddFromSearch}
+          onQuickAdd={handleQuickAdd}
           onClose={() => setSearchOpen(false)}
         />
       )}

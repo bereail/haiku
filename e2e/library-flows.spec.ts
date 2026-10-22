@@ -242,32 +242,8 @@ test.describe('alta y edición', () => {
     })
   })
 
-  test('alta desde la búsqueda en Open Library (respuesta simulada)', async ({ page, request }) => {
-    await page.route('https://openlibrary.org/search.json**', route => route.fulfill({
-      json: { docs: [
-        { key: '/works/OL1W', title: 'Pedro Páramo', author_name: ['Juan Rulfo'], publisher: ['Fondo de Cultura Económica'], first_publish_year: 1955 },
-        { key: '/works/OL2W', title: 'El llano en llamas', author_name: ['Juan Rulfo'], publisher: ['FCE'], first_publish_year: 1953 },
-      ] },
-    }))
-    await openLibrary(page)
-    await page.getByRole('button', { name: 'Buscar en Open Library' }).click()
-    await page.getByRole('textbox', { name: 'Buscar libros' }).fill('Rulfo')
-    const results = page.getByRole('region', { name: 'Resultados de búsqueda' })
-    // Cada botón dice a qué libro corresponde (no diez botones "Leído" iguales)
-    await results.getByRole('button', { name: /Leído.*Pedro Páramo/ }).click()
-
-    const dialog = page.getByRole('dialog')
-    await expect(dialog.locator('#title')).toHaveValue('Pedro Páramo')
-    await expect(dialog.locator('#author')).toHaveValue('Juan Rulfo')
-    await expect(dialog.locator('#publisher')).toHaveValue('Fondo de Cultura Económica')
-    await expect(dialog.locator('#year')).toHaveValue('1955')
-    await dialog.getByRole('button', { name: 'Agregar libro' }).click()
-    await expect(page.getByRole('article', { name: 'Pedro Páramo' })).toBeVisible()
-    const saved = await bookByTitle(request, 'Pedro Páramo')
-    expect(saved.author).toBe('Juan Rulfo')
-    expect(saved.year).toBe(1955)
-    await request.delete(`${API_URL}/books/${saved.id}`, { headers: H() })
-  })
+  // El alta desde los resultados de Open Library ("Leído" / "Pendiente") está en
+  // search-quick-add.spec.ts.
 
   test('ISBN ingresado a mano: completa los datos; si no existe, lo avisa', async ({ page }) => {
     await page.route('https://openlibrary.org/search.json**', route => {

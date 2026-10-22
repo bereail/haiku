@@ -9,7 +9,14 @@ function CoverImg({ src, alt }) {
   return <img src={src} alt={alt} onError={() => setHasError(true)} />
 }
 
-export default function BookSearchModal({ onSelect, onClose }) {
+// Estado del guardado rápido de cada resultado (por clave de Open Library)
+type SaveState =
+  | { phase: 'saving'; target: 'read' | 'pending' }
+  | { phase: 'done'; message: string }
+  | { phase: 'error'; message: string }
+
+export default function BookSearchModal({ onQuickAdd, onClose }) {
+  const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({})
   const [query, setQuery] = useState('')
   const [soloEspanol, setSoloEspanol] = useState(true)
   const { suggestions, loading, search } = useBookSearch()
@@ -32,8 +39,15 @@ export default function BookSearchModal({ onSelect, onClose }) {
     setQuery(e.target.value)
   }
 
-  const handleSelect = (book, tipo) => {
-    onSelect({ ...book, tipo })
+  const handleQuickAdd = async (book, target: 'read' | 'pending') => {
+    setSaveStates(prev => ({ ...prev, [book.key]: { phase: 'saving', target } }))
+    try {
+      const message = await onQuickAdd(book, target)
+      setSaveStates(prev => ({ ...prev, [book.key]: { phase: 'done', message } }))
+    } catch (err) {
+      const reason = err instanceof Error && err.message ? err.message : 'Error desconocido'
+      setSaveStates(prev => ({ ...prev, [book.key]: { phase: 'error', message: `No se pudo guardar: ${reason}` } }))
+    }
   }
 
   const showEmpty = query.length >= 2 && !loading && suggestions.length === 0
@@ -138,7 +152,10 @@ export default function BookSearchModal({ onSelect, onClose }) {
             </div>
           )}
 
-          {suggestions.map(book => (
+          {suggestions.map(book => {
+            const st = saveStates[book.key]
+            const saving = st?.phase === 'saving'
+            return (
             <div key={book.key} className={styles.result}>
               <div className={styles.cover}>
                 {book.cover ? (
@@ -164,13 +181,26 @@ export default function BookSearchModal({ onSelect, onClose }) {
                 {book.publisher && (
                   <p className={styles.bookPublisher}>{book.publisher}</p>
                 )}
+                {st?.phase === 'saving' && (
+                  <p className={styles.saveMsg} role="status">Guardando…</p>
+                )}
+                {st?.phase === 'done' && (
+                  <p className={`${styles.saveMsg} ${styles.saveOk}`} role="status"><span className={styles.saveIcon} aria-hidden="true">✓</span>{st.message}</p>
+                )}
+                {st?.phase === 'error' && (
+                  <p className={`${styles.saveMsg} ${styles.saveErr}`} role="alert">
+                    <span className={styles.saveIcon} aria-hidden="true">⚠</span>{st.message}. Podés volver a intentarlo.
+                  </p>
+                )}
               </div>
 
               <div className={styles.actions}>
                 <button
                   className={styles.readBtn}
-                  onClick={() => handleSelect(book, 'leido')}
-                  title="Abrir formulario completo"
+                  onClick={() => handleQuickAdd(book, 'read')}
+                  disabled={saving}
+                  aria-busy={saving && st.target === 'read'}
+                  title="Guardar en mi biblioteca como leído"
                   aria-label={`Leído: ${book.title}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
@@ -180,8 +210,10 @@ export default function BookSearchModal({ onSelect, onClose }) {
                 </button>
                 <button
                   className={styles.pendingBtn}
-                  onClick={() => handleSelect(book, 'pendiente')}
-                  title="Guardar para leer después"
+                  onClick={() => handleQuickAdd(book, 'pending')}
+                  disabled={saving}
+                  aria-busy={saving && st.target === 'pending'}
+                  title="Guardar en mi biblioteca para leer después"
                   aria-label={`Pendiente: ${book.title}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -191,7 +223,8 @@ export default function BookSearchModal({ onSelect, onClose }) {
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

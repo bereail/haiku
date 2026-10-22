@@ -382,3 +382,23 @@
   opacity: 0.75;
   cursor: default;
 }
+
+/* Resultado del guardado rápido ("Leído" / "Pendiente"). El texto usa
+   --color-text: accent, error y secondary no llegan a 4.5:1 en el tema oscuro
+   (sobre todo con el fondo de hover). El tipo de mensaje lo marcan el ícono y
+   el rol (status/alert), no solo el color. */
+.saveMsg {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--color-text);
+}
+.saveIcon { margin-right: 0.3rem; }
+.saveOk .saveIcon { color: var(--color-accent); }
+.saveErr { font-weight: 600; }
+.saveErr .saveIcon { color: var(--color-error); }
+
+.readBtn:disabled,
+.pendingBtn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
