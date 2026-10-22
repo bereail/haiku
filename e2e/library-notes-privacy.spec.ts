@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test'
-
-const TEST_EMAIL = 'lectora1@test.dev'
-const TEST_PASSWORD = 'test1234'
+import { storageStatePath } from './accounts'
 
 // Título único por corrida para no chocar con libros ya existentes de la
 // cuenta de prueba y para poder buscarlo sin falsos positivos.
@@ -9,11 +7,12 @@ const UNIQUE_TITLE = `Libro E2E ${Date.now()}`
 const PRIVATE_NOTE = 'Nota privada de prueba E2E — no debería salir de mi biblioteca.'
 
 test.describe('Biblioteca: alta, persistencia y privacidad de notas', () => {
+  // Sesión de lectora1 preparada por global-setup (el login por UI ya lo
+  // cubre auth.spec.ts).
+  test.use({ storageState: storageStatePath('lectora1') })
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/')
-    await page.locator('#email').fill(TEST_EMAIL)
-    await page.locator('#password').fill(TEST_PASSWORD)
-    await page.getByRole('button', { name: 'Ingresar' }).click()
+    await page.goto('')
     await expect(page.getByPlaceholder('Buscar por título o autor...')).toBeVisible()
   })
 
