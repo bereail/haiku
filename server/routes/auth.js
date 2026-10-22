@@ -2,18 +2,33 @@ const router = require('express').Router()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
+const fs = require('fs')
 const nodemailer = require('nodemailer')
 const pool = require('../db')
 const { DEMO_EMAIL, seedDemoBooks } = require('../demoData')
 const { authLimiter } = require('../middleware/rateLimiter')
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-})
+// MAIL_OUTBOX_FILE (solo desarrollo/E2E): en vez de mandar por Gmail, cada mail se agrega
+// como una línea JSON a ese archivo, para poder leer el link de reset sin un correo real.
+// En producción no se define y el comportamiento es el de siempre.
+const MAIL_OUTBOX_FILE = process.env.MAIL_OUTBOX_FILE
+const transporter = MAIL_OUTBOX_FILE
+  ? {
+      sendMail: async (msg) => {
+        fs.appendFileSync(MAIL_OUTBOX_FILE, JSON.stringify({ ...msg, sentAt: new Date().toISOString() }) + '\n')
+      },
+    }
+  : nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+
+// Base de los links que van en los mails. Configurable para que en local apunten al
+// entorno local y no a producción.
+const APP_URL = process.env.APP_URL || 'https://ailonline.com.ar/librook/'
 
 function makeJwt(user, { isDemo = false } = {}) {
   return jwt.sign(
@@ -110,7 +125,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
       [userId, token, expiresAt]
     )
 
-    const resetUrl = `https://ailonline.com.ar/librook/?reset_token=${token}`
+    const resetUrl = `${APP_URL}?reset_token=${token}`
 
     await transporter.sendMail({
       from: `"Librook" <${process.env.EMAIL_USER}>`,
