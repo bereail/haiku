@@ -654,8 +654,9 @@ export default function LibraryPage({
           <div className={styles.advPanel}>
             <div className={styles.advSelects}>
               <div className={styles.advField}>
-                <label className={styles.advLabel}>Editorial</label>
+                <label className={styles.advLabel} htmlFor="filter-editorial">Editorial</label>
                 <select
+                  id="filter-editorial"
                   className={styles.advSelect}
                   value={filterEditorial}
                   onChange={e => setFilterEditorial(e.target.value)}
@@ -665,8 +666,9 @@ export default function LibraryPage({
                 </select>
               </div>
               <div className={styles.advField}>
-                <label className={styles.advLabel}>Autor/a</label>
+                <label className={styles.advLabel} htmlFor="filter-autor">Autor/a</label>
                 <select
+                  id="filter-autor"
                   className={styles.advSelect}
                   value={filterAutor}
                   onChange={e => setFilterAutor(e.target.value)}
@@ -676,8 +678,9 @@ export default function LibraryPage({
                 </select>
               </div>
               <div className={styles.advField}>
-                <label className={styles.advLabel}>Género</label>
+                <label className={styles.advLabel} htmlFor="filter-genero">Género</label>
                 <select
+                  id="filter-genero"
                   className={styles.advSelect}
                   value={filterGenero}
                   onChange={e => setFilterGenero(e.target.value)}

@@ -171,6 +171,7 @@ export default function BookSearchModal({ onSelect, onClose }) {
                   className={styles.readBtn}
                   onClick={() => handleSelect(book, 'leido')}
                   title="Abrir formulario completo"
+                  aria-label={`Leído: ${book.title}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                     <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -181,6 +182,7 @@ export default function BookSearchModal({ onSelect, onClose }) {
                   className={styles.pendingBtn}
                   onClick={() => handleSelect(book, 'pendiente')}
                   title="Guardar para leer después"
+                  aria-label={`Pendiente: ${book.title}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

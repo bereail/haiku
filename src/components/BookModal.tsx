@@ -193,7 +193,12 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
     e.preventDefault()
     if (isbnLoading) return
     const errs = validate()
-    if (Object.keys(errs).length) { setErrors(errs); return }
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      // Llevar el foco al primer campo con error (además del aviso role="alert")
+      document.getElementById(errs.title ? 'title' : 'author')?.focus()
+      return
+    }
     onSave(form)
   }
 
@@ -233,6 +238,8 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                     <input
                       id="title"
                       className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
+                      aria-invalid={!!errors.title}
+                      aria-describedby={errors.title ? 'title-error' : undefined}
                       value={form.title}
                       onChange={handleTitleChange}
                       onFocus={() => String(form.title).length >= 2 && setShowSuggestions(true)}
@@ -288,7 +295,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                       </ul>
                     )}
                   </div>
-                  {errors.title && <span className={styles.error} role="alert">{errors.title}</span>}
+                  {errors.title && <span className={styles.error} role="alert" id="title-error">{errors.title}</span>}
                 </div>
 
                 <div className={styles.row2}>
@@ -297,12 +304,14 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                     <input
                       id="author"
                       className={`${styles.input} ${errors.author ? styles.inputError : ''}`}
+                      aria-invalid={!!errors.author}
+                      aria-describedby={errors.author ? 'author-error' : undefined}
                       value={form.author}
                       onChange={e => set('author', e.target.value)}
                       placeholder="Nombre del autor"
                       maxLength={150}
                     />
-                    {errors.author && <span className={styles.error} role="alert">{errors.author}</span>}
+                    {errors.author && <span className={styles.error} role="alert" id="author-error">{errors.author}</span>}
                   </div>
                   <div className={styles.field}>
                     <label className={styles.label} htmlFor="publisher">Editorial</label>
@@ -379,6 +388,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                             key === 'done'      ? styles.statusPillDone      : '',
                             key === 'abandoned' ? styles.statusPillAbandoned : '',
                           ].filter(Boolean).join(' ')}
+                          aria-pressed={current === key}
                           onClick={() => {
                             const today = todayLocal()
                             if (key === 'pending') setForm(f => ({ ...f, startDate: '', endDate: '', abandoned: false }))
@@ -409,6 +419,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                           type="button"
                           className={styles.todayBtn}
                           onClick={() => set('startDate', todayLocal())}
+                          aria-label="Hoy (inicio de lectura)"
                         >
                           Hoy
                         </button>
@@ -431,6 +442,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                           type="button"
                           className={styles.todayBtn}
                           onClick={() => set('endDate', todayLocal())}
+                          aria-label="Hoy (fin de lectura)"
                         >
                           Hoy
                         </button>
