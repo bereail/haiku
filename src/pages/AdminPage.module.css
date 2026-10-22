@@ -176,8 +176,22 @@
 }
 
 /* ── SVG Charts ──────────────────────────────────────────────────────────── */
-.chartWrap { overflow: hidden; }
+.chartWrap { overflow: hidden; position: relative; }
 .svg { width: 100%; height: auto; display: block; }
+
+/* Alternativa accesible a los gráficos SVG (que son aria-hidden): la misma
+   información en una tabla real, visible solo para lectores de pantalla. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 .gridLine {
   stroke: var(--chart-grid);

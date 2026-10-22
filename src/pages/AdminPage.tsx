@@ -84,7 +84,7 @@ function HourlyChart({ data }: { data: { hour: number; count: number }[] }) {
 
   return (
     <div className={styles.chartWrap}>
-      <svg viewBox={`0 0 ${W} ${H}`} className={styles.svg}>
+      <svg viewBox={`0 0 ${W} ${H}`} className={styles.svg} aria-hidden="true">
         {/* Grid lines */}
         {gridLines.map(p => {
           const y = pad.t + innerH * (1 - p)
@@ -134,6 +134,15 @@ function HourlyChart({ data }: { data: { hour: number; count: number }[] }) {
           )
         })}
       </svg>
+      <table className={styles.srOnly}>
+        <caption>Visitas por hora, hoy</caption>
+        <thead><tr><th scope="col">Hora</th><th scope="col">Visitas</th></tr></thead>
+        <tbody>
+          {data.map(d => (
+            <tr key={d.hour}><th scope="row">{d.hour}h</th><td>{d.count}</td></tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -158,7 +167,7 @@ function DailyChart({ data }: { data: { date: string; count: number }[] }) {
 
   return (
     <div className={styles.chartWrap}>
-      <svg viewBox={`0 0 ${W} ${H}`} className={styles.svg}>
+      <svg viewBox={`0 0 ${W} ${H}`} className={styles.svg} aria-hidden="true">
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--chart-line)" stopOpacity="0.35" />
@@ -205,6 +214,15 @@ function DailyChart({ data }: { data: { date: string; count: number }[] }) {
           </g>
         ))}
       </svg>
+      <table className={styles.srOnly}>
+        <caption>Visitas de los últimos 7 días</caption>
+        <thead><tr><th scope="col">Día</th><th scope="col">Visitas</th></tr></thead>
+        <tbody>
+          {data.map(d => (
+            <tr key={d.date}><th scope="row">{fmtDay(d.date)}</th><td>{d.count}</td></tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
