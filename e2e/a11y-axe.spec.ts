@@ -13,6 +13,11 @@ const TITLE = `Axe E2E ${Date.now()}`
 let bookId: string
 
 async function expectNoViolations(page: Page, label: string, include?: string) {
+  // Escanear con la página quieta: a mitad de una animación (p. ej. el giro de
+  // la tarjeta) los tamaños y colores son transitorios y axe da falsos positivos.
+  // Las animaciones infinitas (indicadores "en vivo", spinners) no se esperan.
+  await page.waitForFunction(() => document.getAnimations().every(a =>
+    a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
   let builder = new AxeBuilder({ page }).withTags(WCAG)
   if (include) builder = builder.include(include)
   const { violations } = await builder.analyze()
@@ -106,6 +111,17 @@ test.describe('axe-core: biblioteca', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await expect(page.getByRole('button', { name: 'Agregar libro', exact: true })).toBeVisible()
     await expectNoViolations(page, 'Biblioteca mobile')
+  })
+
+  test('tema oscuro: modal de alta con hover en el botón principal', async ({ page }) => {
+    // Los botones primarios cambian a --color-accent-light en hover: en oscuro
+    // el texto blanco quedaba en 2.7:1 (ahora --color-on-accent-light).
+    await page.getByRole('button', { name: /modo oscuro/i }).click()
+    await page.getByRole('button', { name: 'Agregar', exact: true }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Agregar libro' }).hover()
+    await expectNoViolations(page, 'Alta oscura con hover', '[role="dialog"]')
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: /modo claro/i }).click()
   })
 
   test('tarjeta dada vuelta', async ({ page }) => {

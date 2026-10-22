@@ -293,7 +293,7 @@
   transition: var(--transition);
 }
 
-.commentSubmit:hover:not(:disabled) { background: var(--color-accent-light); }
+.commentSubmit:hover:not(:disabled) { background: var(--color-accent-light); color: var(--color-on-accent-light); }
 
 .commentSubmit:disabled {
   opacity: 0.5;

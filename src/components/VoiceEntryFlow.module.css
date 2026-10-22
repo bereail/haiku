@@ -191,7 +191,7 @@
   transition: background var(--transition);
 }
 
-.primaryBtn:hover { background: var(--color-accent-light); }
+.primaryBtn:hover { background: var(--color-accent-light); color: var(--color-on-accent-light); }
 
 .secondaryBtn {
   padding: 0.6rem 1.2rem;

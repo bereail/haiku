@@ -115,7 +115,7 @@
   transition: var(--transition);
 }
 
-.aliasSave:hover:not(:disabled) { background: var(--color-accent-light); }
+.aliasSave:hover:not(:disabled) { background: var(--color-accent-light); color: var(--color-on-accent-light); }
 .aliasSave:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .aliasCancel {

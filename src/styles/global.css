@@ -14,6 +14,8 @@
   --color-text-muted: #726d67;
   --color-accent: #2d4a3e;
   --color-accent-light: #4a7c68;
+  /* Texto sobre --color-accent-light (4.8:1) */
+  --color-on-accent-light: #ffffff;
   --color-accent-pale: #e8f0ec;
   --color-gold: #c9a84c;
   /* Dorado de "favorito" — distinto del --color-gold de "leyendo". Más
@@ -61,11 +63,15 @@
   --color-surface-2: #252320;
   --color-border: #2e2c29;
   --color-text: #ede9e3;
-  --color-text-secondary: #8c8780;
+  /* #96918a: con #8c8780 quedaba 4.4:1 sobre --color-surface-2 (fondos de hover)
+     y más oscuro que --color-text-muted, al revés de la jerarquía. */
+  --color-text-secondary: #96918a;
   --color-text-muted: #908b85;
   --color-accent: #457a63;
   --color-favorite: #c8922a;
   --color-accent-light: #6aaa88;
+  /* Blanco sobre #6aaa88 daba 2.7:1; el fondo oscuro da 7:1 */
+  --color-on-accent-light: #111010;
   --color-accent-pale: #1a2e25;
   --color-gold: #c9a84c;
   --color-error: #e05252;

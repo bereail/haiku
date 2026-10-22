@@ -304,6 +304,7 @@
 
 .markReadBtn:hover {
   background: var(--color-accent-light);
+  color: var(--color-on-accent-light);
 }
 
 /* Footer */
@@ -395,7 +396,7 @@
   transition: var(--transition);
 }
 
-.editBtnLg:hover { background: var(--color-accent-light); }
+.editBtnLg:hover { background: var(--color-accent-light); color: var(--color-on-accent-light); }
 
 .confirmMsg {
   flex: 1;

@@ -615,6 +615,7 @@
 
 .saveBtn:hover {
   background: var(--color-accent-light);
+  color: var(--color-on-accent-light);
 }
 
 .saveBtn:disabled {
