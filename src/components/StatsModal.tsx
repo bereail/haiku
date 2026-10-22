@@ -15,7 +15,8 @@ function CoverImg({ src, alt, className }: { src: string; alt: string; className
 function calcularStats(books: Book[]) {
   const currentYear = new Date().getFullYear()
   const leidos = books.filter(b => b.endDate)
-  const leyendo = books.filter(b => b.startDate && !b.endDate)
+  // Mismo criterio que el filtro "Leyendo" de la biblioteca: un abandonado no se está leyendo.
+  const leyendo = books.filter(b => b.startDate && !b.endDate && !b.abandoned)
   const pendientes = books.filter(b => !b.startDate && !b.endDate)
 
   const scored = leidos.filter(hasScore)
