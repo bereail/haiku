@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
 vi.mock('../api', () => ({
+  SESSION_EXPIRED_EVENT: 'librook:session-expired',
   api: {
     post: vi.fn(),
     get: vi.fn(),
@@ -95,5 +96,23 @@ describe('useAuth', () => {
       expect(res.ok).toBe(false)
       expect(res.error?.toLowerCase()).toContain('ya existe')
     })
+  })
+
+  it('vuelve al login y marca sessionExpired cuando la API avisa que la sesión venció', async () => {
+    const { api } = await import('../api')
+    vi.mocked(api.post).mockResolvedValueOnce({ token: 'jwt-123', email: 'user@test.com' })
+
+    const { useAuth } = await import('../hooks/useAuth')
+    const { result } = renderHook(() => useAuth())
+    await act(async () => { await result.current.login('user@test.com', 'pass123') })
+    expect(result.current.user).not.toBeNull()
+
+    act(() => { window.dispatchEvent(new Event('librook:session-expired')) })
+    expect(result.current.user).toBeNull()
+    expect(result.current.sessionExpired).toBe(true)
+
+    vi.mocked(api.post).mockResolvedValueOnce({ token: 'jwt-456', email: 'user@test.com' })
+    await act(async () => { await result.current.login('user@test.com', 'pass123') })
+    expect(result.current.sessionExpired).toBe(false)
   })
 })

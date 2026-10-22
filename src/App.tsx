@@ -46,7 +46,7 @@ export default function App() {
 }
 
 function AuthenticatedApp() {
-  const { user, login, register, forgotPassword, resetPassword, guestLogin, logout } = useAuth()
+  const { user, sessionExpired, login, register, forgotPassword, resetPassword, guestLogin, logout } = useAuth()
   const { dark, toggle: toggleTheme } = useTheme()
   const [adminOpen, setAdminOpen] = useState(false)
 
@@ -74,7 +74,15 @@ function AuthenticatedApp() {
   }
 
   if (!user) {
-    return <LoginPage onLogin={login} onRegister={register} onForgotPassword={forgotPassword} onGuestLogin={guestLogin} />
+    return (
+      <LoginPage
+        onLogin={login}
+        onRegister={register}
+        onForgotPassword={forgotPassword}
+        onGuestLogin={guestLogin}
+        notice={sessionExpired ? 'Tu sesión expiró. Ingresá de nuevo para seguir.' : undefined}
+      />
+    )
   }
 
   if (adminOpen && user.email === ADMIN_EMAIL) {

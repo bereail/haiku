@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { api } from '../api'
+import { useEffect, useState } from 'react'
+import { api, SESSION_EXPIRED_EVENT } from '../api'
 
 const TOKEN_KEY = 'librook_token'
 const AUTH_KEY = 'librook_auth'
@@ -12,11 +12,23 @@ export function useAuth() {
     } catch { return null }
   })
 
+  const [sessionExpired, setSessionExpired] = useState(false)
+
+  useEffect(() => {
+    const onExpired = () => {
+      setUser(null)
+      setSessionExpired(true)
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+  }, [])
+
   const saveSession = (data: { token: string; email: string; isDemo?: boolean }) => {
     localStorage.setItem(TOKEN_KEY, data.token)
     const userData = { email: data.email, isDemo: !!data.isDemo }
     localStorage.setItem(AUTH_KEY, JSON.stringify(userData))
     setUser(userData)
+    setSessionExpired(false)
   }
 
   const register = async (email: string, password: string) => {
@@ -70,5 +82,5 @@ export function useAuth() {
     setUser(null)
   }
 
-  return { user, login, register, forgotPassword, resetPassword, guestLogin, logout }
+  return { user, sessionExpired, login, register, forgotPassword, resetPassword, guestLogin, logout }
 }

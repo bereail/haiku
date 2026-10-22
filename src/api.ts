@@ -1,5 +1,10 @@
 const API_BASE = '/librook-api'
 
+// Se dispara cuando la API rechaza el token guardado (vencido o inválido).
+// useAuth lo escucha para volver al login en vez de dejar la app "logueada"
+// con errores que ningún reintento puede resolver.
+export const SESSION_EXPIRED_EVENT = 'librook:session-expired'
+
 async function request(path: string, options?: RequestInit) {
   const token = localStorage.getItem('librook_token')
   const res = await fetch(`${API_BASE}${path}`, {
@@ -9,6 +14,11 @@ async function request(path: string, options?: RequestInit) {
     },
     ...options,
   })
+  if (res.status === 401 && token) {
+    localStorage.removeItem('librook_token')
+    localStorage.removeItem('librook_auth')
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+  }
   if (!res.ok) {
     let message = 'Error en la solicitud'
     try {

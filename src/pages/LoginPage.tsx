@@ -7,9 +7,11 @@ interface Props {
   onRegister: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   onForgotPassword: (email: string) => Promise<{ ok: boolean; error?: string }>
   onGuestLogin: () => Promise<{ ok: boolean; error?: string }>
+  /** Aviso informativo al llegar al login (p. ej. sesión vencida). */
+  notice?: string
 }
 
-export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGuestLogin }: Props) {
+export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGuestLogin, notice }: Props) {
   const [modo, setModo] = useState<'login' | 'registro' | 'recuperar'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -177,6 +179,7 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
               </div>
             )}
 
+            {notice && !error && !success && <p className={styles.successMsg} role="status">{notice}</p>}
             {error && <p className={styles.error} role="alert">{error}</p>}
             {success && <p className={styles.successMsg} role="status">{success}</p>}
 
