@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -82,6 +82,42 @@ describe('useDialogA11y', () => {
       )
     }
     render(<AutoFocusDialog onClose={() => {}} />)
+    expect(screen.getByPlaceholderText('con autofocus')).toHaveFocus()
+  })
+
+  // main.tsx monta la app en <StrictMode>: en desarrollo React monta, desmonta y
+  // vuelve a montar los efectos. El hook tiene que quedar con el foco adentro igual.
+  it('en StrictMode el foco queda dentro del diálogo al abrir', async () => {
+    const user = userEvent.setup()
+    function Controlled() {
+      const [open, setOpen] = useState(false)
+      return (
+        <div>
+          <button onClick={() => setOpen(true)}>Abrir</button>
+          {open && <TestDialog onClose={() => setOpen(false)} />}
+        </div>
+      )
+    }
+    render(<StrictMode><Controlled /></StrictMode>)
+    const openBtn = screen.getByText('Abrir')
+    await user.click(openBtn)
+    expect(screen.getByText('Cerrar')).toHaveFocus()
+
+    await user.keyboard('{Escape}')
+    expect(openBtn).toHaveFocus()
+  })
+
+  it('en StrictMode respeta el autoFocus de un campo', () => {
+    function AutoFocusDialog({ onClose }: { onClose: () => void }) {
+      const ref = useDialogA11y(onClose)
+      return (
+        <div ref={ref} role="dialog" aria-modal="true" tabIndex={-1}>
+          <button>Cerrar</button>
+          <input placeholder="con autofocus" autoFocus />
+        </div>
+      )
+    }
+    render(<StrictMode><AutoFocusDialog onClose={() => {}} /></StrictMode>)
     expect(screen.getByPlaceholderText('con autofocus')).toHaveFocus()
   })
 })

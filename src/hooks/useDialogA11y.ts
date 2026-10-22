@@ -28,28 +28,42 @@ function getFocusable(container: HTMLElement): HTMLElement[] {
  */
 export function useDialogA11y(onClose: () => void, active = true) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const hasFocusedRef = useRef(false)
   // Capturado en el render inicial (no en un efecto): un useEffect corre
   // DESPUÉS del commit, que es cuando React ya aplicó cualquier autoFocus
   // de un campo de adentro del diálogo — para entonces document.activeElement
   // ya sería ese campo, no el botón que abrió el diálogo.
   const triggerRef = useRef<Element | null>(typeof document !== 'undefined' ? document.activeElement : null)
 
+  // Foco inicial y devolución del foco en el MISMO efecto de montaje: en
+  // StrictMode (desarrollo) React monta, desmonta y vuelve a montar los efectos;
+  // si la devolución vive sola en un cleanup, se dispara entre medio y deja el
+  // foco afuera del diálogo recién abierto. Así, el re-montaje lo vuelve a meter.
+  const initialFocusRef = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    const container = containerRef.current
+    // Si algún campo ya se autoenfocó (prop autoFocus de React, que se aplica
+    // antes de que corran los efectos) lo respetamos en vez de pisarlo con el
+    // primer elemento enfocable del contenedor — y lo recordamos para
+    // restituirlo en el re-montaje de StrictMode.
+    const focused = document.activeElement
+    if (container?.contains(focused) && focused instanceof HTMLElement) {
+      initialFocusRef.current = focused
+    } else {
+      const remembered = initialFocusRef.current
+      const target = remembered && container?.contains(remembered)
+        ? remembered
+        : (container ? getFocusable(container)[0] : null) ?? container
+      target?.focus()
+    }
+    const trigger = triggerRef.current
+    return () => {
+      if (trigger instanceof HTMLElement && document.contains(trigger)) trigger.focus()
+    }
+  }, [])
+
   useEffect(() => {
     if (!active) return
     const container = containerRef.current
-
-    if (!hasFocusedRef.current) {
-      // Si algún campo ya se autoenfocó (prop autoFocus de React, que se
-      // aplica antes de que corran los efectos) lo respetamos en vez de
-      // pisarlo con el primer elemento enfocable del contenedor.
-      const alreadyFocusedInside = container?.contains(document.activeElement) && document.activeElement !== document.body
-      if (!alreadyFocusedInside) {
-        const focusables = container ? getFocusable(container) : []
-        ;(focusables[0] ?? container)?.focus()
-      }
-      hasFocusedRef.current = true
-    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -79,13 +93,6 @@ export function useDialogA11y(onClose: () => void, active = true) {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [onClose, active])
-
-  useEffect(() => () => {
-    const trigger = triggerRef.current
-    if (trigger instanceof HTMLElement && document.contains(trigger)) {
-      trigger.focus()
-    }
-  }, [])
 
   return containerRef
 }
