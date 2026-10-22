@@ -269,6 +269,7 @@
 }
 
 .notes {
+  font-family: var(--font-read);
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   line-height: 1.65;
@@ -420,9 +421,9 @@
 .confirmYes {
   padding: 0.5rem 0.9rem;
   border-radius: var(--radius-sm);
-  border: none;
-  background: var(--color-error);
-  color: white;
+  border: 1.5px solid var(--color-error);
+  background: transparent;
+  color: var(--color-error);
   font-size: 0.8rem;
   font-weight: 500;
   font-family: var(--font-sans);
@@ -431,4 +432,4 @@
   white-space: nowrap;
 }
 
-.confirmYes:hover { opacity: 0.88; }
+.confirmYes:hover { background: var(--color-error-pale); }

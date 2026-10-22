@@ -254,6 +254,7 @@
 }
 
 .notesText {
+  font-family: var(--font-read);
   font-size: 0.78rem;
   color: var(--color-text-secondary);
   line-height: 1.55;
@@ -324,14 +325,13 @@
 }
 
 .confirmYes {
-  background: var(--color-error);
+  background: transparent;
   border-color: var(--color-error);
-  color: white;
+  color: var(--color-error);
 }
 
 .confirmYes:hover {
-  background: var(--color-error);
+  background: var(--color-error-pale);
   border-color: var(--color-error);
-  color: white;
-  opacity: 0.85;
+  color: var(--color-error);
 }

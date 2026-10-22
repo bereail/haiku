@@ -736,6 +736,7 @@
 }
 
 .emptyWelcomeSub {
+  font-family: var(--font-read);
   font-size: 0.9rem;
   color: var(--color-text-secondary);
   max-width: 260px;
