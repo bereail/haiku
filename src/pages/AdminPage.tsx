@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { api } from '../api'
 import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './AdminPage.module.css'
@@ -347,6 +347,39 @@ function ResetPasswordModal({ target, password, onPasswordChange, error, loading
 export default function AdminPage({ onBack }: { onBack: () => void }) {
   const [tab, setTab] = useState<'analytics' | 'users'>('analytics')
 
+  // Patrón WAI-ARIA Tabs (activación automática): flechas, Inicio y Fin mueven
+  // el foco y seleccionan; Tab sale de la lista hacia el panel.
+  const TABS = ['analytics', 'users'] as const
+  const onTabKeyDown = (e: React.KeyboardEvent) => {
+    const i = TABS.indexOf(tab)
+    const next =
+      e.key === 'ArrowRight' ? TABS[(i + 1) % TABS.length] :
+      e.key === 'ArrowLeft'  ? TABS[(i - 1 + TABS.length) % TABS.length] :
+      e.key === 'Home'       ? TABS[0] :
+      e.key === 'End'        ? TABS[TABS.length - 1] : null
+    if (!next) return
+    e.preventDefault()
+    setTab(next)
+    // Las dos pestañas están siempre en el DOM: se enfocan por id.
+    document.getElementById(`admin-tab-${next}`)?.focus()
+  }
+  const tabProps = (id: 'analytics' | 'users') => ({
+    role: 'tab',
+    id: `admin-tab-${id}`,
+    'aria-selected': tab === id,
+    'aria-controls': `admin-panel-${id}`,
+    tabIndex: tab === id ? 0 : -1,
+    className: `${styles.tab} ${tab === id ? styles.tabOn : ''}`,
+    onClick: () => setTab(id),
+  })
+  const panelProps = (id: 'analytics' | 'users') => ({
+    role: 'tabpanel',
+    id: `admin-panel-${id}`,
+    'aria-labelledby': `admin-tab-${id}`,
+    tabIndex: 0,
+    className: styles.main,
+  })
+
   const [data, setData] = useState<Analytics | null>(null)
   const [aErr, setAErr] = useState('')
   const [aLoad, setALoad] = useState(true)
@@ -425,21 +458,21 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
           Volver
         </button>
         <h1 className={styles.title}>Panel Admin</h1>
-        <nav className={styles.tabs}>
-          <button className={`${styles.tab} ${tab === 'analytics' ? styles.tabOn : ''}`}
-            onClick={() => setTab('analytics')}>
+        <div className={styles.tabs} role="tablist" aria-label="Secciones del panel" onKeyDown={onTabKeyDown}>
+          <button {...tabProps('analytics')}>
             Analíticas
           </button>
-          <button className={`${styles.tab} ${tab === 'users' ? styles.tabOn : ''}`}
-            onClick={() => setTab('users')}>
+          <button {...tabProps('users')}>
             Usuarios {!uLoad && <span className={styles.tabBadge}>{users.length}</span>}
           </button>
-        </nav>
+        </div>
       </header>
 
+      {/* Un solo <main> (landmark) con el panel de la pestaña activa adentro */}
+      <main>
       {/* ── ANALYTICS ───────────────────────────────────────────────────────── */}
       {tab === 'analytics' && (
-        <main className={styles.main}>
+        <div {...panelProps('analytics')}>
           {aLoad && <p className={styles.msg} role="status" aria-live="polite">Cargando analíticas…</p>}
           {aErr  && <p className={styles.err} role="alert">{aErr}</p>}
 
@@ -525,12 +558,12 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
             </section>
 
           </>)}
-        </main>
+        </div>
       )}
 
       {/* ── USERS ───────────────────────────────────────────────────────────── */}
       {tab === 'users' && (
-        <main className={styles.main}>
+        <div {...panelProps('users')}>
           {uLoad && <p className={styles.msg} role="status" aria-live="polite">Cargando…</p>}
           {uErr  && <p className={styles.err} role="alert">{uErr}</p>}
           {!uLoad && !uErr && users.length === 0 && (
@@ -593,8 +626,9 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
               )}
             </div>
           ))}
-        </main>
+        </div>
       )}
+      </main>
 
       {/* ── MODAL RESET CONTRASEÑA ──────────────────────────────────────────── */}
       {resetTarget && (

@@ -145,7 +145,7 @@ test.describe('axe-core: admin', () => {
     await expect(page.getByRole('heading', { name: 'Panel Admin' })).toBeVisible()
     await page.waitForLoadState('networkidle')
     await expectNoViolations(page, 'Admin – analíticas')
-    await page.getByRole('button', { name: /^Usuarios/ }).click()
+    await page.getByRole('tab', { name: /^Usuarios/ }).click()
     await page.waitForLoadState('networkidle')
     await expectNoViolations(page, 'Admin – usuarios')
   })

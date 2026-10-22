@@ -87,7 +87,7 @@ test.describe('Panel Admin', () => {
       await page.goto('')
       await page.getByRole('button', { name: 'Panel admin' }).first().click()
       await expect(page.getByRole('heading', { name: 'Panel Admin' })).toBeVisible()
-      await page.getByRole('button', { name: /^Usuarios/ }).click()
+      await page.getByRole('tab', { name: /^Usuarios/ }).click()
       const row = page.getByRole('button', { name: new RegExp(ACCOUNTS.lectora1.email) })
       await row.click()
       await expect(row).toHaveAttribute('aria-expanded', 'true')
