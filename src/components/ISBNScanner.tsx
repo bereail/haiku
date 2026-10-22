@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './ISBNScanner.module.css'
 
 export default function ISBNScanner({ onScan, onClose }) {
@@ -60,14 +61,24 @@ export default function ISBNScanner({ onScan, onClose }) {
   }, [onScan])
 
   const handleClose = () => { stop(); onClose() }
+  // Se abre encima de BookModal (que suelta su propio trap mientras tanto):
+  // foco adentro, Escape cierra solo el escáner y el foco vuelve al botón.
+  const dialogRef = useDialogA11y(handleClose)
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.container}>
+      <div
+        ref={dialogRef}
+        className={styles.container}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="isbn-scanner-title"
+        tabIndex={-1}
+      >
         <div className={styles.header}>
-          <span className={styles.titulo}>Escanear ISBN</span>
+          <span className={styles.titulo} id="isbn-scanner-title">Escanear ISBN</span>
           <button className={styles.cerrarBtn} onClick={handleClose} aria-label="Cerrar">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
               <path d="M2 2l14 14M16 2L2 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
           </button>
@@ -75,8 +86,8 @@ export default function ISBNScanner({ onScan, onClose }) {
 
         <div className={styles.cuerpo}>
           {estado === 'noSoportado' && (
-            <div className={styles.mensaje}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5">
+            <div className={styles.mensaje} role="status">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
@@ -85,8 +96,8 @@ export default function ISBNScanner({ onScan, onClose }) {
             </div>
           )}
           {estado === 'error' && (
-            <div className={styles.mensaje}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5">
+            <div className={styles.mensaje} role="alert">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
@@ -105,14 +116,14 @@ export default function ISBNScanner({ onScan, onClose }) {
                 {estado === 'escaneando' && <div className={styles.lineaEscaneo} />}
               </div>
               {estado === 'iniciando' && (
-                <div className={styles.cargando}>Iniciando cámara...</div>
+                <div className={styles.cargando} role="status">Iniciando cámara...</div>
               )}
             </div>
           )}
         </div>
 
         <div className={styles.pie}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8"/>
             <path d="M12 16v-4M12 8h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>

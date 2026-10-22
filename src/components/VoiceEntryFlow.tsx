@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
+import { useDialogA11y } from '../hooks/useDialogA11y'
 import { useVoiceEntry, type VoiceDraft } from '../hooks/useVoiceEntry'
 import StarRating from './StarRating'
 import styles from './VoiceEntryFlow.module.css'
@@ -56,15 +57,12 @@ export default function VoiceEntryFlow({
     return () => clearTimeout(t)
   }, [voice.phase, onClose])
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && voice.phase !== 'saving') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [voice.phase, onClose])
-
   const canDismiss = voice.phase !== 'saving'
+  // Mismo patrón de diálogo accesible que el resto de los modales (foco
+  // adentro, Tab atrapado, foco de vuelta al botón). Escape no cierra mientras
+  // se está guardando, igual que antes.
+  const closeIfAllowed = useCallback(() => { if (canDismiss) onClose() }, [canDismiss, onClose])
+  const dialogRef = useDialogA11y(closeIfAllowed)
 
   return (
     <div
@@ -72,7 +70,7 @@ export default function VoiceEntryFlow({
       ref={overlayRef}
       onClick={e => canDismiss && e.target === overlayRef.current && onClose()}
     >
-      <div className={styles.modal} role="dialog" aria-modal="true" aria-label="Registrar lectura por voz">
+      <div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-label="Registrar lectura por voz" tabIndex={-1}>
         {canDismiss && (
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
