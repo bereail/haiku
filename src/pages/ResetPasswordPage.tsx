@@ -38,15 +38,15 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
           </div>
         </div>
         <div className={styles.leftContent}>
-          <h1 className={styles.brand}>Librook</h1>
+          <p className={styles.brand}>Librook</p>
           <p className={styles.tagline}>Tu biblioteca personal.</p>
         </div>
       </div>
 
-      <div className={styles.right}>
+      <main className={styles.right}>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.formHeader}>
-            <h2 className={styles.welcome}>Nueva contraseña</h2>
+            <h1 className={styles.welcome}>Nueva contraseña</h1>
             <p className={styles.subtitle}>Elegí una nueva contraseña para tu cuenta</p>
           </div>
 
@@ -93,7 +93,7 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
             </div>
           )}
         </form>
-      </div>
+      </main>
     </div>
   )
 }

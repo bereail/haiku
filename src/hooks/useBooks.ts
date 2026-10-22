@@ -138,8 +138,8 @@ export function useBooks(userEmail: string) {
     td{padding:.5rem .75rem;border-bottom:1px solid #ede}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#f5f3ee}
-    .stars{color:#c8922a;white-space:nowrap}
-    .fav{color:#c8922a;text-align:center}
+    .stars{color:#8a6419;white-space:nowrap}
+    .fav{color:#8a6419;text-align:center}
     footer{margin-top:3rem;font-size:.75rem;color:#bbb;text-align:center;font-family:Arial,sans-serif}
     @media(max-width:600px){table{font-size:.78rem}td,th{padding:.4rem .5rem}.stats{gap:1rem}}
   </style>

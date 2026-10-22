@@ -101,6 +101,7 @@ export default function BookSearchModal({ onSelect, onClose }) {
               onClick={() => setSoloEspanol(v => !v)}
               role="switch"
               aria-checked={soloEspanol}
+              aria-label="Priorizar resultados en español"
               tabIndex={0}
               onKeyDown={e => {
                 if (e.key === ' ' || e.key === 'Enter') {

@@ -127,7 +127,7 @@ export default function BookDetailModal({ book, onEdit, onDelete, onClose, onMar
               {book.wouldReread && (
                 <div className={styles.metaRow}>
                   <span className={styles.metaLabel}>Favorito</span>
-                  <span className={styles.metaValue} style={{ color: '#c8922a' }}>★ Volvería a leer</span>
+                  <span className={styles.metaValue} style={{ color: 'var(--color-favorite)' }}>★ Volvería a leer</span>
                 </div>
               )}
             </div>

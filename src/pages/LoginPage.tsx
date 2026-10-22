@@ -93,18 +93,18 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
           </div>
         </div>
         <div className={styles.leftContent}>
-          <h1 className={styles.brand}>Librook</h1>
+          <p className={styles.brand}>Librook</p>
           <p className={styles.tagline}>Tu biblioteca personal.</p>
         </div>
       </div>
 
       {/* Right form panel */}
-      <div className={styles.right}>
+      <main className={styles.right}>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.formHeader}>
             {/* Brand shown only on mobile (hidden on desktop since it's in .left) */}
             <span className={styles.brandMobile}>Librook</span>
-            <h2 className={styles.welcome}>{titulo}</h2>
+            <h1 className={styles.welcome}>{titulo}</h1>
             <p className={styles.subtitle}>{subtitulo}</p>
           </div>
 
@@ -241,7 +241,7 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
             </p>
           </div>
         </form>
-      </div>
+      </main>
     </div>
   )
 }

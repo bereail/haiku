@@ -175,7 +175,9 @@ export default function BookCard({ book, onEdit, onView, onDelete }: BookCardPro
             {book.notes && (
               <div className={styles.notes}>
                 <span className={styles.rowLabel}>Notas</span>
-                <p className={styles.notesText}>{book.notes}</p>
+                <p className={styles.notesText} tabIndex={0} role="region" aria-label={`Notas de ${book.title}`}>
+                  {book.notes}
+                </p>
               </div>
             )}
 

@@ -11,11 +11,17 @@
   --color-border: #e8e4dc;
   --color-text: #1a1916;
   --color-text-secondary: #6b6560;
-  --color-text-muted: #9c9690;
+  --color-text-muted: #726d67;
   --color-accent: #2d4a3e;
   --color-accent-light: #4a7c68;
   --color-accent-pale: #e8f0ec;
   --color-gold: #c9a84c;
+  /* Dorado de "favorito" — distinto del --color-gold de "leyendo". Más
+     oscuro que el acento original (#c8922a) porque ese valor no cumple
+     4.5:1 como texto sobre fondo claro (medido con axe-core). En modo
+     oscuro #c8922a sí cumple (el fondo es oscuro), así que ahí se vuelve
+     a aclarar — ver el bloque [data-theme="dark"]. */
+  --color-favorite: #8a6419;
   --color-error: #c0392b;
   --color-error-pale: #fdecea;
   --color-header-bg: rgba(250, 249, 247, 0.92);
@@ -56,8 +62,9 @@
   --color-border: #2e2c29;
   --color-text: #ede9e3;
   --color-text-secondary: #8c8780;
-  --color-text-muted: #5e5a56;
-  --color-accent: #5a9478;
+  --color-text-muted: #908b85;
+  --color-accent: #457a63;
+  --color-favorite: #c8922a;
   --color-accent-light: #6aaa88;
   --color-accent-pale: #1a2e25;
   --color-gold: #c9a84c;

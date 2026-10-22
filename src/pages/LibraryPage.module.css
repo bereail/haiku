@@ -437,19 +437,22 @@
 }
 
 .filterFavBtn {
-  border-color: #c8922a44;
-  color: #c8922a;
+  border-color: color-mix(in srgb, var(--color-favorite) 27%, transparent);
+  color: var(--color-favorite);
 }
 
 .filterFavBtn:hover {
-  border-color: #c8922a;
-  color: #c8922a;
-  background: #c8922a18;
+  border-color: var(--color-favorite);
+  color: var(--color-favorite);
+  background: color-mix(in srgb, var(--color-favorite) 9%, transparent);
 }
 
 .filterFavBtn.active {
-  background: #c8922a;
-  border-color: #c8922a;
+  /* Relleno sólido con texto blanco: el mismo tono funciona en ambos
+     temas (medido >5:1 de contraste), por eso no usa el token --color-favorite
+     (que sí cambia por tema para funcionar como texto plano). */
+  background: #8a6419;
+  border-color: #8a6419;
   color: white;
 }
 

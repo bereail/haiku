@@ -109,7 +109,7 @@
 .badgeFav {
   right: auto;
   left: 22px;
-  background: #c8922a;
+  background: #8a6419;
 }
 
 /* Barra de progreso */
@@ -203,7 +203,7 @@
 
 .backAuthor {
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.93);
   margin-top: 0.1rem;
   white-space: nowrap;
   overflow: hidden;
