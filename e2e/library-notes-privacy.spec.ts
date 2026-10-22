@@ -17,41 +17,47 @@ test.describe('Biblioteca: alta, persistencia y privacidad de notas', () => {
     await expect(page.getByPlaceholder('Buscar por título o autor...')).toBeVisible()
   })
 
-  test('agregar un libro con nota privada persiste y no se filtra a Comunidad ni al Catálogo', async ({ page, context }) => {
+  test('agregar un libro con nota privada persiste y no se filtra al Catálogo público', async ({ page, browser }) => {
+    const search = page.getByPlaceholder('Buscar por título o autor...')
+    // La tarjeta repite el título en frente y dorso (flip): se apunta al
+    // <article> por su nombre accesible para no tener dos coincidencias.
+    const card = page.getByRole('article', { name: UNIQUE_TITLE })
+
     // 1. Agregar manualmente (botón del header, no el FAB mobile)
     await page.getByRole('button', { name: 'Agregar', exact: true }).click()
     await page.locator('#title').fill(UNIQUE_TITLE)
     await page.locator('#author').fill('Autor E2E')
-    await page.locator('#notes').fill(PRIVATE_NOTE).catch(() => {})
+    await page.locator('#notes').fill(PRIVATE_NOTE)
     await page.getByRole('button', { name: 'Agregar libro' }).click()
-    await page.waitForTimeout(1000)
-    await page.screenshot({ path: 'e2e-debug.png', fullPage: true })
 
     // 2. Aparece en la biblioteca
-    await expect(page.getByText(UNIQUE_TITLE)).toBeVisible({ timeout: 10000 })
+    await expect(card).toBeVisible()
 
-    // 3. Persiste tras recargar (confirma que quedó en la base, no solo en memoria)
+    // 3. Persiste tras recargar (confirma que quedó en la base, no solo en
+    //    memoria), con la nota guardada en el dorso de la tarjeta
     await page.reload()
-    await expect(page.getByPlaceholder('Buscar por título o autor...')).toBeVisible()
-    await page.getByPlaceholder('Buscar por título o autor...').fill(UNIQUE_TITLE)
-    await expect(page.getByText(UNIQUE_TITLE)).toBeVisible()
+    await search.fill(UNIQUE_TITLE)
+    await expect(card).toBeVisible()
+    await card.click() // flip de la tarjeta
+    await expect(card.getByRole('region', { name: `Notas de ${UNIQUE_TITLE}` })).toHaveText(PRIVATE_NOTE)
 
-    // 4. La nota privada no aparece en el catálogo público (ruta y origin
-    //    distintos — página nueva, sin el token de sesión de lectora1)
-    const publicPage = await context.newPage()
-    await publicPage.goto('/catalog')
+    // 4. La nota privada no aparece en el catálogo público. Contexto nuevo:
+    //    sin el token de sesión de lectora1 en localStorage.
+    const publicContext = await browser.newContext()
+    const publicPage = await publicContext.newPage()
+    await publicPage.goto('catalog')
     await publicPage.getByPlaceholder('Buscar por título...').fill(UNIQUE_TITLE)
-    await publicPage.waitForTimeout(1500)
-    await expect(publicPage.getByText(PRIVATE_NOTE)).not.toBeVisible()
-    await publicPage.close()
+    await publicPage.waitForLoadState('networkidle')
+    await expect(publicPage.getByText(PRIVATE_NOTE)).toHaveCount(0)
+    await publicContext.close()
 
     // 5. Limpieza: borrar el libro de prueba para no acumular basura en
-    //    la cuenta de prueba entre corridas.
-    await page.getByPlaceholder('Buscar por título o autor...').fill(UNIQUE_TITLE)
-    await page.getByText(UNIQUE_TITLE).click() // flip de la tarjeta
-    await page.getByRole('button', { name: 'Eliminar' }).click()
-    await page.getByRole('button', { name: 'Sí' }).click()
-    await page.getByPlaceholder('Buscar por título o autor...').fill(UNIQUE_TITLE)
-    await expect(page.getByText(UNIQUE_TITLE)).not.toBeVisible()
+    //    la cuenta de prueba entre corridas. La tarjeta ya está dada vuelta.
+    await card.getByRole('button', { name: 'Eliminar' }).click()
+    await card.getByRole('button', { name: 'Sí' }).click()
+    await expect(card).toHaveCount(0)
+    await page.reload()
+    await search.fill(UNIQUE_TITLE)
+    await expect(card).toHaveCount(0)
   })
 })
