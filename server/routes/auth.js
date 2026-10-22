@@ -6,6 +6,7 @@ const fs = require('fs')
 const nodemailer = require('nodemailer')
 const pool = require('../db')
 const { DEMO_EMAIL, seedDemoBooks } = require('../demoData')
+const { isDemoEmail } = require('../demoAccount')
 const { authLimiter } = require('../middleware/rateLimiter')
 
 // MAIL_OUTBOX_FILE (solo desarrollo/E2E): en vez de mandar por Gmail, cada mail se agrega
@@ -30,9 +31,9 @@ const transporter = MAIL_OUTBOX_FILE
 // entorno local y no a producción.
 const APP_URL = process.env.APP_URL || 'https://ailonline.com.ar/librook/'
 
-function makeJwt(user, { isDemo = false } = {}) {
+function makeJwt(user) {
   return jwt.sign(
-    { userId: user.id, email: user.email, isDemo },
+    { userId: user.id, email: user.email, isDemo: isDemoEmail(user.email) },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }
   )
@@ -55,7 +56,7 @@ router.post('/demo-login', authLimiter, async (req, res) => {
       await seedDemoBooks(user.id)
     }
 
-    res.json({ token: makeJwt(user, { isDemo: true }), email: user.email, isDemo: true })
+    res.json({ token: makeJwt(user), email: user.email, isDemo: true })
   } catch (err) {
     console.error('demo-login error', err)
     res.status(500).json({ error: 'Error al ingresar como invitado' })
@@ -69,7 +70,8 @@ router.post('/register', authLimiter, async (req, res) => {
 
   try {
     const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()])
-    if (exists.rows.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email' })
+    // El email de la demo está reservado aunque la cuenta todavía no exista.
+    if (exists.rows.length > 0 || isDemoEmail(email)) return res.status(400).json({ error: 'Ya existe una cuenta con ese email' })
 
     const hash = await bcrypt.hash(password, 12)
     const result = await pool.query(
@@ -99,7 +101,7 @@ router.post('/login', authLimiter, async (req, res) => {
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) return res.status(400).json({ error: 'Email o contraseña incorrectos' })
 
-    res.json({ token: makeJwt(user), email: user.email })
+    res.json({ token: makeJwt(user), email: user.email, isDemo: isDemoEmail(user.email) })
   } catch (err) {
     console.error('login error', err)
     res.status(500).json({ error: 'Error al iniciar sesión' })
@@ -113,8 +115,9 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
 
   try {
     const result = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase().trim()])
-    // Siempre respondemos ok para no revelar si el email existe
-    if (result.rows.length === 0) return res.json({ ok: true })
+    // Siempre respondemos ok para no revelar si el email existe. La demo nunca recibe
+    // link de reset: quien controle ese buzón tomaría la cuenta compartida.
+    if (result.rows.length === 0 || isDemoEmail(email)) return res.json({ ok: true })
 
     const userId = result.rows[0].id
     const token = crypto.randomBytes(32).toString('hex')

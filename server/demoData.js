@@ -1,6 +1,6 @@
 const pool = require('./db')
 
-const DEMO_EMAIL = 'demo@librook.app'
+const { DEMO_EMAIL } = require('./demoAccount')
 
 const DEMO_BOOKS = [
   {
