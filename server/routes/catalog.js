@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const pool = require('../db')
+const { publicAliasSql } = require('../publicAlias')
 const { catalogLimiter } = require('../middleware/rateLimiter')
 
 router.use(catalogLimiter)
@@ -71,7 +72,7 @@ router.get('/works/:id', async (req, res) => {
       ),
       pool.query(
         `SELECT p.id, p.reflection, p.book_score, p.created_at,
-                COALESCE(u.display_name, split_part(u.email, '@', 1)) AS author_alias
+                ${publicAliasSql('u.')} AS author_alias
          FROM community_posts p JOIN users u ON u.id = p.user_id
          WHERE p.obra_id = $1 ORDER BY p.created_at DESC LIMIT 20`,
         [req.params.id]

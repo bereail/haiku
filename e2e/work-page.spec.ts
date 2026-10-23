@@ -73,6 +73,11 @@ test('nunca expone notas privadas, fechas de lectura ni emails (UI y API)', asyn
   expect(api.ok()).toBeTruthy()
   const raw = await api.text()
   expect(raw).not.toContain(PRIVATE)
+  // Sin alias elegido, el nombre público no sale del email (antes era "lectora1")
+  const alias = (await api.json()).reviews[0].authorAlias
+  expect(alias).toMatch(/^Lector\/a [0-9A-F]{4}$/)
+  expect(alias).not.toContain('lectora1')
+  await expect(page.getByText(alias)).toBeVisible()
   expect(raw).not.toMatch(/@test\.dev|"notes"|start_?date|end_?date|2026-03-03|2026-04-04|"email"/i)
 })
 

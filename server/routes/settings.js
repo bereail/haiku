@@ -2,6 +2,7 @@ const router = require('express').Router()
 const auth = require('../middleware/authMiddleware')
 const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
+const { publicAliasSql } = require('../publicAlias')
 
 router.get('/goal', auth, async (req, res) => {
   try {
@@ -41,7 +42,7 @@ router.put('/goal', auth, blockDemoWrites, async (req, res) => {
 router.get('/profile', auth, async (req, res) => {
   try {
     const r = await pool.query(
-      `SELECT display_name, COALESCE(display_name, split_part(email, '@', 1)) AS alias
+      `SELECT display_name, ${publicAliasSql()} AS alias
        FROM users WHERE id = $1`,
       [req.userId]
     )
@@ -61,7 +62,7 @@ router.put('/profile', auth, blockDemoWrites, async (req, res) => {
   try {
     const r = await pool.query(
       `UPDATE users SET display_name = $1 WHERE id = $2
-       RETURNING display_name, COALESCE(display_name, split_part(email, '@', 1)) AS alias`,
+       RETURNING display_name, ${publicAliasSql()} AS alias`,
       [displayName, req.userId]
     )
     res.json({ displayName: r.rows[0].display_name, alias: r.rows[0].alias })

@@ -64,8 +64,10 @@ test('compartir una reseña desde el detalle del libro y dejar de compartirla', 
   const community = await openCommunity(page)
   const post = community.getByRole('article', { name: MINE })
   await expect(post).toContainText(MY_NOTE)
-  // Se muestra el alias, nunca el email completo
+  // Se muestra el alias, nunca el email ni una parte de él
   await expect(post).not.toContainText(ACCOUNTS.lectora1.email)
+  await expect(post).not.toContainText(ACCOUNTS.lectora1.email.split('@')[0])
+  await expect(post).toContainText(/Lector\/a [0-9A-F]{4}/)
   await page.keyboard.press('Escape')
 
   // openCommunity recargó la página: la tarjeta volvió a su frente

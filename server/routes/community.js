@@ -2,6 +2,7 @@ const router = require('express').Router()
 const auth = require('../middleware/authMiddleware')
 const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
+const { publicAliasSql } = require('../publicAlias')
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL
 const MAX_REFLECTION_LEN = 2000
@@ -45,7 +46,7 @@ async function getPostById(id, userId, admin) {
   const result = await pool.query(
     `SELECT
       p.*,
-      COALESCE(u.display_name, split_part(u.email, '@', 1)) AS author_alias,
+      ${publicAliasSql('u.')} AS author_alias,
       (p.user_id = $2 OR $3::boolean) AS can_delete,
       (SELECT COUNT(*) FROM community_likes l WHERE l.post_id = p.id) AS like_count,
       EXISTS(SELECT 1 FROM community_likes l WHERE l.post_id = p.id AND l.user_id = $2) AS liked_by_me,
@@ -65,7 +66,7 @@ router.get('/posts', auth, async (req, res) => {
     const result = await pool.query(
       `SELECT
         p.*,
-        COALESCE(u.display_name, split_part(u.email, '@', 1)) AS author_alias,
+        ${publicAliasSql('u.')} AS author_alias,
         (p.user_id = $1 OR $2::boolean) AS can_delete,
         (SELECT COUNT(*) FROM community_likes l WHERE l.post_id = p.id) AS like_count,
         EXISTS(SELECT 1 FROM community_likes l WHERE l.post_id = p.id AND l.user_id = $1) AS liked_by_me,
@@ -144,7 +145,7 @@ router.get('/posts/:id/comments', auth, async (req, res) => {
     const result = await pool.query(
       `SELECT
         c.*,
-        COALESCE(u.display_name, split_part(u.email, '@', 1)) AS author_alias,
+        ${publicAliasSql('u.')} AS author_alias,
         (c.user_id = $2 OR $3::boolean) AS can_delete
        FROM community_comments c
        JOIN users u ON u.id = c.user_id
@@ -174,7 +175,7 @@ router.post('/posts/:id/comments', auth, blockDemoWrites, async (req, res) => {
       [req.params.id, req.userId, body]
     )
     const alias = await pool.query(
-      `SELECT COALESCE(display_name, split_part(email, '@', 1)) AS author_alias FROM users WHERE id = $1`,
+      `SELECT ${publicAliasSql()} AS author_alias FROM users WHERE id = $1`,
       [req.userId]
     )
     const row = result.rows[0]

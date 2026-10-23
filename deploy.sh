@@ -55,6 +55,7 @@ $SCP server/index.js          $USER@$HOST:$API_DIR/index.js
 # el parser de columnas DATE (fechas como 'YYYY-MM-DD').
 $SCP server/db.js             $USER@$HOST:$API_DIR/db.js
 $SCP server/demoAccount.js    $USER@$HOST:$API_DIR/demoAccount.js
+$SCP server/publicAlias.js    $USER@$HOST:$API_DIR/publicAlias.js
 $SCP server/schema.sql        $USER@$HOST:$API_DIR/schema.sql
 $SCP server/demoData.js       $USER@$HOST:$API_DIR/demoData.js
 $SCP server/reset-demo.js     $USER@$HOST:$API_DIR/reset-demo.js
