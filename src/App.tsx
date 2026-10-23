@@ -20,16 +20,17 @@ function getSessionId() {
   return sid
 }
 
-function trackView(path: string, userEmail?: string) {
+function trackView(path: string) {
+  // El servidor toma el email del token (no se manda en el body: no confía en él)
+  const token = localStorage.getItem('librook_token')
   fetch('/librook-api/analytics/track', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({
       session_id: getSessionId(),
       path,
       referrer: document.referrer,
       user_agent: navigator.userAgent,
-      user_email: userEmail ?? null,
     }),
     keepalive: true,
   }).catch(() => {})
@@ -61,7 +62,7 @@ function AuthenticatedApp() {
   useEffect(() => {
     if (section === lastSection.current) return
     lastSection.current = section
-    trackView(section, user?.email)
+    trackView(section)
   }, [section, user?.email])
 
   const handleResetDone = () => {

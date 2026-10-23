@@ -36,4 +36,14 @@ const catalogLimiter = rateLimit({
   message: { error: 'Demasiadas solicitudes. Probá de nuevo en un minuto.' },
 })
 
-module.exports = { authLimiter, catalogLimiter, authLimit, DEFAULT_AUTH_LIMIT }
+// /analytics/track es público y escribe en la base en cada llamada: sin techo, cualquiera
+// podía insertar filas sin límite (y llenar el disco).
+const analyticsLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes.' },
+})
+
+module.exports = { authLimiter, catalogLimiter, analyticsLimiter, authLimit, DEFAULT_AUTH_LIMIT }
