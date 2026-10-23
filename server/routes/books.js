@@ -2,6 +2,7 @@ const router = require('express').Router()
 const auth = require('../middleware/authMiddleware')
 const blockDemoWrites = require('../middleware/blockDemoWrites')
 const pool = require('../db')
+const { validateBookInput } = require('../validation/bookInput')
 
 function dbToBook(row) {
   return {
@@ -59,8 +60,8 @@ router.get('/', auth, async (req, res) => {
 })
 
 router.post('/', auth, blockDemoWrites, async (req, res) => {
-  const b = req.body
   try {
+    const b = validateBookInput(req.body)
     const editionId = await resolveEditionId(b.editionId)
     const result = await pool.query(
       `INSERT INTO books
@@ -69,19 +70,9 @@ router.post('/', auth, blockDemoWrites, async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        RETURNING *`,
       [
-        req.userId, b.title, b.author || null, b.cover || null,
-        b.publisher || null, b.genre || null, b.isbn || null,
-        b.pages ? Number(b.pages) : null,
-        b.year ? Number(b.year) : null,
-        b.score ? Number(b.score) : null,
-        b.notes || null,
-        b.startDate || null, b.endDate || null,
-        b.color || null,
-        b.totalPages ? Number(b.totalPages) : null,
-        b.currentPage ? Number(b.currentPage) : null,
-        b.wouldReread ? true : false,
-        b.abandoned ? true : false,
-        editionId,
+        req.userId, b.title, b.author, b.cover, b.publisher, b.genre, b.isbn,
+        b.pages, b.year, b.score, b.notes, b.startDate, b.endDate, b.color,
+        b.totalPages, b.currentPage, b.wouldReread, b.abandoned, editionId,
       ]
     )
     res.json(dbToBook(result.rows[0]))
@@ -93,8 +84,12 @@ router.post('/', auth, blockDemoWrites, async (req, res) => {
 })
 
 router.put('/:id', auth, blockDemoWrites, async (req, res) => {
-  const b = req.body
   try {
+    // La tapa actual se acepta tal cual aunque no cumpla las reglas nuevas (libros
+    // cargados antes); también confirma que el libro es de este usuario.
+    const current = await pool.query('SELECT cover FROM books WHERE id = $1 AND user_id = $2', [req.params.id, req.userId])
+    if (current.rows.length === 0) return res.status(404).json({ error: 'Libro no encontrado' })
+    const b = validateBookInput(req.body, { existingCover: current.rows[0].cover })
     const editionId = await resolveEditionId(b.editionId)
     const result = await pool.query(
       `UPDATE books SET
@@ -105,18 +100,9 @@ router.put('/:id', auth, blockDemoWrites, async (req, res) => {
        WHERE id=$19 AND user_id=$20
        RETURNING *`,
       [
-        b.title, b.author || null, b.cover || null,
-        b.publisher || null, b.genre || null, b.isbn || null,
-        b.pages ? Number(b.pages) : null,
-        b.year ? Number(b.year) : null,
-        b.score ? Number(b.score) : null,
-        b.notes || null,
-        b.startDate || null, b.endDate || null,
-        b.color || null,
-        b.totalPages ? Number(b.totalPages) : null,
-        b.currentPage ? Number(b.currentPage) : null,
-        b.wouldReread ? true : false,
-        b.abandoned ? true : false,
+        b.title, b.author, b.cover, b.publisher, b.genre, b.isbn,
+        b.pages, b.year, b.score, b.notes, b.startDate, b.endDate, b.color,
+        b.totalPages, b.currentPage, b.wouldReread, b.abandoned,
         editionId,
         req.params.id, req.userId,
       ]

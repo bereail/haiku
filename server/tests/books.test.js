@@ -92,7 +92,9 @@ describe('PUT /books/:id', () => {
 
   it('actualiza un libro existente', async () => {
     const updated = { ...SAMPLE_ROW, score: 4 }
-    pool.query.mockResolvedValueOnce({ rows: [updated] })
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ cover: null }] }) // tapa actual (y pertenencia)
+      .mockResolvedValueOnce({ rows: [updated] })
 
     const res = await request(app)
       .put('/books/book-1')
@@ -204,5 +206,58 @@ describe('Modo invitado (demo) — solo lectura', () => {
 
     expect(res.status).toBe(403)
     expect(pool.query).not.toHaveBeenCalled()
+  })
+})
+
+describe('Validación de entrada (POST/PUT /books)', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it('rechaza una tapa con URL propia (píxel de rastreo en Comunidad) sin tocar la base', async () => {
+    const res = await request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'Libro', cover: 'https://rastreo.example/pixel.gif' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toMatch(/Open Library/)
+    expect(pool.query).not.toHaveBeenCalled()
+  })
+
+  it('una fecha inválida da 400 con un mensaje claro (antes, error de la base → 500)', async () => {
+    const res = await request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'Libro', startDate: '2026-02-30' })
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('La fecha de inicio no es una fecha válida')
+  })
+
+  it('rechaza un puntaje fuera de 0-5', async () => {
+    const res = await request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'Libro', score: 99 })
+    expect(res.status).toBe(400)
+  })
+
+  it('al editar, conserva la tapa que el libro ya tenía aunque sea de otro origen', async () => {
+    const legacy = 'https://books.google.com/cover.jpg'
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ cover: legacy }] })               // tapa actual
+      .mockResolvedValueOnce({ rows: [{ ...SAMPLE_ROW, cover: legacy }] }) // UPDATE
+    const res = await request(app)
+      .put('/books/book-1')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'El Principito', cover: legacy })
+    expect(res.status).toBe(200)
+  })
+
+  it('al editar, no permite cambiar la tapa a una URL propia', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ cover: null }] })
+    const res = await request(app)
+      .put('/books/book-1')
+      .set('Authorization', `Bearer ${authToken()}`)
+      .send({ title: 'El Principito', cover: 'https://rastreo.example/p.gif' })
+    expect(res.status).toBe(400)
+    expect(pool.query).toHaveBeenCalledTimes(1) // solo la lectura de la tapa actual
   })
 })
