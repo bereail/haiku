@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
+import { mockOpenLibrary } from './openlibrary-mock'
 
 // Escaneo automático con axe-core (WCAG 2.0/2.1/2.2, niveles A y AA) de las
 // pantallas principales y de los modales abiertos. Evita que reaparezcan los
@@ -61,10 +62,19 @@ test.describe('axe-core: sin sesión', () => {
   })
 
   test('catálogo público con búsqueda', async ({ page }) => {
+    // Resultados deterministas en las dos secciones: una obra local (base
+    // local) y, como hay menos de 3 locales, los de Open Library simulados.
+    localObraId()
+    await mockOpenLibrary(page)
     await page.goto('catalog')
     await expect(page.getByRole('heading', { name: 'Catálogo público' })).toBeVisible()
     await page.getByPlaceholder('Buscar por título...').fill('Obra E2E')
-    await page.waitForLoadState('networkidle')
+    await expect(page.getByRole('heading', { name: 'En Librook', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Obra E2E accesibilidad/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /También en Open Library/ })).toBeVisible()
+    await expect(page.getByText('Rayuela (simulado)')).toBeVisible()
+    await expect(page.getByText('Ficciones (simulado)')).toBeVisible()
+    await expect(page.getByRole('status').filter({ hasText: 'Buscando…' })).toHaveCount(0)
     await expectNoViolations(page, 'Catálogo')
   })
 
