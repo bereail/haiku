@@ -19,6 +19,7 @@ app.use('/analytics', require('./routes/analytics'))
 app.use('/settings',  require('./routes/settings'))
 app.use('/community', require('./routes/community'))
 app.use('/catalog',   require('./routes/catalog'))
+app.use('/uploads',   require('./routes/uploads'))
 
 // Antes solo confirmaba que el proceso Node estaba vivo, no que la API sirviera algo real —
 // un deploy con la base caída o mal configurada podía pasar este chequeo igual.

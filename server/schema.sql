@@ -149,3 +149,43 @@ CREATE INDEX IF NOT EXISTS books_edition_idx ON books (edition_id);
 
 ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS obra_id UUID REFERENCES obras(id);
 CREATE INDEX IF NOT EXISTS community_posts_obra_idx ON community_posts (obra_id);
+
+-- ── Marketplace (Etapa B): publicaciones de venta/intercambio, separadas de las reseñas ──
+CREATE TABLE IF NOT EXISTS marketplace_listings (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind        TEXT NOT NULL CHECK (kind IN ('venta', 'intercambio')),
+  book_title  TEXT NOT NULL,
+  book_author TEXT,
+  condition   TEXT NOT NULL CHECK (condition IN ('nuevo', 'muy_bueno', 'bueno', 'aceptable')),
+  price_cents INTEGER CHECK (price_cents IS NULL OR price_cents >= 0),
+  currency    TEXT NOT NULL DEFAULT 'ARS',
+  description TEXT,
+  city        TEXT,
+  contact     TEXT,
+  status      TEXT NOT NULL DEFAULT 'activa' CHECK (status IN ('activa', 'pausada', 'cerrada')),
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  -- Una venta siempre tiene precio
+  CHECK (kind <> 'venta' OR price_cents IS NOT NULL)
+);
+CREATE INDEX IF NOT EXISTS marketplace_listings_status_idx ON marketplace_listings (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS marketplace_listings_user_idx ON marketplace_listings (user_id);
+
+-- Imágenes subidas (archivo en UPLOADS_DIR, fuera del webroot). Sin listing_id = huérfana:
+-- la limpieza borra las huérfanas de más de 24 h.
+CREATE TABLE IF NOT EXISTS uploads (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  filename    TEXT NOT NULL UNIQUE,
+  mime        TEXT NOT NULL,
+  bytes       INTEGER NOT NULL,
+  width       INTEGER NOT NULL,
+  height      INTEGER NOT NULL,
+  listing_id  UUID REFERENCES marketplace_listings(id) ON DELETE SET NULL,
+  position    SMALLINT,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS uploads_user_idx ON uploads (user_id);
+CREATE INDEX IF NOT EXISTS uploads_listing_idx ON uploads (listing_id, position);
+CREATE INDEX IF NOT EXISTS uploads_orphan_idx ON uploads (created_at) WHERE listing_id IS NULL;

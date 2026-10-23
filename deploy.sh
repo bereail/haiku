@@ -66,6 +66,7 @@ $SCP server/routes/analytics.js $USER@$HOST:$API_DIR/routes/analytics.js
 $SCP server/routes/settings.js $USER@$HOST:$API_DIR/routes/settings.js
 $SCP server/routes/community.js $USER@$HOST:$API_DIR/routes/community.js
 $SCP server/routes/catalog.js $USER@$HOST:$API_DIR/routes/catalog.js
+$SCP server/routes/uploads.js $USER@$HOST:$API_DIR/routes/uploads.js
 # IMPORTANTE: antes de esta versión, deploy.sh nunca copiaba server/middleware/ — asumía
 # que el VPS ya tenía authMiddleware.js de la instalación inicial (install_api.sh). Ahora que
 # hay middlewares nuevos (blockDemoWrites.js, rateLimiter.js) que index.js ya requiere, hace
@@ -77,6 +78,10 @@ $SCP server/middleware/rateLimiter.js     $USER@$HOST:$API_DIR/middleware/rateLi
 $SCP server/middleware/sessionRevocation.js $USER@$HOST:$API_DIR/middleware/sessionRevocation.js
 $SCP server/validation/bookInput.js      $USER@$HOST:$API_DIR/validation/bookInput.js
 $SCP server/images/imageFile.js          $USER@$HOST:$API_DIR/images/imageFile.js
+$SCP server/images/storage.js            $USER@$HOST:$API_DIR/images/storage.js
+$SCP server/images/cleanup.js            $USER@$HOST:$API_DIR/images/cleanup.js
+$SCP server/scripts/cleanup-uploads.js   $USER@$HOST:$API_DIR/scripts/cleanup-uploads.js
+$SCP server/scripts/backup-uploads.sh    $USER@$HOST:$API_DIR/scripts/backup-uploads.sh
 $SCP server/scripts/backfill-editions.js  $USER@$HOST:$API_DIR/scripts/backfill-editions.js
 # server/rateLimit.js (el rate limiter casero original) quedó reemplazado por
 # server/middleware/rateLimiter.js (usa express-rate-limit) — limpiamos el archivo viejo
@@ -189,6 +194,46 @@ echo "==> Aplicando migración SQL (revocación de sesiones al cambiar la contra
 # Tiene que correr ANTES del restart: el authMiddleware nuevo consulta esta columna.
 $SSH "psql \$(grep DATABASE_URL $API_DIR/.env | cut -d= -f2-) -c \"
   ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ;
+\""
+
+echo "==> Aplicando migración SQL (marketplace: publicaciones e imágenes subidas)..."
+# Aditiva (IF NOT EXISTS). La carpeta de imágenes (UPLOADS_DIR) se configura una sola vez a
+# mano: ver docs/marketplace-imagenes.md.
+$SSH "psql \$(grep DATABASE_URL $API_DIR/.env | cut -d= -f2-) -c \"
+  CREATE TABLE IF NOT EXISTS marketplace_listings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('venta', 'intercambio')),
+    book_title TEXT NOT NULL,
+    book_author TEXT,
+    condition TEXT NOT NULL CHECK (condition IN ('nuevo', 'muy_bueno', 'bueno', 'aceptable')),
+    price_cents INTEGER CHECK (price_cents IS NULL OR price_cents >= 0),
+    currency TEXT NOT NULL DEFAULT 'ARS',
+    description TEXT,
+    city TEXT,
+    contact TEXT,
+    status TEXT NOT NULL DEFAULT 'activa' CHECK (status IN ('activa', 'pausada', 'cerrada')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CHECK (kind <> 'venta' OR price_cents IS NOT NULL)
+  );
+  CREATE INDEX IF NOT EXISTS marketplace_listings_status_idx ON marketplace_listings (status, created_at DESC);
+  CREATE INDEX IF NOT EXISTS marketplace_listings_user_idx ON marketplace_listings (user_id);
+  CREATE TABLE IF NOT EXISTS uploads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    filename TEXT NOT NULL UNIQUE,
+    mime TEXT NOT NULL,
+    bytes INTEGER NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    listing_id UUID REFERENCES marketplace_listings(id) ON DELETE SET NULL,
+    position SMALLINT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS uploads_user_idx ON uploads (user_id);
+  CREATE INDEX IF NOT EXISTS uploads_listing_idx ON uploads (listing_id, position);
+  CREATE INDEX IF NOT EXISTS uploads_orphan_idx ON uploads (created_at) WHERE listing_id IS NULL;
 \""
 
 echo "==> Instalando dependencias nuevas del backend (express-rate-limit)..."

@@ -35,3 +35,6 @@ server.tar.gz
 e2e-debug.png
 /e2e/.auth/
 /e2e/.outbox.jsonl
+
+# Imágenes subidas en local (UPLOADS_DIR por defecto)
+/.uploads/
