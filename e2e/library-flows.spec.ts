@@ -262,8 +262,17 @@ test.describe('alta y edición', () => {
     await expect(dialog.locator('#title')).toHaveValue('Cien años de soledad')
     await expect(dialog.locator('#author')).toHaveValue('Gabriel García Márquez')
 
-    await isbn.fill('9780000000000')
+    // ISBN válido (verificador correcto) pero que no existe
+    await isbn.fill('9780000000002')
     await dialog.getByRole('button', { name: 'Buscar', exact: true }).click()
     await expect(dialog.getByRole('alert').filter({ hasText: 'ISBN no encontrado' })).toBeVisible()
+
+    // Un dígito mal tipeado: se avisa sin consultar Open Library
+    let consultas = 0
+    page.on('request', r => { if (r.url().includes('openlibrary.org/search.json')) consultas++ })
+    await isbn.fill('978-84-376-0494-8')
+    await dialog.getByRole('button', { name: 'Buscar', exact: true }).click()
+    await expect(dialog.getByRole('alert').filter({ hasText: 'El ISBN no es válido' })).toBeVisible()
+    expect(consultas).toBe(0)
   })
 })

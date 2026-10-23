@@ -1,64 +1,87 @@
 import { useEffect, useRef, useState } from 'react'
 import { useDialogA11y } from '../hooks/useDialogA11y'
+import { createIsbnDetector } from '../services/barcode'
+import { isBookEan } from '../services/isbn'
 import styles from './ISBNScanner.module.css'
 
-export default function ISBNScanner({ onScan, onClose }) {
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
-  const rafRef = useRef(null)
-  const [estado, setEstado] = useState(() =>
-    'BarcodeDetector' in window ? 'iniciando' : 'noSoportado'
+type Estado = 'iniciando' | 'escaneando' | 'sinCamara' | 'error'
+
+interface ISBNScannerProps {
+  onScan: (isbn: string) => void
+  onClose: () => void
+}
+
+// Escaneo por cámara con BarcodeDetector nativo o, si el navegador no lo trae, con un
+// lector ZXing (WebAssembly) cargado de forma diferida. Solo acepta ISBN de libros
+// (EAN-13 978/979 con dígito verificador correcto).
+export default function ISBNScanner({ onScan, onClose }: ISBNScannerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const stoppedRef = useRef(false)
+  // El callback cambia en cada render de BookModal: si fuera dependencia del efecto, cada
+  // re-render reiniciaba la cámara.
+  const onScanRef = useRef(onScan)
+  useEffect(() => { onScanRef.current = onScan }, [onScan])
+  const [estado, setEstado] = useState<Estado>(() =>
+    navigator.mediaDevices?.getUserMedia ? 'iniciando' : 'sinCamara'
   )
+  const [aviso, setAviso] = useState('')
 
   const stop = () => {
-    cancelAnimationFrame(rafRef.current)
+    stoppedRef.current = true
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     streamRef.current?.getTracks().forEach(t => t.stop())
     streamRef.current = null
   }
 
   useEffect(() => {
-    if (!('BarcodeDetector' in window)) return
+    if (!navigator.mediaDevices?.getUserMedia) return
+    stoppedRef.current = false
 
     const iniciar = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
-        })
+        const [stream, detector] = await Promise.all([
+          navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } }),
+          createIsbnDetector(),
+        ])
+        if (stoppedRef.current) { stream.getTracks().forEach(t => t.stop()); return }
         streamRef.current = stream
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
+        const video = videoRef.current
+        if (video) {
+          video.srcObject = stream
+          await video.play()
         }
         setEstado('escaneando')
 
-        const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'isbn', 'code_128'] })
-
         const loop = async () => {
-          if (!videoRef.current || videoRef.current.readyState < 2) {
-            rafRef.current = requestAnimationFrame(loop)
-            return
-          }
-          try {
-            const codes = await detector.detect(videoRef.current)
-            if (codes.length > 0) {
-              stop()
-              onScan(codes[0].rawValue)
-              return
+          if (stoppedRef.current) return
+          const v = videoRef.current
+          if (v && v.readyState >= 2) {
+            try {
+              const codes = await detector.detect(v)
+              const code = codes.map(c => c.rawValue).find(Boolean)
+              if (code && isBookEan(code)) {
+                stop()
+                onScanRef.current(code)
+                return
+              }
+              if (code) setAviso('Ese código no es el ISBN de un libro. Buscá el que empieza con 978 o 979.')
+            } catch {
+              // Algunos fotogramas fallan al decodificar: se reintenta con el siguiente
             }
-          } catch (_e) {
-            // BarcodeDetector puede fallar en algunos fotogramas — se reintenta
           }
           rafRef.current = requestAnimationFrame(loop)
         }
         rafRef.current = requestAnimationFrame(loop)
       } catch {
-        setEstado('error')
+        if (!stoppedRef.current) setEstado('error')
       }
     }
 
     iniciar()
     return () => stop()
-  }, [onScan])
+  }, [])
 
   const handleClose = () => { stop(); onClose() }
   // Se abre encima de BookModal (que suelta su propio trap mientras tanto):
@@ -85,13 +108,13 @@ export default function ISBNScanner({ onScan, onClose }) {
         </div>
 
         <div className={styles.cuerpo}>
-          {estado === 'noSoportado' && (
+          {estado === 'sinCamara' && (
             <div className={styles.mensaje} role="status">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
-              <p>Tu navegador no soporta el escaneo de códigos de barras.</p>
+              <p>Este dispositivo no tiene una cámara disponible para escanear.</p>
               <p>Ingresá el ISBN manualmente en el campo de arriba.</p>
             </div>
           )}
@@ -102,7 +125,7 @@ export default function ISBNScanner({ onScan, onClose }) {
                 <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
               <p>No se pudo acceder a la cámara.</p>
-              <p>Verificá los permisos del navegador e intentá de nuevo.</p>
+              <p>Verificá los permisos del navegador o ingresá el ISBN manualmente.</p>
             </div>
           )}
           {(estado === 'iniciando' || estado === 'escaneando') && (
@@ -116,8 +139,9 @@ export default function ISBNScanner({ onScan, onClose }) {
                 {estado === 'escaneando' && <div className={styles.lineaEscaneo} />}
               </div>
               {estado === 'iniciando' && (
-                <div className={styles.cargando} role="status">Iniciando cámara...</div>
+                <div className={styles.cargando} role="status">Iniciando cámara y lector…</div>
               )}
+              {aviso && <p className={styles.aviso} role="status">{aviso}</p>}
             </div>
           )}
         </div>

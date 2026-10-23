@@ -7,6 +7,7 @@ import styles from './BookModal.module.css'
 import type { Book } from '../types'
 import { todayLocal } from '../utils'
 import { toBookPayload, type BookPayload } from '../services/bookForm'
+import { isValidIsbn } from '../services/isbn'
 
 const COVER_MAX_PX = 500
 const COVER_QUALITY = 0.82
@@ -152,6 +153,11 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
     e?.preventDefault()
     const q = isbn.trim()
     if (!q) return
+    // Un dígito mal tipeado invalida el verificador: avisar sin consultar Open Library
+    if (!isValidIsbn(q)) {
+      setIsbnError('El ISBN no es válido: revisá los dígitos (10 o 13, con el verificador correcto)')
+      return
+    }
     setIsbnLoading(true)
     setIsbnError('')
     try {
