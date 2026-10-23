@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import StarRating from './StarRating'
 import ISBNScanner from './ISBNScanner'
+import CoverOcr from './CoverOcr'
 import { useBookSearch } from '../hooks/useBookSearch'
 import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookModal.module.css'
@@ -67,6 +68,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
   const [coverError, setCoverError] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
+  const [ocrOpen, setOcrOpen] = useState(false)
   const [isbn, setIsbn] = useState('')
   const [isbnLoading, setIsbnLoading] = useState(false)
   const [isbnError, setIsbnError] = useState('')
@@ -77,7 +79,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { suggestions, loading, search, searchByISBN, clear } = useBookSearch()
-  const dialogRef = useDialogA11y(onClose, !scannerOpen)
+  const dialogRef = useDialogA11y(onClose, !scannerOpen && !ocrOpen)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -586,6 +588,17 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
                       </svg>
                       <span>Escanear ISBN</span>
                     </button>
+                    <button
+                      type="button"
+                      className={styles.coverOpcionBtn}
+                      onClick={() => setOcrOpen(true)}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z" fill="currentColor"/>
+                        <path d="M8 10h8M8 14h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                      <span>Identificar por foto</span>
+                    </button>
                   </div>
                 </div>
 
@@ -649,6 +662,13 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
           </form>
         </div>
       </div>
+
+      {ocrOpen && (
+        <CoverOcr
+          onPick={(book) => { fillFromResult(book); setOcrOpen(false) }}
+          onClose={() => setOcrOpen(false)}
+        />
+      )}
 
       {scannerOpen && (
         <ISBNScanner onScan={handleScan} onClose={() => setScannerOpen(false)} />

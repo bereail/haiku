@@ -39,6 +39,15 @@ function mapDoc(doc: OpenLibraryDoc): BookSuggestion {
   }
 }
 
+// Búsqueda puntual (sin debounce ni estado), p. ej. con el texto reconocido de una tapa
+export async function searchBooksOnce(query: string, limit = 5): Promise<BookSuggestion[]> {
+  const params = new URLSearchParams({ q: query.trim(), limit: String(limit), fields: FIELDS })
+  const res = await fetch(`${API}?${params}`)
+  if (!res.ok) throw new Error('No se pudo buscar en Open Library')
+  const data = await res.json()
+  return (data.docs || []).slice(0, limit).map(mapDoc)
+}
+
 export function useBookSearch() {
   const [suggestions, setSuggestions] = useState<BookSuggestion[]>([])
   const [loading, setLoading] = useState(false)

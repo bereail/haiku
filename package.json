@@ -14,10 +14,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@tesseract.js-data/spa": "^1.0.0",
     "barcode-detector": "^3.2.3",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.4",
+    "tesseract.js": "^7.0.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

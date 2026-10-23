@@ -1,6 +1,39 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+
+// OCR local (Tesseract.js): por defecto baja el worker, el núcleo WASM y el idioma de
+// jsDelivr. Este plugin los sirve desde el propio sitio en /ocr/ (en dev desde
+// node_modules; en el build los copia a dist/ocr/), con las versiones fijadas por el
+// lockfile y sin copiar binarios al repo.
+const OCR_FILES = {
+  'worker.min.js': 'node_modules/tesseract.js/dist/worker.min.js',
+  'tesseract-core-simd-lstm.wasm.js': 'node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js',
+  'tesseract-core-lstm.wasm.js': 'node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js',
+  // LSTM entero: buen equilibrio entre precisión y velocidad (2,1 MB)
+  'spa.traineddata.gz': 'node_modules/@tesseract.js-data/spa/4.0.0_best_int/spa.traineddata.gz',
+}
+function ocrAssets() {
+  return {
+    name: 'librook-ocr-assets',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const m = req.url && req.url.match(/^\/librook\/ocr\/([^?]+)/)
+        const src = m && OCR_FILES[m[1]]
+        if (!src) return next()
+        res.setHeader('Content-Type', m[1].endsWith('.js') ? 'text/javascript' : 'application/octet-stream')
+        fs.createReadStream(path.resolve(src)).pipe(res)
+      })
+    },
+    generateBundle() {
+      for (const [name, src] of Object.entries(OCR_FILES)) {
+        this.emitFile({ type: 'asset', fileName: `ocr/${name}`, source: fs.readFileSync(path.resolve(src)) })
+      }
+    },
+  }
+}
 
 export default defineConfig({
   test: {
@@ -31,6 +64,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    ocrAssets(),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -65,6 +99,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        // El OCR (~6 MB) se baja solo si alguien lo usa: no se precachea para todos
+        globIgnores: ['**/ocr/**'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/covers\.openlibrary\.org\//,
