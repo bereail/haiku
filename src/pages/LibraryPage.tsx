@@ -533,7 +533,7 @@ export default function LibraryPage({
                   {isAdmin && onImport && (
                     <button
                       className={styles.menuItem}
-                      onClick={handleImportClick}
+                      onClick={() => runMenuItem(handleImportClick)}
                       role="menuitem"
                       tabIndex={-1}
                     >

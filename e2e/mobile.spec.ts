@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
 import { test, expect, type Page } from '@playwright/test'
-import { BASE_URL, storageStatePath } from './accounts'
+import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
 
 // Celular: sin scroll horizontal en las páginas principales ni con los modales
 // abiertos, modales dentro de la pantalla, y botones flotantes funcionales.
@@ -144,6 +145,93 @@ for (const vp of VIEWPORTS) {
         await expectDialogInsideViewport(page, 'Detalle')
         await expectNoHorizontalScroll(page, 'Detalle abierto')
       })
+    })
+  })
+}
+
+// Menú "Más opciones" con la cuenta admin (tiene los ítems Exportar/Importar
+// JSON). El menú se muestra por debajo de 900px: se prueba en celular y tablet.
+const MENU_VIEWPORTS = [...VIEWPORTS, { name: '768×1024', width: 768, height: 1024 }]
+
+async function openLoadedLibrary(page: Page) {
+  await page.goto('')
+  // Esperar a que termine la carga inicial: antes de eso el orden de foco y la
+  // lista de libros todavía cambian.
+  await expect(page.getByPlaceholder('Buscar por título o autor...')).toBeVisible()
+  await expect(page.getByText('Cargando tu biblioteca…')).toHaveCount(0)
+}
+
+for (const vp of MENU_VIEWPORTS) {
+  test.describe(`menú ${vp.name} — admin`, () => {
+    test.use({ viewport: { width: vp.width, height: vp.height }, hasTouch: true, isMobile: true, storageState: storageStatePath('admin') })
+    // Título único por corrida y tamaño; la limpieza borra solo estos libros.
+    const TITLE = `Menú E2E ${vp.name} ${Date.now()}`
+
+    test.afterEach(async ({ request }) => {
+      const list = await (await request.get(`${API_URL}/books`, { headers: bearer('admin') })).json()
+      for (const b of list.filter((x: { title: string }) => x.title === TITLE)) {
+        await request.delete(`${API_URL}/books/${b.id}`, { headers: bearer('admin') })
+      }
+    })
+
+    test('Tab desde el menú cierra y sigue el orden normal (no se saltea elementos)', async ({ page }) => {
+      await openLoadedLibrary(page)
+      const trigger = page.getByRole('button', { name: 'Más opciones' })
+      // Destino natural: el elemento que sigue al botón con el menú cerrado. Se
+      // marca para comparar identidad (no solo el HTML).
+      await trigger.focus()
+      await page.keyboard.press('Tab')
+      const natural = await page.evaluate(() => {
+        const el = document.activeElement
+        if (!el || el === document.body) return null
+        el.setAttribute('data-e2e-natural', '1')
+        return el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.textContent?.trim()
+      })
+      expect(natural, 'después del botón tiene que haber un elemento enfocable').toBeTruthy()
+
+      await trigger.focus()
+      await page.keyboard.press('Enter')
+      await expect(page.getByRole('menuitem').first()).toBeFocused()
+      await page.keyboard.press('Tab')
+      await expect(page.getByRole('menu')).toHaveCount(0)
+      await expect(page.locator('[data-e2e-natural="1"]')).toBeFocused()
+    })
+
+    test('"Exportar JSON" desde el menú descarga el backup con los libros', async ({ page, request }) => {
+      await request.post(`${API_URL}/books`, { headers: bearer('admin'), data: { title: TITLE, author: 'Autora Export' } })
+      await openLoadedLibrary(page)
+      const trigger = page.getByRole('button', { name: 'Más opciones' })
+      await trigger.focus()
+      await page.keyboard.press('Enter')
+      await page.getByRole('menuitem', { name: 'Exportar JSON' }).focus()
+      const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+      expect(download.suggestedFilename()).toMatch(/^librook-backup-\d{4}-\d{2}-\d{2}\.json$/)
+      const backup = JSON.parse(fs.readFileSync((await download.path())!, 'utf8'))
+      expect(backup.version).toBe(1)
+      expect(backup.books.some((b: { title: string }) => b.title === TITLE)).toBe(true)
+      await expect(page.getByRole('menu')).toHaveCount(0)
+      await expect(trigger).toBeFocused()
+    })
+
+    test('"Importar JSON" desde el menú: importa, cierra el menú y el foco vuelve al botón', async ({ page, request }) => {
+      await openLoadedLibrary(page)
+      const trigger = page.getByRole('button', { name: 'Más opciones' })
+      await trigger.focus()
+      await page.keyboard.press('Enter')
+      await page.getByRole('menuitem', { name: 'Importar JSON' }).focus()
+      const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.keyboard.press('Enter')])
+      await expect(page.getByRole('menu')).toHaveCount(0)
+      await expect(trigger).toBeFocused()
+
+      await chooser.setFiles({
+        name: 'backup.json', mimeType: 'application/json',
+        buffer: Buffer.from(JSON.stringify({ books: [{ title: TITLE, author: 'Autora Import' }] })),
+      })
+      await expect(page.getByText('Se importaron 1 libros correctamente.')).toBeVisible()
+      await expect(page.getByRole('article', { name: TITLE })).toBeVisible()
+      const list = await (await request.get(`${API_URL}/books`, { headers: bearer('admin') })).json()
+      expect(list.filter((x: { title: string }) => x.title === TITLE)).toHaveLength(1)
+      await expect(trigger).toBeFocused()
     })
   })
 }
