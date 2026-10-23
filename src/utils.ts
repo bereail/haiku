@@ -15,6 +15,16 @@ export function formatDate(str: string | undefined): string {
 // Fecha de hoy ('YYYY-MM-DD') en la zona horaria del usuario. No usar
 // toISOString().slice(0, 10): eso es la fecha UTC, y en Argentina después de las
 // 21 h devuelve el día siguiente.
+// Para insertar texto del usuario en HTML generado a mano (p. ej. la exportación)
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export function todayLocal(d: Date = new Date()): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')

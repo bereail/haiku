@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
-import { formatDate } from '../utils'
+import { escapeHtml, formatDate, readingStatus, todayLocal } from '../utils'
 import type { Book } from '../types'
 
 const LEGACY_KEYS = ['librook_books', 'books']
@@ -81,7 +81,7 @@ export function useBooks(userEmail: string) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `librook-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `librook-backup-${todayLocal()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -89,15 +89,19 @@ export function useBooks(userEmail: string) {
   const exportBooksHtml = () => {
     const stars = (n?: number) => n && n > 0 ? '★'.repeat(n) + '☆'.repeat(5 - n) : ''
 
-    const finished = [...books].filter(b => b.endDate).sort((a, b) => (b.endDate || '') > (a.endDate || '') ? 1 : -1)
-    const reading  = books.filter(b => b.startDate && !b.endDate)
-    const pending  = books.filter(b => !b.startDate && !b.endDate)
+    // Mismos estados que el resto de la app: antes los abandonados figuraban como "Leyendo"
+    const finished  = [...books].filter(b => readingStatus(b) === 'read').sort((a, b) => (b.endDate || '') > (a.endDate || '') ? 1 : -1)
+    const reading   = books.filter(b => readingStatus(b) === 'reading')
+    const pending   = books.filter(b => readingStatus(b) === 'pending')
+    const abandoned = books.filter(b => readingStatus(b) === 'abandoned')
 
+    // Todo dato del usuario se escapa: el archivo se abre como una página HTML y un título
+    // con <img onerror=…> o <script> se ejecutaba.
     const row = (b: Book) => `<tr>
-      <td>${b.title}</td>
-      <td>${b.author || ''}</td>
-      <td>${b.genre || ''}</td>
-      <td>${b.year || ''}</td>
+      <td>${escapeHtml(b.title)}</td>
+      <td>${escapeHtml(b.author)}</td>
+      <td>${escapeHtml(b.genre)}</td>
+      <td>${escapeHtml(b.year)}</td>
       <td class="stars">${stars(b.score)}</td>
       <td>${formatDate(b.endDate || b.startDate)}</td>
       <td class="fav">${b.wouldReread ? '★' : ''}</td>
@@ -111,6 +115,7 @@ export function useBooks(userEmail: string) {
     const finishedCols = ['Título','Autor/a','Género','Año','Puntaje','Terminado','Fav']
     const readingCols  = ['Título','Autor/a','Género','Año','Puntaje','Desde','']
     const pendingCols  = ['Título','Autor/a','Género','Año','','','']
+    const abandonedCols = ['Título','Autor/a','Género','Año','Puntaje','Desde','']
 
     const avgScore = finished.filter(b => b.score && b.score > 0)
     const avg = avgScore.length ? (avgScore.reduce((s, b) => s + (b.score || 0), 0) / avgScore.length).toFixed(1) : '—'
@@ -159,6 +164,7 @@ export function useBooks(userEmail: string) {
   ${finished.length > 0 ? `<h2>Leídos<span class="count">${finished.length}</span></h2>${table(finished, finishedCols)}` : ''}
   ${reading.length > 0 ? `<h2>Leyendo<span class="count">${reading.length}</span></h2>${table(reading, readingCols)}` : ''}
   ${pending.length > 0 ? `<h2>Pendientes<span class="count">${pending.length}</span></h2>${table(pending, pendingCols)}` : ''}
+  ${abandoned.length > 0 ? `<h2>Abandonados<span class="count">${abandoned.length}</span></h2>${table(abandoned, abandonedCols)}` : ''}
   <footer>Generado por Librook</footer>
 </div>
 </body>
@@ -168,7 +174,7 @@ export function useBooks(userEmail: string) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `librook-${new Date().toISOString().slice(0,10)}.html`
+    a.download = `librook-${todayLocal()}.html`
     a.click()
     URL.revokeObjectURL(url)
   }
