@@ -145,6 +145,7 @@ interface LibraryPageProps {
   onDeleteBook: (id: string) => void
   onShowStats: () => void
   onOpenCommunity: () => void
+  onOpenMarketplace: () => void
   isAdmin: boolean
   isDemo?: boolean
   onExportHtml: () => void
@@ -157,7 +158,7 @@ interface LibraryPageProps {
 export default function LibraryPage({
   books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
   onAddBook, onSearchBooks, onVoiceEntry, onViewBook, onEditBook, onDeleteBook,
-  onShowStats, onOpenCommunity, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, modal,
+  onShowStats, onOpenCommunity, onOpenMarketplace, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -363,6 +364,18 @@ export default function LibraryPage({
                 </svg>
               </button>
 
+              <button
+                className={styles.iconBtn}
+                onClick={onOpenMarketplace}
+                title="Mercado de libros (venta e intercambio)"
+                aria-label="Mercado de libros"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+                  <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/>
+                </svg>
+              </button>
+
               <Link
                 to="/catalog"
                 className={styles.iconBtn}
@@ -502,6 +515,19 @@ export default function LibraryPage({
                       <path d="M15 14.2a5.2 5.2 0 016.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                     <span>Comunidad</span>
+                  </button>
+
+                  <button
+                    className={styles.menuItem}
+                    onClick={() => runMenuItem(() => onOpenMarketplace())}
+                    role="menuitem"
+                    tabIndex={-1}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+                      <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor"/>
+                    </svg>
+                    <span>Mercado de libros</span>
                   </button>
 
                   <button

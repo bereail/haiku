@@ -58,3 +58,47 @@ export interface CommunityComment {
   authorAlias: string
   canDelete: boolean
 }
+
+export type ListingKind = 'venta' | 'intercambio'
+export type ListingCondition = 'nuevo' | 'muy_bueno' | 'bueno' | 'aceptable'
+export type ListingStatus = 'activa' | 'pausada' | 'cerrada'
+
+export interface ListingPhoto {
+  id: string
+  url: string
+  width: number
+  height: number
+}
+
+export interface Listing {
+  id: string
+  kind: ListingKind
+  bookTitle: string
+  bookAuthor: string | null
+  condition: ListingCondition
+  price: number | null
+  currency: string
+  description: string | null
+  city: string | null
+  contact: string | null
+  status: ListingStatus
+  sellerAlias: string
+  isMine: boolean
+  canDelete: boolean
+  createdAt: string
+  updatedAt: string
+  photos: ListingPhoto[]
+}
+
+export interface ListingInput {
+  kind: ListingKind
+  condition: ListingCondition
+  bookTitle: string
+  bookAuthor?: string
+  price?: number | string | null
+  description?: string
+  city?: string
+  contact?: string
+  status?: ListingStatus
+  photoIds: string[]
+}

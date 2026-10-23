@@ -13,6 +13,7 @@ import BookDetailModal from './components/BookDetailModal'
 import BookSearchModal from './components/BookSearchModal'
 import StatsModal from './components/StatsModal'
 import CommunityModal from './components/CommunityModal'
+import MarketplaceModal from './components/MarketplaceModal'
 import VoiceEntryFlow from './components/VoiceEntryFlow'
 import ToastContainer from './components/Toast'
 import type { Book } from './types'
@@ -41,6 +42,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const [searchOpen, setSearchOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [communityOpen, setCommunityOpen] = useState(false)
+  const [marketplaceOpen, setMarketplaceOpen] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [sharingBookId, setSharingBookId] = useState<string | null>(null)
 
@@ -48,6 +50,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const openStats = useCallback(() => setStatsOpen(true), [])
   const openCommunity = useCallback(() => setCommunityOpen(true), [])
+  const openMarketplace = useCallback(() => setMarketplaceOpen(true), [])
   const openVoice = useCallback(() => setVoiceOpen(true), [])
 
   const handleToggleCommunity = async (book: Book, share: boolean) => {
@@ -160,6 +163,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onDeleteBook={handleDelete}
         onShowStats={openStats}
         onOpenCommunity={openCommunity}
+        onOpenMarketplace={openMarketplace}
         isAdmin={isAdmin}
         isDemo={user.isDemo}
         onExportHtml={exportBooksHtml}
@@ -229,6 +233,13 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
       {communityOpen && (
         <CommunityModal
           onClose={() => setCommunityOpen(false)}
+          onToast={addToast}
+        />
+      )}
+
+      {marketplaceOpen && (
+        <MarketplaceModal
+          onClose={() => setMarketplaceOpen(false)}
           onToast={addToast}
         />
       )}
