@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react'
 import { api } from '../api'
 import { escapeHtml, formatDate, readingStatus, todayLocal } from '../utils'
 import type { Book } from '../types'
+import { findDuplicate } from '../services/bookDuplicates'
+
+export interface ImportResult {
+  total: number
+  imported: number
+  skippedDuplicates: number
+  withoutCover: string[]
+  failed: { title: string; reason: string }[]
+}
+
+// El servidor rechaza tapas que no sean imagen subida u Open Library: un backup viejo
+// puede traer otras. En ese caso el libro se importa igual, sin tapa.
+const COVER_REJECTED = /tapa/i
 
 const LEGACY_KEYS = ['librook_books', 'books']
 const MIGRATED_KEY = 'librook_migrated_v3'
@@ -179,26 +192,50 @@ export function useBooks(userEmail: string) {
     URL.revokeObjectURL(url)
   }
 
-  const importBooks = (file: File): Promise<number> => new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async (e) => {
+  // Libro por libro: antes era Promise.all y, si fallaba uno, el error decía "no se pudo
+  // leer el archivo" aunque los demás SÍ se habían creado (y no aparecían en pantalla:
+  // reintentar los duplicaba). Ahora se informa exactamente qué pasó con cada uno.
+  const importBooks = async (file: File): Promise<ImportResult> => {
+    let imported: Partial<Book>[]
+    try {
+      const data = JSON.parse(await file.text())
+      imported = Array.isArray(data) ? data : data?.books
+    } catch {
+      throw new Error('No se pudo leer el archivo. Verificá que sea un backup válido de Librook.')
+    }
+    if (!Array.isArray(imported) || imported.length === 0) {
+      throw new Error('El archivo está vacío o tiene un formato inválido')
+    }
+
+    const result: ImportResult = { total: imported.length, imported: 0, skippedDuplicates: 0, withoutCover: [], failed: [] }
+    const known: Book[] = [...books]
+    const created: Book[] = []
+    for (const raw of imported) {
+      const title = String(raw?.title ?? '').trim() || '(sin título)'
+      // Sin duplicar lo que ya está (ni lo repetido dentro del mismo archivo)
+      if (findDuplicate(known, String(raw?.title ?? ''), String(raw?.author ?? ''))) {
+        result.skippedDuplicates++
+        continue
+      }
       try {
-        const data = JSON.parse(e.target!.result as string)
-        const imported: Book[] = Array.isArray(data) ? data : (data.books || [])
-        if (!Array.isArray(imported) || imported.length === 0) {
-          reject(new Error('El archivo está vacío o tiene un formato inválido'))
-          return
+        let saved: Book
+        try {
+          saved = await api.post('/books', raw)
+        } catch (err) {
+          if (!raw.cover || !COVER_REJECTED.test((err as Error).message)) throw err
+          saved = await api.post('/books', { ...raw, cover: '' })
+          result.withoutCover.push(title)
         }
-        const results = await Promise.all(imported.map(b => api.post('/books', b)))
-        setBooks(prev => [...results, ...prev])
-        resolve(results.length)
-      } catch {
-        reject(new Error('No se pudo leer el archivo. Verificá que sea un backup válido de Librook.'))
+        created.push(saved)
+        known.push(saved)
+        result.imported++
+      } catch (err) {
+        result.failed.push({ title, reason: (err as Error).message || 'Error desconocido' })
       }
     }
-    reader.onerror = () => reject(new Error('Error al leer el archivo'))
-    reader.readAsText(file)
-  })
+    if (created.length) setBooks(prev => [...created.reverse(), ...prev])
+    return result
+  }
 
   return { books, loading, error, reload, addBook, updateBook, deleteBook, setBookCommunityPost, exportBooks, exportBooksHtml, importBooks }
 }

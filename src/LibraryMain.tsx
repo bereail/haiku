@@ -96,8 +96,18 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const handleImport = async (file: File) => {
     if (!file) return
     try {
-      const count = await importBooks(file)
-      addToast(`Se importaron ${count} libros correctamente.`)
+      const r = await importBooks(file)
+      if (r.imported === r.total) {
+        addToast(`Se importaron ${r.imported} libros correctamente.`)
+      } else {
+        const parts = [`Se importaron ${r.imported} de ${r.total} libros.`]
+        if (r.skippedDuplicates) parts.push(`${r.skippedDuplicates} ya estaban en tu biblioteca.`)
+        if (r.failed.length) parts.push(`${r.failed.length} no se pudieron importar: ${r.failed.map(f => `${f.title} (${f.reason})`).join('; ')}.`)
+        addToast(parts.join(' '), r.failed.length ? 'error' : 'success')
+      }
+      if (r.withoutCover.length) {
+        addToast(`${r.withoutCover.length} se importaron sin tapa (formato no admitido): ${r.withoutCover.join(', ')}.`)
+      }
     } catch (err) {
       addToast((err as Error).message, 'error')
     }
