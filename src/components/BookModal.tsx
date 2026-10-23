@@ -6,6 +6,7 @@ import { useDialogA11y } from '../hooks/useDialogA11y'
 import styles from './BookModal.module.css'
 import type { Book } from '../types'
 import { todayLocal } from '../utils'
+import { toBookPayload, type BookPayload } from '../services/bookForm'
 
 const COVER_MAX_PX = 500
 const COVER_QUALITY = 0.82
@@ -38,6 +39,8 @@ const EMPTY: FormData = {
   abandoned: false,
 }
 
+type FormState = FormData & Partial<Omit<Book, keyof FormData>>
+
 const COLORS = [
   '#2d4a3e', '#1a3a5c', '#4a2040', '#5c3d1e', '#1c3d5a',
   '#3d2b1f', '#2a4858', '#4d3319', '#1e3a2f', '#6b3737',
@@ -47,7 +50,7 @@ const COLORS = [
 interface BookModalProps {
   mode: 'add' | 'edit'
   book?: Partial<Book>
-  onSave: (data: FormData) => Promise<void>
+  onSave: (data: BookPayload) => Promise<void>
   onClose: () => void
 }
 
@@ -58,7 +61,7 @@ function CoverImg({ src, alt, className }: { src: string; alt: string; className
 }
 
 export default function BookModal({ mode, book, onSave, onClose }: BookModalProps) {
-  const [form, setForm] = useState<FormData>({ ...EMPTY, ...book })
+  const [form, setForm] = useState<FormState>({ ...EMPTY, ...book })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [coverError, setCoverError] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -199,7 +202,7 @@ export default function BookModal({ mode, book, onSave, onClose }: BookModalProp
       document.getElementById(errs.title ? 'title' : 'author')?.focus()
       return
     }
-    onSave(form)
+    onSave(toBookPayload(form))
   }
 
   const isReading = !!form.startDate && !form.endDate && !form.abandoned

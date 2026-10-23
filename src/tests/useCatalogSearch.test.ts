@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 function mockFetchSequence(responses: Array<{ url: RegExp; body: unknown }>) {
-  global.fetch = vi.fn((url: string) => {
+  globalThis.fetch = vi.fn((url: string) => {
     const match = responses.find((r) => r.url.test(url))
     return Promise.resolve({
       ok: true,
@@ -30,7 +30,7 @@ describe('useCatalogSearch', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(500) })
 
     expect(result.current.localResults).toEqual([])
-    expect(global.fetch).not.toHaveBeenCalled()
+    expect(globalThis.fetch).not.toHaveBeenCalled()
   })
 
   it('con suficientes resultados locales, no consulta Open Library', async () => {
@@ -62,7 +62,7 @@ describe('useCatalogSearch', () => {
   })
 
   it('un error en el catálogo local no rompe la búsqueda — recurre a Open Library', async () => {
-    global.fetch = vi.fn((url: string) => {
+    globalThis.fetch = vi.fn((url: string) => {
       if (/catalog\/works/.test(url)) return Promise.resolve({ ok: false, json: () => Promise.resolve({}) }) as unknown as Promise<Response>
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ docs: [] }) }) as unknown as Promise<Response>
     })
