@@ -58,7 +58,7 @@ export default function CommunityPostCard({
   }
 
   return (
-    <article className={styles.card}>
+    <article className={styles.card} aria-labelledby={`post-title-${post.id}`}>
       <div className={styles.header}>
         {post.bookCover && !coverFailed ? (
           <img
@@ -73,7 +73,7 @@ export default function CommunityPostCard({
           </div>
         )}
         <div className={styles.headerText}>
-          <p className={styles.bookTitle}>{post.bookTitle}</p>
+          <p className={styles.bookTitle} id={`post-title-${post.id}`}>{post.bookTitle}</p>
           {post.bookAuthor && <p className={styles.bookAuthor}>{post.bookAuthor}</p>}
           {!!post.bookScore && (
             <div className={styles.score}>
@@ -96,11 +96,13 @@ export default function CommunityPostCard({
           className={`${styles.actionBtn} ${post.likedByMe ? styles.liked : ''}`}
           onClick={() => onToggleLike(post)}
           aria-pressed={post.likedByMe}
-          aria-label={post.likedByMe ? 'Quitar me gusta' : 'Dar me gusta'}
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill={post.likedByMe ? 'currentColor' : 'none'} aria-hidden="true">
             <path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
           </svg>
+          {/* Nombre fijo "Me gusta N"; si está dado lo indica aria-pressed. Antes el
+              nombre cambiaba (Dar/Quitar) y no incluía el número visible. */}
+          <span className={styles.srOnly}>Me gusta </span>
           <span>{post.likeCount}</span>
         </button>
 
@@ -108,6 +110,8 @@ export default function CommunityPostCard({
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+          {/* Antes el nombre del botón era solo el número */}
+          <span className={styles.srOnly}>Comentarios </span>
           <span>{post.commentCount}</span>
         </button>
 
