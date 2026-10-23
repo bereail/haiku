@@ -1,0 +1,2 @@
+# Los scripts de shell corren en Linux (VPS): siempre LF, aunque se clone en Windows
+*.sh text eol=lf
