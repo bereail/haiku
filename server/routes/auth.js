@@ -31,6 +31,10 @@ const transporter = MAIL_OUTBOX_FILE
 // entorno local y no a producción.
 const APP_URL = process.env.APP_URL || 'https://ailonline.com.ar/librook/'
 
+// En la base se guarda solo el hash del token de reset: el token en claro viaja únicamente
+// en el mail. Si la tabla se filtrara, los links pendientes no servirían.
+const hashResetToken = (token) => crypto.createHash('sha256').update(String(token)).digest('hex')
+
 function makeJwt(user) {
   return jwt.sign(
     { userId: user.id, email: user.email, isDemo: isDemoEmail(user.email) },
@@ -125,11 +129,13 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
 
     await pool.query(
       'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
-      [userId, token, expiresAt]
+      [userId, hashResetToken(token), expiresAt]
     )
 
     const resetUrl = `${APP_URL}?reset_token=${token}`
 
+    // Si el envío falla, la respuesta es la misma que para un email inexistente: un 500 solo
+    // para cuentas reales permitía averiguar qué emails están registrados.
     await transporter.sendMail({
       from: `"Librook" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -147,7 +153,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
           <p style="color:#666;font-size:14px;">Este enlace expira en 1 hora. Si no solicitaste esto, ignorá este email.</p>
         </div>
       `,
-    })
+    }).catch(err => console.error('forgot-password: no se pudo enviar el mail', err))
 
     res.json({ ok: true })
   } catch (err) {
@@ -163,19 +169,22 @@ router.post('/reset-password', authLimiter, async (req, res) => {
   if (password.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' })
 
   try {
-    const result = await pool.query(
-      'SELECT id, user_id FROM password_reset_tokens WHERE token = $1 AND used = FALSE AND expires_at > NOW()',
-      [token]
+    // Verificar y marcar usado en una sola sentencia: dos pedidos simultáneos con el mismo
+    // link no pueden usarlo los dos (antes era SELECT y después UPDATE).
+    const claimed = await pool.query(
+      'UPDATE password_reset_tokens SET used = TRUE WHERE token = $1 AND used = FALSE AND expires_at > NOW() RETURNING user_id',
+      [hashResetToken(token)]
     )
-    if (result.rows.length === 0) return res.status(400).json({ error: 'El enlace es inválido o ya expiró' })
+    if (claimed.rows.length === 0) return res.status(400).json({ error: 'El enlace es inválido o ya expiró' })
 
-    const { id: tokenId, user_id: userId } = result.rows[0]
+    const { user_id: userId } = claimed.rows[0]
     const hash = await bcrypt.hash(password, 12)
 
     // password_changed_at invalida las sesiones abiertas antes (ver sessionRevocation.js).
     // La fecha la pone Node (no NOW() de Postgres) para que coincida con el reloj del iat.
     await pool.query('UPDATE users SET password_hash = $1, password_changed_at = $2 WHERE id = $3', [hash, new Date(), userId])
-    await pool.query('UPDATE password_reset_tokens SET used = TRUE WHERE id = $1', [tokenId])
+    // Cualquier otro link pendiente del mismo usuario deja de servir
+    await pool.query('UPDATE password_reset_tokens SET used = TRUE WHERE user_id = $1 AND used = FALSE', [userId])
 
     res.json({ ok: true })
   } catch (err) {

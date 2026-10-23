@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, OUTBOX_FILE, bearer } from './accounts'
@@ -127,11 +128,37 @@ test.describe('Recuperar contraseña', () => {
     // LOCAL (contenedor Docker librook-pg). El token es hex, sin inyección posible.
     expect(token).toMatch(/^[0-9a-f]{64}$/)
     execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-c',
-      `UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 minute' WHERE token = '${token}'`])
+      // La base guarda el hash del token, no el token
+      `UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 minute' WHERE token = '${crypto.createHash('sha256').update(token).digest('hex')}'`])
 
     const res = await request.post(`${API_URL}/auth/reset-password`, { data: { token, password: 'tarde1234' } })
     expect(res.status()).toBe(400)
     expect((await login(request, START_PASSWORD)).ok()).toBeTruthy()
+  })
+
+  test('la base guarda el hash del token, no el token del mail', async ({ page }) => {
+    const mark = outboxLines().length
+    await requestResetFromUI(page, EMAIL)
+    const token = new URL(lastResetLinkFor(EMAIL, mark)!).searchParams.get('reset_token')!
+    const sha = crypto.createHash('sha256').update(token).digest('hex')
+    const q = (v: string) => execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-tAc',
+      `SELECT count(*) FROM password_reset_tokens WHERE token = '${v}'`]).toString().trim()
+    expect(token).toMatch(/^[0-9a-f]{64}$/)
+    expect(q(token)).toBe('0')
+    expect(q(sha)).toBe('1')
+  })
+
+  test('usar un link anula los demás links pendientes del mismo usuario', async ({ page, request }) => {
+    const mark = outboxLines().length
+    await requestResetFromUI(page, EMAIL)
+    await requestResetFromUI(page, EMAIL)
+    const links = outboxLines().slice(mark).filter(m => m.to === EMAIL)
+      .map(m => new URL(m.html.match(/href="([^"]+reset_token=[0-9a-f]+)"/)![1]).searchParams.get('reset_token'))
+    expect(links).toHaveLength(2)
+    expect((await request.post(`${API_URL}/auth/reset-password`, { data: { token: links[1], password: 'segunda1234' } })).ok()).toBeTruthy()
+    const old = await request.post(`${API_URL}/auth/reset-password`, { data: { token: links[0], password: 'primera1234' } })
+    expect(old.status()).toBe(400)
+    expect((await login(request, 'segunda1234')).ok()).toBeTruthy()
   })
 
   test('API: un email que no existe recibe la misma respuesta y no genera mail', async ({ request }) => {
