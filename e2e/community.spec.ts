@@ -159,8 +159,10 @@ test('API: validaciones y contenido HTML que no se ejecuta', async ({ page, requ
 
 test('axe: comunidad con publicaciones y comentarios abiertos', async ({ page }) => {
   const community = await openCommunity(page)
-  await community.getByRole('article', { name: THEIRS }).getByRole('button', { name: /^Comentarios/ }).click()
-  await page.waitForLoadState('networkidle')
+  const post = community.getByRole('article', { name: THEIRS })
+  await post.getByRole('button', { name: /^Comentarios/ }).click()
+  // Comentarios cargados: aparece el campo para comentar
+  await expect(post.getByRole('textbox', { name: 'Escribir comentario' })).toBeVisible()
   const { violations } = await new AxeBuilder({ page }).include('[role="dialog"]')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze()
   expect(violations.map(v => `${v.id}: ${v.nodes.map(n => n.target.join(' ')).join(', ')}`)).toEqual([])

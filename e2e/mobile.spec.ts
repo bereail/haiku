@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import { test, expect, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
+import { mockOpenLibrary } from './openlibrary-mock'
 
 // Celular: sin scroll horizontal en las páginas principales ni con los modales
 // abiertos, modales dentro de la pantalla, y botones flotantes funcionales.
@@ -12,7 +13,10 @@ const VIEWPORTS = [
 ]
 
 async function expectNoHorizontalScroll(page: Page, label: string) {
-  await page.waitForLoadState('networkidle')
+  // El ancho depende del contenido cargado y de las fuentes: se espera eso
+  // explícitamente (sin networkidle, que dependía de cualquier pedido externo).
+  await expect(page.getByRole('status').filter({ hasText: /Cargando|Buscando/ })).toHaveCount(0)
+  await page.evaluate(() => document.fonts.ready)
   const { scroll, client, culprits } = await page.evaluate(() => {
     const root = document.documentElement
     const vw = root.clientWidth
@@ -50,13 +54,18 @@ for (const vp of VIEWPORTS) {
     test.use({ viewport: { width: vp.width, height: vp.height }, hasTouch: true, isMobile: true })
 
     test('login, catálogo y obra sin scroll horizontal', async ({ page }) => {
+      await mockOpenLibrary(page)
       await page.goto(BASE_URL)
       await expect(page.locator('#email')).toBeVisible()
       await expectNoHorizontalScroll(page, 'Login')
       await page.goto('catalog')
+      const obraId = localObraId()
       await page.getByPlaceholder('Buscar por título...').fill('Obra E2E')
+      // Con resultados en las dos secciones (local + Open Library simulado)
+      await expect(page.getByRole('heading', { name: 'En Librook', exact: true })).toBeVisible()
+      await expect(page.getByText('Rayuela (simulado)')).toBeVisible()
       await expectNoHorizontalScroll(page, 'Catálogo')
-      await page.goto(`catalog/obra/${localObraId()}`)
+      await page.goto(`catalog/obra/${obraId}`)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       await expectNoHorizontalScroll(page, 'Obra')
     })

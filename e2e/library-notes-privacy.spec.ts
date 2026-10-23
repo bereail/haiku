@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { storageStatePath } from './accounts'
+import { mockOpenLibrary } from './openlibrary-mock'
 
 // Título único por corrida para no chocar con libros ya existentes de la
 // cuenta de prueba y para poder buscarlo sin falsos positivos.
@@ -44,9 +45,11 @@ test.describe('Biblioteca: alta, persistencia y privacidad de notas', () => {
     //    sin el token de sesión de lectora1 en localStorage.
     const publicContext = await browser.newContext()
     const publicPage = await publicContext.newPage()
+    await mockOpenLibrary(publicPage, []) // sin resultados externos: no depende de internet
     await publicPage.goto('catalog')
     await publicPage.getByPlaceholder('Buscar por título...').fill(UNIQUE_TITLE)
-    await publicPage.waitForLoadState('networkidle')
+    // Recién con la búsqueda terminada tiene sentido afirmar que la nota no está
+    await expect(publicPage.getByText(`No encontramos «${UNIQUE_TITLE}» en el catálogo.`)).toBeVisible()
     await expect(publicPage.getByText(PRIVATE_NOTE)).toHaveCount(0)
     await publicContext.close()
 
