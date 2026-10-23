@@ -172,6 +172,38 @@ export default function LibraryPage({
   const [filterFav, setFilterFav] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
+  const menuListRef = useRef<HTMLDivElement>(null)
+
+  // Menú "Más opciones" con el patrón WAI-ARIA de botón de menú: al abrir, el
+  // foco va al primer ítem; flechas/Inicio/Fin recorren; Escape cierra y vuelve
+  // al botón; Tab cierra.
+  useEffect(() => {
+    if (menuOpen) menuListRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
+  }, [menuOpen])
+
+  const onMenuKeyDown = (e: React.KeyboardEvent) => {
+    const items = Array.from(menuListRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])
+    const i = items.indexOf(document.activeElement as HTMLElement)
+    const go = (n: number) => { e.preventDefault(); items[(n + items.length) % items.length]?.focus() }
+    if (e.key === 'ArrowDown') go(i + 1)
+    else if (e.key === 'ArrowUp') go(i - 1)
+    else if (e.key === 'Home') go(0)
+    else if (e.key === 'End') go(items.length - 1)
+    else if (e.key === 'Escape') {
+      e.preventDefault()
+      setMenuOpen(false)
+      menuTriggerRef.current?.focus()
+    } else if (e.key === 'Tab') setMenuOpen(false)
+  }
+
+  // Antes de ejecutar un ítem, el foco vuelve al botón del menú: si el ítem
+  // abre un modal, al cerrarlo el foco regresa ahí y no a un ítem que ya no existe.
+  const runMenuItem = (action: () => void) => {
+    menuTriggerRef.current?.focus()
+    setMenuOpen(false)
+    action()
+  }
 
   useEffect(() => {
     if (!menuOpen) return
@@ -410,6 +442,7 @@ export default function LibraryPage({
             {/* More menu — visible on mobile only */}
             <div className={styles.moreWrap} ref={menuRef}>
               <button
+                ref={menuTriggerRef}
                 className={`${styles.iconBtn} ${menuOpen ? styles.iconBtnOpen : ''}`}
                 onClick={() => setMenuOpen(o => !o)}
                 aria-label="Más opciones"
@@ -424,11 +457,12 @@ export default function LibraryPage({
               </button>
 
               {menuOpen && (
-                <div className={styles.menuDropdown} role="menu">
+                <div className={styles.menuDropdown} role="menu" aria-label="Más opciones" ref={menuListRef} onKeyDown={onMenuKeyDown}>
                   <button
                     className={styles.menuItem}
-                    onClick={() => { onToggleTheme(); setMenuOpen(false) }}
+                    onClick={() => runMenuItem(() => onToggleTheme())}
                     role="menuitem"
+                    tabIndex={-1}
                   >
                     {dark ? (
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -445,8 +479,9 @@ export default function LibraryPage({
 
                   <button
                     className={styles.menuItem}
-                    onClick={() => { onShowStats(); setMenuOpen(false) }}
+                    onClick={() => runMenuItem(() => onShowStats())}
                     role="menuitem"
+                    tabIndex={-1}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M18 20V10M12 20V4M6 20v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -456,8 +491,9 @@ export default function LibraryPage({
 
                   <button
                     className={styles.menuItem}
-                    onClick={() => { onOpenCommunity(); setMenuOpen(false) }}
+                    onClick={() => runMenuItem(() => onOpenCommunity())}
                     role="menuitem"
+                    tabIndex={-1}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <circle cx="9" cy="7" r="3.2" stroke="currentColor" strokeWidth="1.8"/>
@@ -470,8 +506,9 @@ export default function LibraryPage({
 
                   <button
                     className={styles.menuItem}
-                    onClick={() => { onExportHtml(); setMenuOpen(false) }}
+                    onClick={() => runMenuItem(() => onExportHtml())}
                     role="menuitem"
+                    tabIndex={-1}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -482,8 +519,9 @@ export default function LibraryPage({
                   {isAdmin && onExport && (
                     <button
                       className={styles.menuItem}
-                      onClick={() => { onExport!(); setMenuOpen(false) }}
+                      onClick={() => runMenuItem(() => onExport!())}
                       role="menuitem"
+                      tabIndex={-1}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -497,6 +535,7 @@ export default function LibraryPage({
                       className={styles.menuItem}
                       onClick={handleImportClick}
                       role="menuitem"
+                      tabIndex={-1}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -508,8 +547,9 @@ export default function LibraryPage({
                   {onOpenAdmin && (
                     <button
                       className={styles.menuItem}
-                      onClick={() => { onOpenAdmin!(); setMenuOpen(false) }}
+                      onClick={() => runMenuItem(() => onOpenAdmin!())}
                       role="menuitem"
+                      tabIndex={-1}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -526,6 +566,7 @@ export default function LibraryPage({
                     className={`${styles.menuItem} ${styles.menuItemLogout}`}
                     onClick={onLogout}
                     role="menuitem"
+                    tabIndex={-1}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
