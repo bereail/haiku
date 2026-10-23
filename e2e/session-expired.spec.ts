@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { test, expect, type Page } from '@playwright/test'
-import { ACCOUNTS, BASE_URL, tokenOf } from './accounts'
+import { ACCOUNTS, API_URL, BASE_URL, tokenOf } from './accounts'
 
 // Con un token vencido o inválido la app tiene que volver al login y limpiar
 // la sesión, no quedarse "logueada" con una biblioteca rota o en blanco.
@@ -51,7 +51,7 @@ async function expectBackAtLogin(page: Page) {
 
 test.describe('Sesión vencida o inválida', () => {
   test('el token firmado y vencido es rechazado por la API', async ({ request }) => {
-    const res = await request.get('http://localhost:5173/librook-api/books', {
+    const res = await request.get(`${API_URL}/books`, {
       headers: { Authorization: `Bearer ${expiredTokenForLectora1()}` },
     })
     expect(res.status()).toBe(401)

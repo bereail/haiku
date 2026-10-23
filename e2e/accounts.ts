@@ -19,9 +19,13 @@ export const ACCOUNTS = {
 
 export type AccountName = keyof typeof ACCOUNTS | 'demo'
 
-export const BASE_URL = 'http://localhost:5173/librook/'
-export const API_URL = 'http://localhost:5173/librook-api'
-export const AUTH_DIR = path.join(E2E_DIR, '.auth')
+// E2E_ORIGIN permite correr la suite contra un stack local aparte (otro Vite y
+// otro backend), sin tocar el servidor de desarrollo. Por defecto, el de siempre.
+export const E2E_ORIGIN = process.env.E2E_ORIGIN || 'http://localhost:5173'
+export const BASE_URL = `${E2E_ORIGIN}/librook/`
+export const API_URL = `${E2E_ORIGIN}/librook-api`
+// Las sesiones guardadas son por origen (localStorage es por origen)
+export const AUTH_DIR = path.join(E2E_DIR, '.auth', new URL(E2E_ORIGIN).port || 'default')
 export const OUTBOX_FILE = path.join(E2E_DIR, '.outbox.jsonl')
 
 export function storageStatePath(name: AccountName) {

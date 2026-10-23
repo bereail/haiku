@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:e2e": "playwright test",
+    "test:e2e:stack": "node scripts/e2e-stack.mjs",
     "icons": "node scripts/generate-icons.mjs",
     "test": "vitest run"
   },

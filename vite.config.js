@@ -11,11 +11,15 @@ export default defineConfig({
     include: ['src/tests/**/*.test.{ts,tsx}'],
   },
   base: '/librook/',
+  // Caché propia por servidor: dos dev servers con la misma caché se pisan
+  cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
   server: {
     proxy: {
       '/librook-api': process.env.VITE_LOCAL_API === '1' ? {
         // Backend local (server/): no usa el prefijo /librook-api en sus rutas
-        target: 'http://localhost:3001',
+        // LOCAL_API_PORT: para levantar un segundo stack (p. ej. el de E2E) sin
+        // tocar el de desarrollo
+        target: `http://localhost:${process.env.LOCAL_API_PORT || 3001}`,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/librook-api/, ''),
       } : {
