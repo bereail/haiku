@@ -13,6 +13,16 @@
     <meta name="twitter:title" content="Librook" />
     <meta name="twitter:description" content="Tu biblioteca personal de libros." />
     <title>Librook — Tu biblioteca personal</title>
+    <!-- Tema antes del primer cuadro: sin esto la página se dibujaba en claro y
+         recién después React aplicaba el oscuro (destello). Misma lógica que
+         src/hooks/useTheme.ts: elección guardada o, si no hay, la del sistema. -->
+    <script>
+      try {
+        var t = localStorage.getItem('librook_theme')
+        if (t !== 'dark' && t !== 'light') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Carga no bloqueante: evita que la tipografía externa demore el primer
