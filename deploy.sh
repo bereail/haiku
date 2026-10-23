@@ -70,12 +70,13 @@ $SCP server/routes/catalog.js $USER@$HOST:$API_DIR/routes/catalog.js
 # que el VPS ya tenía authMiddleware.js de la instalación inicial (install_api.sh). Ahora que
 # hay middlewares nuevos (blockDemoWrites.js, rateLimiter.js) que index.js ya requiere, hace
 # falta copiar la carpeta completa o el deploy deja la API rota (módulo no encontrado).
-$SSH "mkdir -p $API_DIR/middleware $API_DIR/scripts $API_DIR/validation"
+$SSH "mkdir -p $API_DIR/middleware $API_DIR/scripts $API_DIR/validation $API_DIR/images"
 $SCP server/middleware/authMiddleware.js  $USER@$HOST:$API_DIR/middleware/authMiddleware.js
 $SCP server/middleware/blockDemoWrites.js $USER@$HOST:$API_DIR/middleware/blockDemoWrites.js
 $SCP server/middleware/rateLimiter.js     $USER@$HOST:$API_DIR/middleware/rateLimiter.js
 $SCP server/middleware/sessionRevocation.js $USER@$HOST:$API_DIR/middleware/sessionRevocation.js
 $SCP server/validation/bookInput.js      $USER@$HOST:$API_DIR/validation/bookInput.js
+$SCP server/images/imageFile.js          $USER@$HOST:$API_DIR/images/imageFile.js
 $SCP server/scripts/backfill-editions.js  $USER@$HOST:$API_DIR/scripts/backfill-editions.js
 # server/rateLimit.js (el rate limiter casero original) quedó reemplazado por
 # server/middleware/rateLimiter.js (usa express-rate-limit) — limpiamos el archivo viejo
