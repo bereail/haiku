@@ -15,6 +15,10 @@
 set -euo pipefail
 [ -f .env.deploy.local ] && source .env.deploy.local
 
+# Chequeo local antes de tocar el VPS: que todo .js del backend esté en la lista de copia de
+# abajo (si falta uno, la API falla en producción con MODULE_NOT_FOUND).
+node scripts/check-deploy-files.mjs
+
 USER=${1:-root}
 HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
@@ -47,6 +51,10 @@ rollback_and_exit() {
 
 echo "==> Copiando archivos del servidor al VPS..."
 $SCP server/index.js          $USER@$HOST:$API_DIR/index.js
+# db.js no se copiaba nunca (quedaba la versión de la instalación inicial): sin esto no llega
+# el parser de columnas DATE (fechas como 'YYYY-MM-DD').
+$SCP server/db.js             $USER@$HOST:$API_DIR/db.js
+$SCP server/demoAccount.js    $USER@$HOST:$API_DIR/demoAccount.js
 $SCP server/schema.sql        $USER@$HOST:$API_DIR/schema.sql
 $SCP server/demoData.js       $USER@$HOST:$API_DIR/demoData.js
 $SCP server/reset-demo.js     $USER@$HOST:$API_DIR/reset-demo.js
@@ -61,10 +69,12 @@ $SCP server/routes/catalog.js $USER@$HOST:$API_DIR/routes/catalog.js
 # que el VPS ya tenía authMiddleware.js de la instalación inicial (install_api.sh). Ahora que
 # hay middlewares nuevos (blockDemoWrites.js, rateLimiter.js) que index.js ya requiere, hace
 # falta copiar la carpeta completa o el deploy deja la API rota (módulo no encontrado).
-$SSH "mkdir -p $API_DIR/middleware $API_DIR/scripts"
+$SSH "mkdir -p $API_DIR/middleware $API_DIR/scripts $API_DIR/validation"
 $SCP server/middleware/authMiddleware.js  $USER@$HOST:$API_DIR/middleware/authMiddleware.js
 $SCP server/middleware/blockDemoWrites.js $USER@$HOST:$API_DIR/middleware/blockDemoWrites.js
 $SCP server/middleware/rateLimiter.js     $USER@$HOST:$API_DIR/middleware/rateLimiter.js
+$SCP server/middleware/sessionRevocation.js $USER@$HOST:$API_DIR/middleware/sessionRevocation.js
+$SCP server/validation/bookInput.js      $USER@$HOST:$API_DIR/validation/bookInput.js
 $SCP server/scripts/backfill-editions.js  $USER@$HOST:$API_DIR/scripts/backfill-editions.js
 # server/rateLimit.js (el rate limiter casero original) quedó reemplazado por
 # server/middleware/rateLimiter.js (usa express-rate-limit) — limpiamos el archivo viejo
