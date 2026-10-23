@@ -67,6 +67,7 @@ $SCP server/routes/settings.js $USER@$HOST:$API_DIR/routes/settings.js
 $SCP server/routes/community.js $USER@$HOST:$API_DIR/routes/community.js
 $SCP server/routes/catalog.js $USER@$HOST:$API_DIR/routes/catalog.js
 $SCP server/routes/uploads.js $USER@$HOST:$API_DIR/routes/uploads.js
+$SCP server/routes/marketplace.js $USER@$HOST:$API_DIR/routes/marketplace.js
 # IMPORTANTE: antes de esta versión, deploy.sh nunca copiaba server/middleware/ — asumía
 # que el VPS ya tenía authMiddleware.js de la instalación inicial (install_api.sh). Ahora que
 # hay middlewares nuevos (blockDemoWrites.js, rateLimiter.js) que index.js ya requiere, hace
@@ -77,6 +78,7 @@ $SCP server/middleware/blockDemoWrites.js $USER@$HOST:$API_DIR/middleware/blockD
 $SCP server/middleware/rateLimiter.js     $USER@$HOST:$API_DIR/middleware/rateLimiter.js
 $SCP server/middleware/sessionRevocation.js $USER@$HOST:$API_DIR/middleware/sessionRevocation.js
 $SCP server/validation/bookInput.js      $USER@$HOST:$API_DIR/validation/bookInput.js
+$SCP server/validation/listingInput.js   $USER@$HOST:$API_DIR/validation/listingInput.js
 $SCP server/images/imageFile.js          $USER@$HOST:$API_DIR/images/imageFile.js
 $SCP server/images/storage.js            $USER@$HOST:$API_DIR/images/storage.js
 $SCP server/images/cleanup.js            $USER@$HOST:$API_DIR/images/cleanup.js
