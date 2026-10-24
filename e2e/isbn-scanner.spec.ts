@@ -1,7 +1,7 @@
 import os from 'node:os'
 import path from 'node:path'
 import fs from 'node:fs'
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { storageStatePath } from './accounts'
 import { writeEan13Y4m } from './fixtures/ean13-video'
 
@@ -24,6 +24,41 @@ test.use({
     ],
   },
 })
+
+// Registra las pistas de video que entrega la cámara, para verificar que se apagan
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const md = navigator.mediaDevices
+    if (!md?.getUserMedia) return
+    const original = md.getUserMedia.bind(md)
+    const w = window as unknown as { __tracks: MediaStreamTrack[] }
+    w.__tracks = []
+    md.getUserMedia = async (c) => {
+      const stream = await original(c)
+      w.__tracks.push(...stream.getTracks())
+      return stream
+    }
+  })
+})
+
+const cameraTracks = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __tracks: MediaStreamTrack[] }).__tracks.map(t => t.readyState))
+
+const mockIsbnSearch = (page: Page) => page.route('https://openlibrary.org/search.json**', route => {
+  const isbn = new URL(route.request().url()).searchParams.get('isbn')
+  return route.fulfill({ json: { docs: isbn === ISBN ? [
+    { key: '/works/OL3W', title: 'Cien años de soledad', author_name: ['Gabriel García Márquez'], publisher: ['Cátedra'], first_publish_year: 1967 },
+  ] : [] } })
+})
+
+async function openScanner(page: Page) {
+  await page.goto('')
+  await expect(page.getByText('Cargando tu biblioteca…')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Agregar', exact: true }).click()
+  const form = page.getByRole('dialog').first()
+  await form.getByRole('button', { name: /Escanear ISBN/ }).click()
+  return { form, scanner: page.getByRole('dialog', { name: 'Escanear ISBN' }) }
+}
 
 test('escanear el código de barras con la cámara completa los datos del libro (sin CDN externo)', async ({ page }) => {
   const external: string[] = []
@@ -61,6 +96,39 @@ test('escanear el código de barras con la cámara completa los datos del libro 
   await expect(dialog.locator('#author')).toHaveValue('Gabriel García Márquez')
   console.log(`Escaneo ZXing: ${elapsed} ms desde abrir el escáner hasta completar el formulario`)
   expect(external).toEqual([])
+  // Leído el código, la cámara se apagó
+  expect(await cameraTracks(page)).not.toHaveLength(0)
+  expect(await cameraTracks(page)).toEqual((await cameraTracks(page)).map(() => 'ended'))
+})
+
+test('si el lector no carga (sin conexión), lo avisa con la cámara apagada y «Reintentar» funciona', async ({ page }) => {
+  await mockIsbnSearch(page)
+  await page.route(/zxing_reader.*\.wasm/, route => route.abort('internetdisconnected'))
+  const { form, scanner } = await openScanner(page)
+  await expect(scanner.getByRole('alert')).toContainText('No se pudo cargar el lector de códigos.')
+  const tracks = await cameraTracks(page)
+  expect(tracks.length).toBeGreaterThan(0)
+  expect(tracks.every(t => t === 'ended')).toBe(true)
+
+  await page.unroute(/zxing_reader.*\.wasm/)
+  await scanner.getByRole('button', { name: 'Reintentar' }).click()
+  await expect(scanner).toBeHidden({ timeout: 15000 })
+  await expect(form.locator('#title')).toHaveValue('Cien años de soledad')
+  expect((await cameraTracks(page)).every(t => t === 'ended')).toBe(true)
+})
+
+test('cerrar el escáner mientras todavía carga apaga la cámara igual', async ({ page }) => {
+  let release!: () => void
+  const held = new Promise<void>(r => { release = r })
+  await page.route(/zxing_reader.*\.wasm/, async route => { await held; await route.continue() })
+  const { form, scanner } = await openScanner(page)
+  await expect(scanner.getByRole('status')).toContainText('Iniciando cámara y lector')
+  await expect.poll(() => cameraTracks(page)).not.toHaveLength(0) // la cámara ya se entregó
+  await page.keyboard.press('Escape')
+  await expect(scanner).toHaveCount(0)
+  await expect(form).toBeVisible() // Escape cerró solo el escáner
+  release()
+  await expect.poll(async () => (await cameraTracks(page)).every(t => t === 'ended')).toBe(true)
 })
 
 test('sin cámara disponible, el escáner lo explica y ofrece la entrada manual', async ({ page }) => {

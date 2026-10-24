@@ -27,13 +27,22 @@ export async function createIsbnDetector(): Promise<IsbnDetector> {
       }
     } catch { /* sin soporte real: se usa ZXing */ }
   }
-  const [{ BarcodeDetector, prepareZXingModule }, { default: wasmUrl }] = await Promise.all([
+  const [{ BarcodeDetector, prepareZXingModule, purgeZXingModule }, { default: wasmUrl }] = await Promise.all([
     import('barcode-detector/ponyfill'),
     import('zxing-wasm/reader/zxing_reader.wasm?url'),
   ])
-  prepareZXingModule({
-    overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) },
-  })
+  // El .wasm se carga YA (no en el primer detect): si falla (sin conexión), el escáner lo
+  // muestra y ofrece reintentar. Antes la falla aparecía en cada detect, el bucle la tomaba
+  // por "fotograma ilegible" y quedaba escaneando para siempre sin avisar.
+  try {
+    await prepareZXingModule({
+      overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? wasmUrl : prefix + path) },
+      fireImmediately: true,
+    })
+  } catch (err) {
+    purgeZXingModule() // que «Reintentar» vuelva a pedirlo en vez de reusar la falla
+    throw err
+  }
   const detector = new BarcodeDetector({ formats: ['ean_13'] })
   return { engine: 'zxing', detect: s => detector.detect(s as ImageBitmapSource) }
 }

@@ -28,6 +28,10 @@ export default function CoverOcr({ onPick, onClose }: CoverOcrProps) {
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
 
+  // Lectura en curso: se cancela al cerrar el diálogo o al elegir otra foto
+  const lecturaRef = useRef<AbortController | null>(null)
+  useEffect(() => () => lecturaRef.current?.abort(), [])
+
   const buscar = async (q: string) => {
     if (!q.trim()) return
     setBuscando(true)
@@ -47,14 +51,18 @@ export default function CoverOcr({ onPick, onClose }: CoverOcrProps) {
     setPaso('leyendo')
     setCandidatos(null)
     setError('')
+    lecturaRef.current?.abort()
+    const lectura = new AbortController()
+    lecturaRef.current = lectura
     try {
-      const r = await recognizeCover(file, (fraction, step) => setProgreso({ fraction, step }))
+      const r = await recognizeCover(file, (fraction, step) => setProgreso({ fraction, step }), lectura.signal)
       setTiempos(r.timings)
       const q = queryFromLines(r.lines)
       setQuery(q)
       setPaso('resultado')
       if (q) await buscar(q)
     } catch {
+      if (lectura.signal.aborted) return // cancelada: el diálogo ya se cerró o hay otra foto
       setError('No se pudo leer la foto. Probá con otra más nítida o buscá por título.')
       setPaso('error')
     }

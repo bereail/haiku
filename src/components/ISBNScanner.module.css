@@ -140,6 +140,20 @@
   line-height: 1.5;
 }
 
+.reintentarBtn {
+  margin-top: 0.4rem;
+  padding: 0.5rem 1.2rem;
+  border: 1.5px solid rgba(255,255,255,0.55);
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background var(--transition);
+}
+
+.reintentarBtn:hover { background: rgba(255,255,255,0.12); }
+.reintentarBtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
 .pie {
   display: flex;
   align-items: center;

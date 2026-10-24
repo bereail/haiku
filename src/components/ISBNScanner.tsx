@@ -4,7 +4,23 @@ import { createIsbnDetector } from '../services/barcode'
 import { isBookEan } from '../services/isbn'
 import styles from './ISBNScanner.module.css'
 
-type Estado = 'iniciando' | 'escaneando' | 'sinCamara' | 'error'
+type Estado = 'iniciando' | 'escaneando' | 'sinCamara' | 'permiso' | 'enUso' | 'lector' | 'error'
+
+// Qué pasó con la cámara, según el error de getUserMedia
+function estadoPorError(err: unknown): Estado {
+  const name = (err as { name?: string } | null)?.name
+  if (name === 'NotAllowedError' || name === 'SecurityError') return 'permiso'
+  if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'sinCamara'
+  if (name === 'NotReadableError' || name === 'AbortError') return 'enUso'
+  return 'error'
+}
+
+const MENSAJES: Partial<Record<Estado, [string, string]>> = {
+  permiso: ['No diste permiso para usar la cámara.', 'Podés habilitarlo en la configuración del sitio en tu navegador, o ingresar el ISBN a mano.'],
+  enUso: ['La cámara está ocupada por otra aplicación.', 'Cerrala y tocá «Reintentar», o ingresá el ISBN a mano.'],
+  lector: ['No se pudo cargar el lector de códigos.', 'Revisá tu conexión y tocá «Reintentar», o ingresá el ISBN a mano.'],
+  error: ['No se pudo acceder a la cámara.', 'Verificá los permisos del navegador o ingresá el ISBN a mano.'],
+}
 
 interface ISBNScannerProps {
   onScan: (isbn: string) => void
@@ -27,6 +43,7 @@ export default function ISBNScanner({ onScan, onClose }: ISBNScannerProps) {
     navigator.mediaDevices?.getUserMedia ? 'iniciando' : 'sinCamara'
   )
   const [aviso, setAviso] = useState('')
+  const [intento, setIntento] = useState(0)
 
   const stop = () => {
     stoppedRef.current = true
@@ -39,19 +56,34 @@ export default function ISBNScanner({ onScan, onClose }: ISBNScannerProps) {
     if (!navigator.mediaDevices?.getUserMedia) return
     stoppedRef.current = false
 
+    // Ante cualquier falla la cámara se apaga (antes, si fallaba la carga del lector o
+    // video.play(), el stream quedaba abierto y la luz de la cámara encendida).
+    const fallar = (e: Estado) => {
+      const cerrado = stoppedRef.current
+      stop()
+      if (!cerrado) setEstado(e)
+    }
+
     const iniciar = async () => {
+      // En paralelo: pedir la cámara y cargar el lector (ZXing puede tardar en bajar)
+      const [camara, lector] = await Promise.allSettled([
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } }),
+        createIsbnDetector(),
+      ])
+      if (camara.status === 'fulfilled') {
+        if (stoppedRef.current) { camara.value.getTracks().forEach(t => t.stop()); return }
+        streamRef.current = camara.value
+      }
+      if (camara.status === 'rejected') return fallar(estadoPorError(camara.reason))
+      if (lector.status === 'rejected') return fallar('lector')
+      const detector = lector.value
       try {
-        const [stream, detector] = await Promise.all([
-          navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } }),
-          createIsbnDetector(),
-        ])
-        if (stoppedRef.current) { stream.getTracks().forEach(t => t.stop()); return }
-        streamRef.current = stream
         const video = videoRef.current
         if (video) {
-          video.srcObject = stream
+          video.srcObject = streamRef.current
           await video.play()
         }
+        if (stoppedRef.current) return
         setEstado('escaneando')
 
         const loop = async () => {
@@ -75,13 +107,19 @@ export default function ISBNScanner({ onScan, onClose }: ISBNScannerProps) {
         }
         rafRef.current = requestAnimationFrame(loop)
       } catch {
-        if (!stoppedRef.current) setEstado('error')
+        fallar('error')
       }
     }
 
     iniciar()
     return () => stop()
-  }, [])
+  }, [intento])
+
+  const reintentar = () => {
+    setAviso('')
+    setEstado('iniciando')
+    setIntento(i => i + 1)
+  }
 
   const handleClose = () => { stop(); onClose() }
   // Se abre encima de BookModal (que suelta su propio trap mientras tanto):
@@ -118,14 +156,17 @@ export default function ISBNScanner({ onScan, onClose }: ISBNScannerProps) {
               <p>Ingresá el ISBN manualmente en el campo de arriba.</p>
             </div>
           )}
-          {estado === 'error' && (
+          {MENSAJES[estado] && (
             <div className={styles.mensaje} role="alert">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" opacity="0.5" aria-hidden="true">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M12 8v5M12 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
-              <p>No se pudo acceder a la cámara.</p>
-              <p>Verificá los permisos del navegador o ingresá el ISBN manualmente.</p>
+              <p>{MENSAJES[estado]![0]}</p>
+              <p>{MENSAJES[estado]![1]}</p>
+              {estado !== 'permiso' && (
+                <button type="button" className={styles.reintentarBtn} onClick={reintentar}>Reintentar</button>
+              )}
             </div>
           )}
           {(estado === 'iniciando' || estado === 'escaneando') && (

@@ -38,19 +38,49 @@ async function prepare(file: Blob): Promise<HTMLCanvasElement> {
   return canvas
 }
 
-export async function recognizeCover(file: Blob, onProgress?: (fraction: number, step: string) => void): Promise<OcrResult> {
+function abortError() {
+  return new DOMException('Lectura cancelada', 'AbortError')
+}
+
+// La promesa original sigue su curso, pero quien espera se libera apenas se cancela
+function untilAborted<T>(p: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return p
+  if (signal.aborted) return Promise.reject(abortError())
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(abortError())
+    signal.addEventListener('abort', onAbort, { once: true })
+    p.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort))
+  })
+}
+
+// `signal`: al cerrar el diálogo (o elegir otra foto) se cancela y el worker se termina
+// aunque esté descargando el modelo o leyendo; si no, en un celular seguía gastando CPU
+// y batería hasta terminar una lectura que ya nadie iba a ver.
+export async function recognizeCover(
+  file: Blob,
+  onProgress?: (fraction: number, step: string) => void,
+  signal?: AbortSignal,
+): Promise<OcrResult> {
   const t0 = performance.now()
-  const [{ createWorker }, image] = await Promise.all([import('tesseract.js'), prepare(file)])
-  const worker = await createWorker('spa', 1 /* LSTM */, {
+  const [{ createWorker }, image] = await untilAborted(Promise.all([import('tesseract.js'), prepare(file)]), signal)
+  const pending = createWorker('spa', 1 /* LSTM */, {
     workerPath: `${BASE}worker.min.js`,
     corePath: `${BASE}${supportsWasmSimd() ? 'tesseract-core-simd-lstm.wasm.js' : 'tesseract-core-lstm.wasm.js'}`,
     langPath: BASE,
     workerBlobURL: false,
-    logger: m => onProgress?.(m.progress ?? 0, m.status),
+    logger: m => { if (!signal?.aborted) onProgress?.(m.progress ?? 0, m.status) },
   })
+  let worker: Awaited<typeof pending>
+  try {
+    worker = await untilAborted(pending, signal)
+  } catch (err) {
+    // Cancelado mientras cargaba: cuando termine de crearse, se cierra
+    pending.then(w => w.terminate()).catch(() => {})
+    throw err
+  }
   const t1 = performance.now()
   try {
-    const { data } = await worker.recognize(image)
+    const { data } = await untilAborted(worker.recognize(image), signal)
     const t2 = performance.now()
     const lines = data.text.split('\n').map(l => l.trim()).filter(l => /[\p{L}]{2,}/u.test(l))
     return { text: data.text, lines, confidence: data.confidence, timings: { loadMs: Math.round(t1 - t0), recognizeMs: Math.round(t2 - t1) } }
