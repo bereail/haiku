@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
+const { checkUploadsConfig, resolveUploadsDir } = require('./images/storage')
 
 const app = express()
 
@@ -27,12 +28,17 @@ app.use('/marketplace', require('./routes/marketplace'))
 app.get('/health', async (_, res) => {
   try {
     await pool.query('SELECT 1')
-    res.json({ ok: true, db: true })
+    // uploads: si la carpeta de fotos del Mercado está bien configurada (sin exponer la ruta)
+    res.json({ ok: true, db: true, uploads: !resolveUploadsDir().error })
   } catch (err) {
     console.error('health check: fallo de conexión a la base', err)
     res.status(503).json({ ok: false, db: false })
   }
 })
+
+// Carpeta de imágenes del Mercado: si falta o es inválida, se avisa y se deshabilitan solo
+// las fotos (el resto de la API sigue andando). Ver images/storage.js.
+checkUploadsConfig()
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, '127.0.0.1', () => {

@@ -28,7 +28,11 @@ const rawImage = express.raw({
   limit: LIMITS.maxBytes + 1024,
 })
 
+const NOT_CONFIGURED = { error: 'La subida de fotos no está disponible por ahora.' }
+
 router.post('/', auth, blockDemoWrites, uploadLimiter, (req, res, next) => {
+  // Sin carpeta válida (ver images/storage.js) ni se lee el cuerpo
+  if (storage.resolveUploadsDir().error) return res.status(503).json(NOT_CONFIGURED)
   rawImage(req, res, (err) => {
     if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'La imagen supera los 5 MB' })
     if (err) return next(err)
@@ -95,6 +99,7 @@ router.get('/:filename', async (req, res) => {
     })
     stream.pipe(res)
   } catch (err) {
+    if (err.code === 'UPLOADS_NOT_CONFIGURED') return res.status(503).end()
     console.error('upload get error', err)
     res.status(500).end()
   }

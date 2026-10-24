@@ -271,6 +271,19 @@ if [ "$HEALTH_OK" = false ]; then
 fi
 echo "==> API respondiendo OK (/health, confirmado contra la base real)."
 
+# Fotos del Mercado: sin UPLOADS_DIR válida el servidor no escribe en ningún lado por su
+# cuenta, deshabilita solo la subida de fotos (503) y lo informa en /health. No frena el
+# deploy (el resto de la app funciona), pero tiene que verse.
+if $SSH "curl -sf http://127.0.0.1:3001/health" | grep -q '"uploads":true'; then
+  echo "==> Carpeta de imágenes del Mercado OK (UPLOADS_DIR)."
+else
+  echo ""
+  echo "AVISO: la subida de fotos del Mercado está DESHABILITADA: falta UPLOADS_DIR en"
+  echo "$API_DIR/.env o no es válida (ruta absoluta, fuera de /var/www). Pasos en"
+  echo "docs/marketplace-imagenes.md. El detalle está en: journalctl -u librook-api | grep uploads"
+  echo ""
+fi
+
 # /health ahora sí toca la base (SELECT 1), pero no garantiza que las tablas NUEVAS existan —
 # solo que hay conexión. Este segundo chequeo pega contra /catalog/works, que necesita la
 # tabla `obras` — si por lo que sea no está, esto lo detecta acá en vez de que lo descubra
