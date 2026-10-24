@@ -1,33 +1,17 @@
 import { execFileSync } from 'node:child_process'
-import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
 import { mockOpenLibrary } from './openlibrary-mock'
+import { expectNoViolations } from './axe'
 
 // Escaneo automático con axe-core (WCAG 2.0/2.1/2.2, niveles A y AA) de las
 // pantallas principales y de los modales abiertos. Evita que reaparezcan los
 // hallazgos ya corregidos (contraste, landmarks, nombres accesibles).
 // axe no reemplaza una revisión manual: detecta ~30-50% de los problemas.
 
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 const TITLE = `Axe E2E ${Date.now()}`
 let bookId: string
 
-async function expectNoViolations(page: Page, label: string, include?: string) {
-  // Escanear con la página quieta: a mitad de una animación (p. ej. el giro de
-  // la tarjeta) los tamaños y colores son transitorios y axe da falsos positivos.
-  // Las animaciones infinitas (indicadores "en vivo", spinners) no se esperan.
-  await page.waitForFunction(() => document.getAnimations().every(a =>
-    a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity))
-  let builder = new AxeBuilder({ page }).withTags(WCAG)
-  if (include) builder = builder.include(include)
-  const { violations } = await builder.analyze()
-  const report = violations.map(v =>
-    `[${v.impact}] ${v.id}: ${v.help}\n` +
-    v.nodes.slice(0, 5).map(n => `    ${n.target.join(' ')}  ${n.failureSummary?.split('\n')[1]?.trim() ?? ''}`).join('\n')
-  ).join('\n')
-  expect(violations, `${label}:\n${report}`).toEqual([])
-}
 
 function localObraId(): string {
   // Una obra en el catálogo de la base LOCAL (contenedor librook-pg) para poder

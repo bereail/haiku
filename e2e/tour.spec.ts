@@ -1,8 +1,8 @@
 import fs from 'node:fs'
-import AxeBuilder from '@axe-core/playwright'
 import { test, expect, type APIRequestContext, type Browser, type Locator, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath, type AccountName } from './accounts'
 import { mockOpenLibrary } from './openlibrary-mock'
+import { expectNoViolations } from './axe'
 import { tourKey } from '../src/tour/tourStorage'
 
 // Tutorial de la primera vez, de punta a punta sobre la interfaz real: invitación,
@@ -324,15 +324,16 @@ test.describe('Tutorial', () => {
 
   test('accesibilidad: invitación y globo sin violaciones de axe', async ({ browser }) => {
     const { page, context } = await openAs(browser, 'lectora1')
-    const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
-    let { violations } = await new AxeBuilder({ page }).withTags(WCAG).include('section[aria-labelledby="tour-invite-title"]').analyze()
-    expect(violations.map(v => `${v.id}: ${v.help}`)).toEqual([])
+    // expectNoViolations espera a que terminen las animaciones de entrada: la invitación
+    // aparece con un fundido cuando termina de cargar la biblioteca, y medir en ese
+    // momento daba un falso color-contrast intermitente.
+    await expect(invite(page)).toBeVisible()
+    await expectNoViolations(page, 'invitación', 'section[aria-labelledby="tour-invite-title"]')
 
     await invite(page).getByRole('button', { name: 'Ver el tutorial' }).click()
     await next(page)
     await expect(page.getByTestId('tour-highlight')).toBeVisible()
-    ;({ violations } = await new AxeBuilder({ page }).withTags(WCAG).include('[data-testid="tour"]').analyze())
-    expect(violations.map(v => `${v.id}: ${v.help}`)).toEqual([])
+    await expectNoViolations(page, 'globo del tutorial', '[data-testid="tour"]')
     await context.close()
   })
 
