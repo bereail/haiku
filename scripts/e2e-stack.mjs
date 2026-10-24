@@ -17,6 +17,7 @@
 // producción: la API se sirve en localhost y global-setup aborta si no es local.
 
 import { spawn, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -100,9 +101,27 @@ try {
     env: { ...process.env, E2E_ORIGIN: ORIGIN },
   })
   code = await new Promise(r => pw.on('exit', c => r(c ?? 1)))
+  if (code !== 0) keepFailureEvidence()
 } catch (err) {
   console.error(err.message)
 } finally {
   stopAll()
 }
 process.exit(code)
+
+// Playwright guarda trazas de lo que falla en test-results/, pero la corrida siguiente lo
+// borra: una falla intermitente se perdía al volver a correr el test suelto. Se copia a
+// e2e/.failures/<fecha> (ignorado por git) y se conservan las últimas 10.
+function keepFailureEvidence() {
+  const src = path.join(ROOT, 'test-results')
+  if (!fs.existsSync(src) || fs.readdirSync(src).length === 0) return
+  const base = path.join(ROOT, 'e2e', '.failures')
+  const dest = path.join(base, new Date().toISOString().replace(/[:.]/g, '-'))
+  fs.cpSync(src, dest, { recursive: true })
+  const runs = fs.readdirSync(base).sort()
+  for (const old of runs.slice(0, Math.max(0, runs.length - 10))) {
+    fs.rmSync(path.join(base, old), { recursive: true, force: true })
+  }
+  console.error(`
+Evidencia de las fallas guardada en ${path.relative(ROOT, dest)} (trazas: npx playwright show-trace <archivo>.zip)`)
+}

@@ -54,9 +54,13 @@ test.describe('Guardado rápido desde Open Library', () => {
   test('"Leído" guarda un libro nuevo como leído, con feedback mientras guarda', async ({ page, request }) => {
     await mockOpenLibrary(page)
     const results = await openSearch(page)
-    // Demorar la respuesta del backend para poder ver el estado intermedio
+    // Retener el POST hasta haber visto el estado intermedio. Antes era una demora fija de
+    // 600 ms: con la máquina cargada las verificaciones llegaban tarde, el guardado ya había
+    // terminado y "toBeDisabled" fallaba de forma intermitente.
+    let release!: () => void
+    const held = new Promise<void>(r => { release = r })
     await page.route('**/librook-api/books', async route => {
-      if (route.request().method() === 'POST') await new Promise(r => setTimeout(r, 600))
+      if (route.request().method() === 'POST') await held
       await route.continue()
     })
     const leido = results.getByRole('button', { name: `Leído: ${PARAMO}` })
@@ -64,6 +68,7 @@ test.describe('Guardado rápido desde Open Library', () => {
     await expect(results.getByRole('status').filter({ hasText: 'Guardando…' })).toBeVisible()
     await expect(leido).toBeDisabled()
     await expect(results.getByRole('button', { name: `Pendiente: ${PARAMO}` })).toBeDisabled()
+    release()
     await expect(results.getByRole('status').filter({ hasText: 'Guardado como Leído' })).toBeVisible()
 
     const [saved] = await booksOf(request, 'lectora2', PARAMO)
