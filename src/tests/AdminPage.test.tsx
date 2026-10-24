@@ -34,7 +34,7 @@ describe('AdminPage', () => {
   it('renderiza el panel admin con las pestañas', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })
@@ -49,7 +49,7 @@ describe('AdminPage', () => {
   it('muestra la lista de usuarios en la pestaña Usuarios', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })
@@ -67,7 +67,7 @@ describe('AdminPage', () => {
   it('abre el modal de reset de contraseña al hacer click en Resetear contraseña', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })
@@ -87,7 +87,7 @@ describe('AdminPage', () => {
   it('deshabilita Guardar si la contraseña tiene menos de 6 caracteres', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })
@@ -110,7 +110,7 @@ describe('AdminPage', () => {
   it('llama a la API y muestra éxito al resetear la contraseña', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })
@@ -138,7 +138,7 @@ describe('AdminPage', () => {
   it('el botón Volver llama a onBack', async () => {
     const { api } = await import('../api')
     vi.mocked(api.get).mockImplementation((path) => {
-      if (path === '/admin/analytics') return Promise.resolve(MOCK_ANALYTICS)
+      if (/^\/admin\/analytics\?tz=[^&]+&offset=-?\d+$/.test(path)) return Promise.resolve(MOCK_ANALYTICS)
       if (path === '/admin/users') return Promise.resolve(MOCK_USERS)
       return Promise.resolve([])
     })

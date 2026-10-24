@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../api'
 import { useDialogA11y } from '../hooks/useDialogA11y'
+import { todayLocal } from '../utils'
 import styles from './AdminPage.module.css'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ function fillDays(data: { date: string; count: number }[]) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (6 - i))
-    const key = d.toISOString().slice(0, 10)
+    const key = todayLocal(d)
     return { date: key, count: map.get(key) ?? 0 }
   })
 }
@@ -397,7 +398,9 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
   const [resetOk, setResetOk] = useState(false)
 
   useEffect(() => {
-    api.get('/admin/analytics')
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const offset = new Date().getTimezoneOffset()
+    api.get(`/admin/analytics?tz=${encodeURIComponent(tz)}&offset=${offset}`)
       .then(setData)
       .catch((e: Error) => setAErr(e.message))
       .finally(() => setALoad(false))

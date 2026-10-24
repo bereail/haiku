@@ -42,30 +42,50 @@ router.get('/users/:id/books', auth, adminOnly, async (req, res) => {
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
 
+// Zona horaria del panel: "hoy", las horas y los días se cuentan en la zona de quien mira,
+// no en la de la base ni en UTC. El navegador manda su zona IANA y su desfase actual
+// (minutos, como getTimezoneOffset). Se usa el nombre solo si Postgres lo conoce: los
+// navegadores suelen dar alias viejos (America/Buenos_Aires) que una tzdata sin los
+// enlaces "legacy" rechaza; en ese caso, el desfase fijo.
+async function analyticsZone(rawTz, rawOffset) {
+  if (typeof rawTz === 'string' && rawTz.length <= 64 && /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$/.test(rawTz)) {
+    const { rows } = await pool.query(
+      'SELECT EXISTS (SELECT 1 FROM pg_timezone_names WHERE name = $1) AS ok', [rawTz])
+    if (rows[0]?.ok) return { expr: '$1', param: rawTz }
+  }
+  const offset = Number(rawOffset)
+  if (Number.isInteger(offset) && Math.abs(offset) <= 14 * 60)
+    return { expr: '$1::interval', param: `${-offset} minutes` }
+  return { expr: '$1', param: 'UTC' }
+}
+
 router.get('/analytics', auth, adminOnly, async (req, res) => {
   try {
+    const { expr: Z, param: tz } = await analyticsZone(req.query.tz, req.query.offset)
+    // Comienzo del día local de hoy, como instante absoluto.
+    const TODAY = `(date_trunc('day', NOW() AT TIME ZONE ${Z}) AT TIME ZONE ${Z})`
     const [overview, hourly, daily, pages, browsers, devices, active] = await Promise.all([
       pool.query(`
         SELECT
           COUNT(*)::int                                                              AS total,
-          COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE)::int                  AS today,
+          COUNT(*) FILTER (WHERE created_at >= ${TODAY})::int                      AS today,
           COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days')::int     AS week,
           COUNT(DISTINCT session_id)::int                                           AS unique_sessions,
-          COUNT(DISTINCT session_id) FILTER (WHERE created_at >= CURRENT_DATE)::int AS unique_today
+          COUNT(DISTINCT session_id) FILTER (WHERE created_at >= ${TODAY})::int     AS unique_today
         FROM page_views
-      `),
+      `, [tz]),
       pool.query(`
-        SELECT EXTRACT(HOUR FROM created_at)::int AS hour, COUNT(*)::int AS count
+        SELECT EXTRACT(HOUR FROM created_at AT TIME ZONE ${Z})::int AS hour, COUNT(*)::int AS count
         FROM page_views
-        WHERE created_at >= CURRENT_DATE
+        WHERE created_at >= ${TODAY}
         GROUP BY hour ORDER BY hour
-      `),
+      `, [tz]),
       pool.query(`
-        SELECT DATE(created_at) AS date, COUNT(*)::int AS count
+        SELECT to_char(created_at AT TIME ZONE ${Z}, 'YYYY-MM-DD') AS date, COUNT(*)::int AS count
         FROM page_views
-        WHERE created_at >= NOW() - INTERVAL '6 days'
-        GROUP BY DATE(created_at) ORDER BY date
-      `),
+        WHERE created_at >= ${TODAY} - INTERVAL '6 days'
+        GROUP BY 1 ORDER BY 1
+      `, [tz]),
       pool.query(`
         SELECT path, COUNT(*)::int AS count
         FROM page_views GROUP BY path ORDER BY count DESC LIMIT 10

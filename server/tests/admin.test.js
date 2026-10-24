@@ -129,3 +129,54 @@ describe('PUT /admin/users/:id/password', () => {
     expect(res.status).toBe(403)
   })
 })
+
+describe('GET /admin/analytics — zona horaria', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  // La primera consulta pregunta a Postgres si conoce la zona; el resto son las métricas.
+  function mockZoneKnown(ok) {
+    pool.query.mockImplementation(sql =>
+      Promise.resolve({ rows: [/pg_timezone_names/.test(sql) ? { ok } : {}] }))
+  }
+  const metricCalls = () => pool.query.mock.calls.filter(c => c[1] && !/pg_timezone_names/.test(c[0]))
+  const get = q => request(app).get(`/admin/analytics${q}`).set('Authorization', `Bearer ${adminToken()}`)
+
+  it('usa la zona del panel si Postgres la conoce', async () => {
+    mockZoneKnown(true)
+    const res = await get('?tz=America/Argentina/Buenos_Aires&offset=180')
+
+    expect(res.status).toBe(200)
+    expect(metricCalls().map(c => c[1][0])).toEqual(Array(3).fill('America/Argentina/Buenos_Aires'))
+    const sql = pool.query.mock.calls.map(c => c[0]).join('\n')
+    expect(sql).not.toMatch(/CURRENT_DATE|DATE\(created_at\)/)
+  })
+
+  it('con un alias que Postgres no conoce, usa el desfase del navegador', async () => {
+    mockZoneKnown(false)
+    const res = await get('?tz=America/Buenos_Aires&offset=180')
+
+    expect(res.status).toBe(200)
+    for (const [sql, params] of metricCalls()) {
+      expect(params).toEqual(['-180 minutes'])
+      expect(sql).toMatch(/AT TIME ZONE \$1::interval/)
+    }
+  })
+
+  it.each([
+    ['', 'sin parámetros'],
+    ["?tz=UTC'; DROP TABLE users; --&offset=1e9", 'zona con inyección y desfase fuera de rango'],
+    [`?tz=${'x'.repeat(100)}&offset=abc`, 'zona larguísima y desfase no numérico'],
+  ])('usa UTC si no hay datos válidos (%s → %s)', async q => {
+    mockZoneKnown(false)
+    const res = await get(q)
+
+    expect(res.status).toBe(200)
+    expect(metricCalls().map(c => c[1][0])).toEqual(Array(3).fill('UTC'))
+  })
+
+  it('no le pregunta a Postgres por una zona con caracteres raros', async () => {
+    mockZoneKnown(true)
+    await get(`?tz=${encodeURIComponent("UTC'; --")}`)
+    expect(pool.query.mock.calls.some(c => /pg_timezone_names/.test(c[0]))).toBe(false)
+  })
+})
