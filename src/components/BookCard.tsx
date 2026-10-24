@@ -47,6 +47,7 @@ export default function BookCard({ book, onEdit, onView, onDelete }: BookCardPro
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role="article"
+      data-tour="book-card"
       aria-label={book.title}
       aria-expanded={flipped}
       tabIndex={0}

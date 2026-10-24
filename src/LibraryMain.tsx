@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useBooks } from './hooks/useBooks'
 import { useGoal } from './hooks/useGoal'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
@@ -16,6 +16,9 @@ import CommunityModal from './components/CommunityModal'
 import MarketplaceModal from './components/MarketplaceModal'
 import VoiceEntryFlow from './components/VoiceEntryFlow'
 import ToastContainer from './components/Toast'
+import Tour, { TourInvite, type TourEnd } from './components/Tour'
+import { stepsFor } from './tour/tourSteps'
+import { getTourPreference, isTourPostponed, postponeTour, setTourPreference } from './tour/tourStorage'
 import type { Book } from './types'
 
 interface Props {
@@ -52,6 +55,17 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const openCommunity = useCallback(() => setCommunityOpen(true), [])
   const openMarketplace = useCallback(() => setMarketplaceOpen(true), [])
   const openVoice = useCallback(() => setVoiceOpen(true), [])
+
+  // Tutorial: se invita una vez por persona (en este navegador); siempre se puede
+  // volver a abrir desde «Ver tutorial».
+  const tourSteps = useMemo(() => stepsFor({ isAdmin }), [isAdmin])
+  const [tourOpen, setTourOpen] = useState(false)
+  const [tourInvite, setTourInvite] = useState(() => !getTourPreference(user.email) && !isTourPostponed())
+  const startTour = useCallback(() => { setTourInvite(false); setTourOpen(true) }, [])
+  const endTour = useCallback((how: TourEnd) => {
+    setTourOpen(false)
+    setTourPreference(user.email, how === 'finished' ? 'done' : 'dismissed')
+  }, [user.email])
 
   const handleToggleCommunity = async (book: Book, share: boolean) => {
     if (share && !book.notes) {
@@ -170,6 +184,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onExport={isAdmin ? exportBooks : undefined}
         onImport={isAdmin ? handleImport : undefined}
         onOpenAdmin={onOpenAdmin}
+        onStartTour={startTour}
         modal={
           modal && (
             <BookModal
@@ -255,6 +270,16 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
           onUpdateDuplicate={handleUpdateFromVoiceDuplicate}
         />
       )}
+
+      {tourInvite && !tourOpen && !loading && !error && (
+        <TourInvite
+          onStart={startTour}
+          onLater={() => { postponeTour(); setTourInvite(false) }}
+          onDismiss={() => { setTourPreference(user.email, 'dismissed'); setTourInvite(false) }}
+        />
+      )}
+
+      {tourOpen && <Tour steps={tourSteps} isDemo={!!user.isDemo} onEnd={endTour} />}
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>

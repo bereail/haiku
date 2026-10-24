@@ -1,0 +1,296 @@
+/* Tutorial guiado. Capas: por encima de modales y escáneres (200–400), por debajo
+   de los toasts (500) para que los avisos de lo que la persona hace sigan visibles. */
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  pointer-events: none;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 16, 16, 0.55);
+  pointer-events: auto;
+  animation: fadeIn 200ms ease;
+}
+
+.ring {
+  position: fixed;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 3px var(--color-gold), 0 0 0 7px rgba(201, 168, 76, 0.35);
+  transition: top var(--transition), left var(--transition), width var(--transition), height var(--transition);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.blocker {
+  position: fixed;
+  pointer-events: auto;
+}
+
+.bubble {
+  position: fixed;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 1rem 1.1rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  transition: top var(--transition), left var(--transition);
+  animation: popIn 220ms ease;
+}
+
+.bubble:focus { outline: none; }
+
+/* Flecha que apunta al elemento señalado */
+.bottom::before,
+.top::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--arrow-left) - 9px);
+  width: 18px;
+  height: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  transform: rotate(45deg);
+}
+
+.bottom::before {
+  top: -10px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.top::before {
+  bottom: -10px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Con la flecha el globo no puede recortar su contenido (overflow) en el borde */
+.bottom, .top { overflow: visible; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: -0.35rem -0.4rem 0 0;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  transition: background var(--transition), color var(--transition);
+}
+
+.closeBtn:hover { background: var(--color-surface-2); color: var(--color-text); }
+
+.progressBar {
+  height: 4px;
+  margin: 0.45rem 0 0.85rem;
+  border-radius: 2px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.progressBar span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent-light);
+  transition: width var(--transition);
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  line-height: 1.3;
+  margin-bottom: 0.4rem;
+}
+
+.body {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+.practice {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.7rem;
+  padding: 0.55rem 0.6rem 0.55rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-pale);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+.practice .secondaryBtn {
+  flex-shrink: 0;
+  background: var(--color-surface);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.spacer { flex: 1; }
+
+.primaryBtn {
+  padding: 0.55rem 1.15rem;
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: background var(--transition);
+}
+
+.primaryBtn:hover { background: var(--color-accent-light); color: var(--color-on-accent-light); }
+
+.secondaryBtn {
+  padding: 0.5rem 0.95rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 500;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.secondaryBtn:hover { border-color: var(--color-accent); color: var(--color-accent-light); }
+
+.textBtn {
+  padding: 0.5rem 0.25rem;
+  color: var(--color-text-secondary);
+  font-size: 0.86rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.textBtn:hover { color: var(--color-text); }
+
+.primaryBtn:focus-visible,
+.secondaryBtn:focus-visible,
+.textBtn:focus-visible,
+.closeBtn:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Barra "Tutorial en pausa": debajo de los modales (200) para no taparlos */
+.pausedBar {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  z-index: 190;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 0.6rem 0.9rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+
+/* Invitación de la primera vez: no es modal, no tapa la navegación */
+.invite {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 95;
+  width: min(340px, calc(100vw - 32px));
+  padding: 1rem 1.1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: popIn 260ms ease;
+}
+
+.inviteTitle {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  margin-bottom: 0.3rem;
+}
+
+.inviteBody {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.inviteActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+/* En celular, los botones flotantes (agregar / voz) ocupan la esquina inferior: la
+   invitación va arriba de ellos y a todo el ancho. */
+@media (max-width: 639px) {
+  .invite {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    bottom: calc(1.5rem + 54px + 0.75rem);
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes popIn { from { opacity: 0; transform: translateY(6px); } }
+@keyframes pulse {
+  50% { box-shadow: 0 0 0 3px var(--color-gold), 0 0 0 11px rgba(201, 168, 76, 0.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .bubble, .invite, .ring { animation: none; }
+  .ring, .bubble, .progressBar span { transition: none; }
+}

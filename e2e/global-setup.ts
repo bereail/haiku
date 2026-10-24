@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { request } from '@playwright/test'
 import { ACCOUNTS, API_URL, AUTH_DIR, BASE_URL, storageStatePath, type AccountName } from './accounts'
+import { tourKey } from '../src/tour/tourStorage'
 
 /**
  * Prepara las cuentas de prueba y guarda una sesión por cuenta (storageState)
@@ -45,7 +46,21 @@ export default async function globalSetup() {
     saveSession('demo', await res.json())
   }
 
+  // Las sesiones guardadas son de alguien que ya vio el tutorial: la invitación de la
+  // primera vez se prueba en tour.spec y no tiene que tapar nada en el resto.
+  for (const name of [...Object.keys(ACCOUNTS), 'demo'] as AccountName[]) markTourSeen(name)
+
   await api.dispose()
+}
+
+function markTourSeen(name: AccountName) {
+  const file = storageStatePath(name)
+  const state = JSON.parse(fs.readFileSync(file, 'utf8'))
+  const ls = state.origins[0].localStorage as { name: string; value: string }[]
+  const email = JSON.parse(ls.find(i => i.name === 'librook_auth')!.value).email as string
+  if (ls.some(i => i.name === tourKey(email))) return
+  ls.push({ name: tourKey(email), value: 'dismissed' })
+  fs.writeFileSync(file, JSON.stringify(state, null, 2))
 }
 
 async function hasValidSession(api: Awaited<ReturnType<typeof request.newContext>>, name: AccountName) {

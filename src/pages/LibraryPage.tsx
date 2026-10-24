@@ -152,13 +152,14 @@ interface LibraryPageProps {
   onExport?: () => void
   onImport?: (file: File) => void
   onOpenAdmin?: () => void
+  onStartTour: () => void
   modal?: ReactNode
 }
 
 export default function LibraryPage({
   books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
   onAddBook, onSearchBooks, onVoiceEntry, onViewBook, onEditBook, onDeleteBook,
-  onShowStats, onOpenCommunity, onOpenMarketplace, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, modal,
+  onShowStats, onOpenCommunity, onOpenMarketplace, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, onStartTour, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -280,6 +281,7 @@ export default function LibraryPage({
             <button
               className={styles.voiceBtn}
               onClick={onVoiceEntry}
+              data-tour="voice"
               // El nombre accesible empieza con el texto visible (WCAG 2.5.3): quien
               // usa control por voz dice "Contame qué leíste" y tiene que funcionar.
               aria-label="Contame qué leíste: registrar lectura por voz"
@@ -295,6 +297,7 @@ export default function LibraryPage({
             <button
               className={styles.searchBtn}
               onClick={onSearchBooks}
+              data-tour="search-books"
               aria-label="Buscar en Open Library"
               aria-keyshortcuts="b"
               title="Buscar en Open Library (tecla B)"
@@ -309,6 +312,7 @@ export default function LibraryPage({
             <button
               className={styles.searchBtn}
               onClick={onAddBook}
+              data-tour="add-book"
               aria-keyshortcuts="n"
               title="Agregar libro (tecla N)"
             >
@@ -319,7 +323,7 @@ export default function LibraryPage({
             </button>
 
             {/* Secondary actions — visible on desktop only */}
-            <div className={styles.desktopActions}>
+            <div className={styles.desktopActions} data-tour="more-actions">
               <button
                 className={styles.iconBtn}
                 onClick={onToggleTheme}
@@ -428,6 +432,7 @@ export default function LibraryPage({
               {onOpenAdmin && (
                 <button
                   className={styles.iconBtn}
+                  data-tour="admin"
                   onClick={onOpenAdmin}
                   title="Panel admin"
                   aria-label="Panel admin"
@@ -442,6 +447,20 @@ export default function LibraryPage({
 
               <button
                 className={styles.iconBtn}
+                onClick={onStartTour}
+                data-tour="help"
+                title="Ver tutorial"
+                aria-label="Ver tutorial"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.8"/>
+                  <path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="17.2" r="1.1" fill="currentColor"/>
+                </svg>
+              </button>
+
+              <button
+                className={styles.iconBtn}
                 onClick={onLogout}
                 title="Cerrar sesión"
                 aria-label="Cerrar sesión"
@@ -453,7 +472,7 @@ export default function LibraryPage({
             </div>
 
             {/* More menu — visible on mobile only */}
-            <div className={styles.moreWrap} ref={menuRef}>
+            <div className={styles.moreWrap} ref={menuRef} data-tour="more-actions" data-tour-variant="mobile">
               <button
                 ref={menuTriggerRef}
                 className={`${styles.iconBtn} ${menuOpen ? styles.iconBtnOpen : ''}`}
@@ -586,6 +605,20 @@ export default function LibraryPage({
                     </button>
                   )}
 
+                  <button
+                    className={styles.menuItem}
+                    onClick={() => runMenuItem(() => onStartTour())}
+                    role="menuitem"
+                    tabIndex={-1}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.8"/>
+                      <path d="M9.5 9.3a2.6 2.6 0 015 .9c0 1.7-2.5 2.2-2.5 3.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="17.2" r="1.1" fill="currentColor"/>
+                    </svg>
+                    <span>Ver tutorial</span>
+                  </button>
+
                   <div className={styles.menuDivider} aria-hidden="true" />
 
                   <button
@@ -679,7 +712,7 @@ export default function LibraryPage({
         </div>
 
         <div className={styles.filtersRow}>
-          <div className={styles.statusFilters}>
+          <div className={styles.statusFilters} data-tour="library-filters">
             {STATUS_FILTERS.map(f => (
               <button
                 key={f.key}
@@ -797,7 +830,7 @@ export default function LibraryPage({
 
         {filtered.length === 0 ? (
           books.length === 0 ? (
-            <div className={styles.emptyWelcome}>
+            <div className={styles.emptyWelcome} data-tour="library-empty">
               <svg width="52" height="52" viewBox="0 0 24 24" fill="none" opacity="0.15" aria-hidden="true">
                 <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
