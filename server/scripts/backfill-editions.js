@@ -36,7 +36,7 @@ async function fetchJson(url) {
   try {
     res = await fetch(url, { redirect: 'follow' })
   } catch (err) {
-    throw new Error(`No se pudo conectar con Open Library (${err.cause?.code || err.message})`)
+    throw new Error(`No se pudo conectar con Open Library (${err.cause?.code || err.message})`, { cause: err })
   }
   if (!res.ok) return null
   return await res.json()
