@@ -16,30 +16,45 @@ function dbToWorkSummary(row) {
     firstPublishYear: row.first_publish_year,
     coverUrl: row.cover_url || null,
     authors: row.authors || [],
+    libraryCount: Number(row.library_count) || 0,
   }
 }
 
+const SORTS = ['recent', 'popular']
+
 // Catálogo local — sin autenticación. Nunca expone `books` (el ejemplar personal de nadie).
+// sort=popular ordena por cuántas lectoras distintas tienen alguna edición de la obra (dato
+// real, el mismo que ya se calculaba por separado en /works/:id). Sin pedirlo, el orden es
+// el de siempre (más reciente primero) — comportamiento previo intacto.
+// El cursor sigue siendo created_at: con sort=popular solo tiene sentido pedir la primera
+// página (es lo único que usa el frontend hoy, en Descubrir) — paginar "lo más leído" de
+// verdad necesitaría un cursor compuesto (cantidad, fecha), que no hace falta todavía.
 router.get('/works', async (req, res) => {
   const q = (req.query.q || '').trim()
   const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(req.query.limit) || DEFAULT_LIMIT))
   const cursor = req.query.cursor || null
+  const sort = SORTS.includes(req.query.sort) ? req.query.sort : 'recent'
 
   try {
     const result = await pool.query(
       `SELECT
-        o.id, o.canonical_title, o.subjects, o.first_publish_year,
+        o.id, o.canonical_title, o.subjects, o.first_publish_year, o.created_at,
         (SELECT e.cover_url FROM ediciones e WHERE e.obra_id = o.id AND e.cover_url IS NOT NULL ORDER BY e.created_at LIMIT 1) AS cover_url,
         COALESCE(
           (SELECT array_agg(a.name ORDER BY a.name) FROM obra_autores oa JOIN autores a ON a.id = oa.autor_id WHERE oa.obra_id = o.id),
           '{}'
-        ) AS authors
+        ) AS authors,
+        (SELECT COUNT(DISTINCT b.user_id) FROM books b JOIN ediciones e ON e.id = b.edition_id WHERE e.obra_id = o.id) AS library_count
        FROM obras o
        WHERE ($1 = '' OR o.canonical_title ILIKE '%' || $1 || '%')
          AND ($2::timestamptz IS NULL OR o.created_at < $2)
-       ORDER BY o.created_at DESC
+       ORDER BY
+         CASE WHEN $4 = 'popular' THEN
+           (SELECT COUNT(DISTINCT b.user_id) FROM books b JOIN ediciones e ON e.id = b.edition_id WHERE e.obra_id = o.id)
+         END DESC NULLS LAST,
+         o.created_at DESC
        LIMIT $3`,
-      [q, cursor, limit]
+      [q, cursor, limit, sort]
     )
     const works = result.rows.map(dbToWorkSummary)
     const nextCursor = works.length === limit ? result.rows[result.rows.length - 1].created_at : null

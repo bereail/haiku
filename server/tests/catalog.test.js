@@ -36,6 +36,23 @@ describe('GET /catalog/works', () => {
     const res = await request(app).get('/catalog/works')
     expect(res.status).toBe(200)
   })
+
+  it('devuelve libraryCount (0 si no viene la columna)', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [SAMPLE_WORK] })
+    const res = await request(app).get('/catalog/works')
+    expect(res.body.works[0].libraryCount).toBe(0)
+  })
+
+  it('sort=popular pasa "popular" a la consulta; cualquier otro valor cae al orden de siempre', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ ...SAMPLE_WORK, library_count: '7' }] })
+    const res = await request(app).get('/catalog/works?sort=popular')
+    expect(pool.query.mock.calls[0][1]).toEqual(['', null, 20, 'popular'])
+    expect(res.body.works[0].libraryCount).toBe(7)
+
+    pool.query.mockResolvedValueOnce({ rows: [] })
+    await request(app).get('/catalog/works?sort=lo-que-sea')
+    expect(pool.query.mock.calls[1][1]).toEqual(['', null, 20, 'recent'])
+  })
 })
 
 describe('GET /catalog/works/:id', () => {

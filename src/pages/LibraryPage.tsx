@@ -144,6 +144,7 @@ interface LibraryPageProps {
   onEditBook: (book: Book) => void
   onDeleteBook: (id: string) => void
   onShowStats: () => void
+  onOpenDiscover: () => void
   onOpenCommunity: () => void
   onOpenMarketplace: () => void
   isAdmin: boolean
@@ -159,7 +160,7 @@ interface LibraryPageProps {
 export default function LibraryPage({
   books, loading, error, onRetry, dark, goal, onToggleTheme, onLogout,
   onAddBook, onSearchBooks, onVoiceEntry, onViewBook, onEditBook, onDeleteBook,
-  onShowStats, onOpenCommunity, onOpenMarketplace, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, onStartTour, modal,
+  onShowStats, onOpenDiscover, onOpenCommunity, onOpenMarketplace, isAdmin, isDemo, onExportHtml, onExport, onImport, onOpenAdmin, onStartTour, modal,
 }: LibraryPageProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -344,6 +345,18 @@ export default function LibraryPage({
 
               <button
                 className={styles.iconBtn}
+                onClick={onOpenDiscover}
+                title="Descubrir"
+                aria-label="Descubrir"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8"/>
+                </svg>
+              </button>
+
+              <button
+                className={styles.iconBtn}
                 onClick={onShowStats}
                 title="Estadísticas (tecla E)"
                 aria-label="Estadísticas"
@@ -507,6 +520,19 @@ export default function LibraryPage({
                       </svg>
                     )}
                     <span>{dark ? 'Modo claro' : 'Modo oscuro'}</span>
+                  </button>
+
+                  <button
+                    className={styles.menuItem}
+                    onClick={() => runMenuItem(() => onOpenDiscover())}
+                    role="menuitem"
+                    tabIndex={-1}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8"/>
+                    </svg>
+                    <span>Descubrir</span>
                   </button>
 
                   <button

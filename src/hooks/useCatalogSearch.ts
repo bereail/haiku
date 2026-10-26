@@ -8,6 +8,7 @@ export interface LocalWork {
   firstPublishYear: number | null
   coverUrl: string | null
   authors: string[]
+  libraryCount?: number
 }
 
 const DEBOUNCE_MS = 400

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import WorkCard from '../components/WorkCard'
 import { useCatalogSearch } from '../hooks/useCatalogSearch'
 import { useTheme } from '../hooks/useTheme'
 import styles from './CatalogPage.module.css'
@@ -91,17 +92,7 @@ export default function CatalogPage() {
           <section>
             <h2 className={styles.sectionTitle}>En Librook</h2>
             <div className={styles.grid}>
-              {localResults.map((w) => (
-                <Link key={w.id} to={`/catalog/obra/${w.id}`} className={styles.card}>
-                  <div className={styles.cover} style={w.coverUrl ? { backgroundImage: `url(${w.coverUrl})` } : undefined}>
-                    {!w.coverUrl && <span className={styles.coverFallback}>{w.title.slice(0, 2).toUpperCase()}</span>}
-                  </div>
-                  <div className={styles.cardBody}>
-                    <strong className={styles.cardTitle}>{w.title}</strong>
-                    <span className={styles.cardMeta}>{w.authors.join(', ') || 'Autor desconocido'}</span>
-                  </div>
-                </Link>
-              ))}
+              {localResults.map((w) => <WorkCard key={w.id} work={w} />)}
             </div>
           </section>
         )}
