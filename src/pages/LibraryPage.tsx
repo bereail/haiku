@@ -232,7 +232,7 @@ export default function LibraryPage({
       const q = search.toLowerCase()
       const matchSearch = !search ||
         b.title.toLowerCase().includes(q) ||
-        b.author.toLowerCase().includes(q)
+        (b.author ?? '').toLowerCase().includes(q)
       const matchStatus =
         status === 'all' ||
         (status === 'finished' && b.endDate) ||
