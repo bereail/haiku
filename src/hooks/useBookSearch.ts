@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef } from 'react'
 
-const API = 'https://openlibrary.org/search.json'
+export const API = 'https://openlibrary.org/search.json'
 const COVERS = 'https://covers.openlibrary.org/b/id'
-const FIELDS = 'key,title,author_name,publisher,cover_i,first_publish_year,language'
+export const FIELDS = 'key,title,author_name,publisher,cover_i,first_publish_year,language'
 const DEBOUNCE_MS = 400
 const MAX_CACHE_SIZE = 50
 
@@ -16,7 +16,7 @@ export interface BookSuggestion {
   year: number | null
 }
 
-interface OpenLibraryDoc {
+export interface OpenLibraryDoc {
   key: string
   title?: string
   author_name?: string[]
@@ -27,7 +27,9 @@ interface OpenLibraryDoc {
 
 const searchCache = new Map<string, BookSuggestion[]>()
 
-function mapDoc(doc: OpenLibraryDoc): BookSuggestion {
+// Compartido con bookMatchService (desambiguación por voz): mismo mapeo de
+// Open Library a BookSuggestion, una sola vez.
+export function mapDoc(doc: OpenLibraryDoc): BookSuggestion {
   return {
     key: doc.key,
     title: doc.title || '',
