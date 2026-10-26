@@ -1,6 +1,6 @@
-import { execFileSync } from 'node:child_process'
 import { test, expect, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
+import { dbValue } from './dbExec'
 import { mockOpenLibrary } from './openlibrary-mock'
 import { expectNoViolations } from './axe'
 
@@ -14,15 +14,13 @@ let bookId: string
 
 
 function localObraId(): string {
-  // Una obra en el catálogo de la base LOCAL (contenedor librook-pg) para poder
-  // escanear la página de obra. Idempotente.
-  const sql = `
+  // Una obra en el catálogo de la base LOCAL para poder escanear la página de obra.
+  // Idempotente.
+  return dbValue(`
     INSERT INTO obras (canonical_title, first_publish_year, source)
     SELECT 'Obra E2E accesibilidad', 1963, 'manual'
     WHERE NOT EXISTS (SELECT 1 FROM obras WHERE canonical_title = 'Obra E2E accesibilidad');
-    SELECT id FROM obras WHERE canonical_title = 'Obra E2E accesibilidad';`
-  const out = execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-tAc', sql])
-  return out.toString().trim().split('\n').pop()!.trim()
+    SELECT id FROM obras WHERE canonical_title = 'Obra E2E accesibilidad';`)
 }
 
 test.describe('axe-core: sin sesión', () => {

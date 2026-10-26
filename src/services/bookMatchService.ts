@@ -7,32 +7,7 @@
 // usa el resto de la app (useBookSearch, ISBNScanner) — sumar una segunda fuente y
 // comparar resultados agrega complejidad sin necesidad real a esta escala; queda
 // documentado como posible mejora futura si la tasa de "no encontrado" resulta alta.
-import type { BookSuggestion } from '../hooks/useBookSearch'
-
-const API = 'https://openlibrary.org/search.json'
-const COVERS = 'https://covers.openlibrary.org/b/id'
-const FIELDS = 'key,title,author_name,publisher,cover_i,first_publish_year,language'
-
-interface OpenLibraryDoc {
-  key: string
-  title?: string
-  author_name?: string[]
-  publisher?: string[]
-  cover_i?: number
-  first_publish_year?: number
-}
-
-function mapDoc(doc: OpenLibraryDoc): BookSuggestion {
-  return {
-    key: doc.key,
-    title: doc.title || '',
-    author: doc.author_name?.[0] || '',
-    publisher: doc.publisher?.[0] || '',
-    cover: doc.cover_i ? `${COVERS}/${doc.cover_i}-M.jpg` : '',
-    coverLarge: doc.cover_i ? `${COVERS}/${doc.cover_i}-L.jpg` : '',
-    year: doc.first_publish_year || null,
-  }
-}
+import { API, FIELDS, mapDoc, type BookSuggestion, type OpenLibraryDoc } from '../hooks/useBookSearch'
 
 const COMBINING_MARKS = new RegExp('[\\u0300-\\u036f]', 'g')
 

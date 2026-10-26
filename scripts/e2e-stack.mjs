@@ -75,6 +75,16 @@ start('api', 'node', ['index.js'], {
     APP_URL: `${ORIGIN}/librook/`,
     // Solo local: la suite completa hace más de 20 logins en 15 minutos
     AUTH_RATE_LIMIT_MAX: '1000',
+    // Tiene que coincidir con VITE_ADMIN_EMAIL de abajo: ese solo decide si el
+    // frontend MUESTRA el menú de admin, la autorización real la hace la API con
+    // esta variable. Si no coinciden, la cuenta de prueba ve el menú pero el
+    // backend le devuelve 403 en todo (seguiría usando el ADMIN_EMAIL real de
+    // server/.env, que no es ninguna cuenta de prueba).
+    ADMIN_EMAIL: 'admin@test.dev',
+    // Sin esto, auth.js manda los mails de recuperación por Gmail de verdad (con
+    // las credenciales de server/.env) en vez de escribirlos acá: password-reset.spec
+    // y security-demo.spec leen este archivo, nunca una casilla real.
+    MAIL_OUTBOX_FILE: path.join(ROOT, 'e2e', '.outbox.jsonl'),
   },
 })
 if (devMode) {

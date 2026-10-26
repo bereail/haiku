@@ -1,6 +1,6 @@
-import { execFileSync } from 'node:child_process'
 import { test, expect, type APIRequestContext } from '@playwright/test'
 import { ACCOUNTS, API_URL, BASE_URL, bearer } from './accounts'
+import { dbValue } from './dbExec'
 
 // Página pública de una obra: muestra reseñas compartidas y cuántas personas
 // tienen el libro, pero nunca notas privadas, fechas de lectura ni emails.
@@ -14,11 +14,15 @@ let obraId: string
 let editionId: string
 const created: { who: 'lectora1' | 'lectora2'; id: string }[] = []
 
+// Solo la base LOCAL. Los valores interpolados son constantes de este archivo
+// (título con un número), sin entrada externa. Las sentencias sin RETURNING
+// (los DELETE de limpieza) no devuelven filas: no es un error, el valor no se usa.
 function sql(query: string): string {
-  // Solo la base LOCAL (contenedor librook-pg). Los valores interpolados son
-  // constantes de este archivo (título con un número), sin entrada externa.
-  return execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-tAc', query])
-    .toString().trim().split('\n')[0].trim() // con RETURNING, la 1.ª línea es el valor
+  try {
+    return dbValue(query)
+  } catch {
+    return ''
+  }
 }
 
 async function addLinkedBook(request: APIRequestContext, who: 'lectora1' | 'lectora2', notes: string) {
