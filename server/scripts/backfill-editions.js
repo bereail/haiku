@@ -26,14 +26,20 @@ const LIMIT = limitArg ? parseInt(limitArg.split('=')[1], 10) : null
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 const normalizeIsbn = (raw) => (raw || '').replace(/[-\s]/g, '')
 
+// null = Open Library respondió que no existe (404 u otro no-ok): un "no encontrado" real.
+// Lanza en cambio ante un fallo de red/conexión (timeout, reset, DNS): eso NO es lo mismo que
+// "no existe" y antes quedaba escondido como isbn_no_encontrado — una corrida con problemas
+// de red transitorios marcaba libros reales como perdidos para siempre, sin aviso. Ahora lo
+// cuenta aparte, en RESULT.ERROR (el try/catch de main() ya lo maneja).
 async function fetchJson(url) {
+  let res
   try {
-    const res = await fetch(url, { redirect: 'follow' })
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
+    res = await fetch(url, { redirect: 'follow' })
+  } catch (err) {
+    throw new Error(`No se pudo conectar con Open Library (${err.cause?.code || err.message})`)
   }
+  if (!res.ok) return null
+  return await res.json()
 }
 
 // Un dry-run no debe escribir NADA, ni siquiera obras/autores/ediciones "de paso" — cuando
