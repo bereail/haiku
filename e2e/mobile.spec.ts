@@ -1,7 +1,7 @@
-import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import { test, expect, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, bearer, storageStatePath } from './accounts'
+import { dbValue } from './dbExec'
 import { mockOpenLibrary } from './openlibrary-mock'
 
 // Celular: sin scroll horizontal en las páginas principales ni con los modales
@@ -40,13 +40,11 @@ async function expectDialogInsideViewport(page: Page, label: string) {
 }
 
 function localObraId(): string {
-  const sql = `
+  return dbValue(`
     INSERT INTO obras (canonical_title, first_publish_year, source)
     SELECT 'Obra E2E accesibilidad', 1963, 'manual'
     WHERE NOT EXISTS (SELECT 1 FROM obras WHERE canonical_title = 'Obra E2E accesibilidad');
-    SELECT id FROM obras WHERE canonical_title = 'Obra E2E accesibilidad';`
-  const out = execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-tAc', sql])
-  return out.toString().trim().split('\n').pop()!.trim()
+    SELECT id FROM obras WHERE canonical_title = 'Obra E2E accesibilidad';`)
 }
 
 for (const vp of VIEWPORTS) {

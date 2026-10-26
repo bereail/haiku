@@ -1,8 +1,8 @@
-import { execFileSync } from 'node:child_process'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test'
 import { API_URL, BASE_URL, OUTBOX_FILE, bearer } from './accounts'
+import { dbExec, dbValue } from './dbExec'
 
 // Recuperación de contraseña de punta a punta. El "correo" es la bandeja
 // local (MAIL_OUTBOX_FILE del backend local): nunca se manda un mail real.
@@ -124,12 +124,11 @@ test.describe('Recuperar contraseña', () => {
     const mark = outboxLines().length
     await requestResetFromUI(page, EMAIL)
     const token = new URL(lastResetLinkFor(EMAIL, mark)!).searchParams.get('reset_token')!
-    // Simula que pasó más de 1 hora: vence el token directamente en la base
-    // LOCAL (contenedor Docker librook-pg). El token es hex, sin inyección posible.
+    // Simula que pasó más de 1 hora: vence el token directamente en la base LOCAL.
+    // El token es hex, sin inyección posible.
     expect(token).toMatch(/^[0-9a-f]{64}$/)
-    execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-c',
-      // La base guarda el hash del token, no el token
-      `UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 minute' WHERE token = '${crypto.createHash('sha256').update(token).digest('hex')}'`])
+    // La base guarda el hash del token, no el token
+    dbExec(`UPDATE password_reset_tokens SET expires_at = NOW() - INTERVAL '1 minute' WHERE token = '${crypto.createHash('sha256').update(token).digest('hex')}'`)
 
     const res = await request.post(`${API_URL}/auth/reset-password`, { data: { token, password: 'tarde1234' } })
     expect(res.status()).toBe(400)
@@ -141,8 +140,7 @@ test.describe('Recuperar contraseña', () => {
     await requestResetFromUI(page, EMAIL)
     const token = new URL(lastResetLinkFor(EMAIL, mark)!).searchParams.get('reset_token')!
     const sha = crypto.createHash('sha256').update(token).digest('hex')
-    const q = (v: string) => execFileSync('docker', ['exec', 'librook-pg', 'psql', '-U', 'librook_user', '-d', 'librook_db', '-tAc',
-      `SELECT count(*) FROM password_reset_tokens WHERE token = '${v}'`]).toString().trim()
+    const q = (v: string) => dbValue(`SELECT count(*) FROM password_reset_tokens WHERE token = '${v}'`)
     expect(token).toMatch(/^[0-9a-f]{64}$/)
     expect(q(token)).toBe('0')
     expect(q(sha)).toBe('1')
