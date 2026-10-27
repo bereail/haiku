@@ -87,6 +87,23 @@ concreto antes de pasar a identidad/comunicación y primeros lectores.
 
 ## Qué se tocó en esta sesión
 
-Se creó `admin-local/index.html` y este `CONTINUE.md`. No se modificó ningún archivo de la
-aplicación (`src/`, `server/`, etc.) ni se tocó el VPS — solo lectura para auditar el estado
-real antes de construir el panel.
+Se creó `admin-local/index.html` y este `CONTINUE.md`, commiteados y pusheados a `main`
+(deploy automático confirmado exitoso). No se modificó ningún archivo de la aplicación
+(`src/`, `server/`, etc.) ni se tocó el VPS — solo lectura para auditar el estado real antes
+de construir el panel.
+
+Después, se avanzó en la Fase 4 (identidad y comunicación) — la única fase pendiente que no
+depende del VPS ni de producción, dentro de los límites de esta sesión. Se creó
+`docs/identidad-lanzamiento.md` con un primer borrador de propuesta de valor, descripción/bio
+para redes, identidad visual (reutilizando los tokens reales de la dirección "Segunda edición",
+no colores inventados) y una presentación de una página del proyecto. Se actualizaron los
+datos de partida de `admin-local/index.html` para reflejarlo (f4-1 y f4-3 en curso, f4-5
+completada) — **importante:** esto solo afecta a quien abra el panel por primera vez o lo
+reinicie; si ya lo abriste y tenés cambios guardados en tu navegador, esos 3 estados no se van
+a actualizar solos ahí — marcalos vos a mano, o fijate en `docs/identidad-lanzamiento.md`
+directamente.
+
+**Próximo paso sugerido dentro de Fase 4:** que Berenice revise y recorte
+`docs/identidad-lanzamiento.md`, y decida si quiere avanzar con f4-2 (crear el Instagram) —
+eso sí implica una cuenta real en un servicio externo, fuera del alcance de lo que se puede
+hacer de forma autónoma.
