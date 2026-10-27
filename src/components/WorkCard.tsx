@@ -4,7 +4,7 @@ import type { LocalWork } from '../hooks/useCatalogSearch'
 
 interface WorkCardProps {
   work: LocalWork
-  /** Texto chico debajo del autor — p. ej. "12 lectoras" o un año. Opcional. */
+  /** Texto chico debajo del autor — p. ej. "12 personas la tienen" o un año. Opcional. */
   badge?: string
 }
 

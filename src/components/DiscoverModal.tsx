@@ -9,9 +9,11 @@ interface DiscoverModalProps {
   onOpenCommunity: () => void
 }
 
+// Misma métrica y misma redacción que la ficha de obra (WorkPage) — "persona(s)", no "lectora(s)",
+// para no decirlo de dos formas distintas en dos pantallas que muestran el mismo dato.
 function libraryBadge(count: number): string {
   if (count <= 0) return ''
-  return count === 1 ? '1 lectora la tiene' : `${count} lectoras la tienen`
+  return count === 1 ? '1 persona la tiene' : `${count} personas la tienen`
 }
 
 export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModalProps) {
@@ -68,7 +70,7 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
             <section className={styles.section}>
               <h3 className={styles.sectionTitle}>Para descubrir</h3>
               <div className={styles.grid}>
-                {recent.map(w => <WorkCard key={w.id} work={w} />)}
+                {recent.map(w => <WorkCard key={w.id} work={w} badge={libraryBadge(w.libraryCount ?? 0)} />)}
               </div>
             </section>
           )}
