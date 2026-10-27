@@ -41,8 +41,12 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
 
           {catalogEmpty && (
             <section className={styles.section}>
-              <div className={styles.emptyBig}>
-                <p className={styles.emptyTitle}>El catálogo todavía no tiene fichas propias acá.</p>
+              <div className={styles.empty}>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" opacity="0.18" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                </svg>
+                <p className={styles.emptyTitle}>El catálogo todavía no tiene fichas propias acá</p>
                 <p className={styles.emptyHint}>
                   A medida que se agreguen libros con ISBN, Librook va a armar fichas de obra
                   compartidas — y esta sección va a mostrar las más leídas entre todas las lectoras.
@@ -75,8 +79,11 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
               <button type="button" className={styles.linkBtn} onClick={onOpenCommunity}>Ver todo</button>
             </div>
             {!loading && community.length === 0 ? (
-              <div className={styles.emptyBig}>
-                <p className={styles.emptyTitle}>Todavía no hay reflexiones compartidas.</p>
+              <div className={styles.empty}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" opacity="0.18" aria-hidden="true">
+                  <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <p className={styles.emptyTitle}>Todavía no hay reflexiones compartidas</p>
                 <p className={styles.emptyHint}>Cuando alguien comparta una, en Comunidad, va a aparecer acá.</p>
               </div>
             ) : (
@@ -105,8 +112,12 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
 
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>Premios literarios</h3>
-            <div className={styles.emptyBig}>
-              <p className={styles.emptyTitle}>Todavía no mostramos premios literarios acá.</p>
+            <div className={styles.empty}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" opacity="0.18" aria-hidden="true">
+                <circle cx="12" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M15.5 12.9 17 22l-5-3-5 3 1.5-9.1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className={styles.emptyTitle}>Todavía no mostramos premios literarios acá</p>
               <p className={styles.emptyHint}>
                 No queremos inventar datos de premios: hace falta sumar una fuente confiable
                 antes de mostrar esta sección de verdad.
