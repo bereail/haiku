@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de lanzamiento — Librook</title>
+<style>
+  :root{
+    --bg:#f6f5f1;
+    --surface:#ffffff;
+    --surface-alt:#f0eee7;
+    --border:#e2dfd5;
+    --text:#232820;
+    --text-muted:#6c6f66;
+    --accent:#3a6b5c;
+    --accent-contrast:#ffffff;
+    --accent-soft:#e3ece7;
+    --warn:#8a6a1f;
+    --warn-soft:#f3ebd6;
+    --danger:#8a4a3a;
+    --danger-soft:#f1e3dd;
+    --neutral:#6c6f66;
+    --neutral-soft:#e9e8e1;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(0,0,0,.05), 0 1px 1px rgba(0,0,0,.03);
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){}
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1b1d1a;
+      --surface:#242621;
+      --surface-alt:#2b2d27;
+      --border:#3a3c35;
+      --text:#eceae3;
+      --text-muted:#9b9c93;
+      --accent:#6fae98;
+      --accent-contrast:#13201b;
+      --accent-soft:#263430;
+      --warn:#d8b25a;
+      --warn-soft:#352f1e;
+      --danger:#d98f7c;
+      --danger-soft:#3a2b25;
+      --neutral:#9b9c93;
+      --neutral-soft:#2f3129;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1b1d1a;
+    --surface:#242621;
+    --surface-alt:#2b2d27;
+    --border:#3a3c35;
+    --text:#eceae3;
+    --text-muted:#9b9c93;
+    --accent:#6fae98;
+    --accent-contrast:#13201b;
+    --accent-soft:#263430;
+    --warn:#d8b25a;
+    --warn-soft:#352f1e;
+    --danger:#d98f7c;
+    --danger-soft:#3a2b25;
+    --neutral:#9b9c93;
+    --neutral-soft:#2f3129;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5}
+  a{color:var(--accent)}
+  h1,h2,h3,h4{margin:0 0 4px;font-weight:600;letter-spacing:-.01em}
+  p{margin:0 0 8px}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:220px;flex:0 0 220px;background:var(--surface);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;padding:16px 12px;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{padding:6px 10px 14px}
+  .brand h1{font-size:16px}
+  .brand p{font-size:12px;color:var(--text-muted);margin:0}
+  nav.navlist{display:flex;flex-direction:column;gap:2px;flex:1}
+  .navbtn{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;border:none;
+    background:transparent;border-radius:8px;color:var(--text-muted);transition:background .15s,color .15s;
+  }
+  .navbtn svg{width:17px;height:17px;flex:0 0 17px}
+  .navbtn:hover{background:var(--surface-alt);color:var(--text)}
+  .navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .sidefoot{padding-top:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+  .savebox{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:6px;padding:0 10px}
+  .savedot{width:6px;height:6px;border-radius:50%;background:var(--neutral);flex:0 0 6px}
+  .savedot.saved{background:var(--accent)}
+  .savedot.error{background:var(--danger)}
+  .themebtn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text-muted);font-size:12.5px}
+  .themebtn:hover{color:var(--text)}
+  .themebtn svg{width:14px;height:14px}
+
+  main.content{flex:1;min-width:0;padding:28px 32px 60px;max-width:1040px}
+  .view[hidden]{display:none}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+  .cardrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+  .stat .value{font-size:20px;font-weight:600}
+
+  .progressbar{height:8px;border-radius:5px;background:var(--neutral-soft);overflow:hidden}
+  .progressbar > span{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .25s}
+
+  .hero{display:flex;flex-direction:column;gap:16px;margin-bottom:22px}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .hero-top .pct{font-size:34px;font-weight:700;color:var(--accent)}
+  .nextaction{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--radius);padding:16px 18px}
+  .nextaction .tag{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);font-weight:700;margin-bottom:4px}
+  .nextaction p{font-size:15px;margin:0}
+  .blockerbox{background:var(--danger-soft);border:1px solid var(--danger);border-radius:var(--radius);padding:14px 18px}
+  .blockerbox .tag{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--danger);font-weight:700;margin-bottom:6px}
+  .blockerbox ul{margin:0;padding-left:18px;font-size:13.5px}
+
+  details.helpbox{margin-top:4px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:0}
+  details.helpbox summary{cursor:pointer;padding:10px 14px;font-size:13px;color:var(--text-muted);list-style:none}
+  details.helpbox summary::-webkit-details-marker{display:none}
+  details.helpbox summary:before{content:"▸ ";color:var(--accent)}
+  details.helpbox[open] summary:before{content:"▾ "}
+  details.helpbox .helpbody{padding:0 16px 14px;font-size:13px;color:var(--text-muted)}
+  details.helpbox .helpbody ul{margin:6px 0;padding-left:18px}
+
+  .sectionhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+  .sectionhead h2{font-size:19px}
+  .sectionhead .sub{font-size:12.5px;color:var(--text-muted)}
+
+  .phase{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:12px;overflow:hidden}
+  .phase > summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .phase > summary::-webkit-details-marker{display:none}
+  .phase > summary .ph-left{display:flex;align-items:center;gap:10px}
+  .phase > summary .ph-left:before{content:"▸";color:var(--text-muted);font-size:13px}
+  .phase[open] > summary .ph-left:before{content:"▾"}
+  .phase-progress{font-size:12px;color:var(--text-muted);white-space:nowrap}
+  .phasebody{padding:0 16px 14px;display:flex;flex-direction:column;gap:8px}
+
+  .task{border:1px solid var(--border);border-radius:8px;background:var(--surface-alt);padding:10px 12px}
+  .task-top{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;justify-content:space-between}
+  .task-main{display:flex;flex-direction:column;gap:3px;min-width:200px;flex:1}
+  .task-name{font-weight:600;font-size:14px}
+  .task-meta{font-size:11.5px;color:var(--text-muted);display:flex;gap:8px;flex-wrap:wrap}
+  .task-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+  .badge .dot{width:6px;height:6px;border-radius:50%}
+  .badge.st-pendiente{background:var(--neutral-soft);color:var(--text-muted)}
+  .badge.st-pendiente .dot{background:var(--neutral)}
+  .badge.st-en-curso{background:var(--warn-soft);color:var(--warn)}
+  .badge.st-en-curso .dot{background:var(--warn)}
+  .badge.st-bloqueada{background:var(--danger-soft);color:var(--danger)}
+  .badge.st-bloqueada .dot{background:var(--danger)}
+  .badge.st-completada{background:var(--accent-soft);color:var(--accent)}
+  .badge.st-completada .dot{background:var(--accent)}
+  .badge.prio-alta{background:var(--danger-soft);color:var(--danger)}
+  .badge.prio-media{background:var(--warn-soft);color:var(--warn)}
+  .badge.prio-baja{background:var(--neutral-soft);color:var(--text-muted)}
+
+  select.statusselect{border:1px solid var(--border);background:var(--surface);border-radius:6px;padding:4px 6px;font-size:12.5px}
+
+  details.taskdetail{margin-top:6px}
+  details.taskdetail summary{cursor:pointer;font-size:12px;color:var(--accent);list-style:none}
+  details.taskdetail summary::-webkit-details-marker{display:none}
+  details.taskdetail .tbody{padding-top:6px;font-size:12.5px;color:var(--text-muted);display:flex;flex-direction:column;gap:4px}
+  details.taskdetail textarea{width:100%;min-height:50px;margin-top:4px;border:1px solid var(--border);border-radius:6px;background:var(--surface);padding:6px 8px;color:var(--text);resize:vertical}
+  details.taskdetail label{font-weight:600;color:var(--text)}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .filters input[type="search"],.filters select{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:7px 10px;font-size:13px}
+  .filters input[type="search"]{flex:1;min-width:160px}
+
+  .btn{border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;border:1px solid transparent;transition:background .15s,border-color .15s,color .15s}
+  .btn-primary{background:var(--accent);color:var(--accent-contrast)}
+  .btn-primary:hover{opacity:.9}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{background:var(--surface-alt)}
+  .btn-ghost-danger{background:transparent;border:1px solid var(--border);color:var(--danger)}
+  .btn-ghost-danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:12px;color:var(--text-muted);font-weight:600}
+  .field input,.field select,.field textarea{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:8px 10px;color:var(--text)}
+  .field textarea{resize:vertical;min-height:60px}
+
+  .entry{border:1px solid var(--border);border-radius:8px;background:var(--surface-alt);padding:10px 12px;margin-bottom:8px}
+  .entry-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+  .entry-date{font-size:12px;color:var(--text-muted);font-weight:600}
+  .entry-text{font-size:13.5px}
+  .entry-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+  .entry-link{font-size:11.5px;color:var(--text-muted)}
+
+  .decision{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-alt);padding:12px 14px;margin-bottom:10px}
+  .decision h3{font-size:14.5px}
+  .decision .meta{font-size:11.5px;color:var(--text-muted);margin-bottom:6px}
+  .decision .row{font-size:13px;margin-bottom:3px}
+  .decision .row b{font-weight:600}
+
+  .metricgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+  .metriccard{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface-alt);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .metriccard .label{font-size:12px;color:var(--text-muted)}
+  .metriccard .valrow{display:flex;align-items:center;gap:8px}
+  .metriccard .valrow .big{font-size:20px;font-weight:700}
+  .metriccard .valrow .big.empty{font-size:12.5px;color:var(--text-muted);font-weight:400}
+  .metriccard input{width:70px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;background:var(--surface)}
+
+  .banner{border-radius:var(--radius);padding:12px 16px;font-size:13px;margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .banner.warn{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+  .banner.danger{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger)}
+
+  .confirmbox{background:var(--danger-soft);border:1px solid var(--danger);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:12.5px}
+  .confirmbox .actions{display:flex;gap:8px;margin-top:8px}
+
+  .configcard{margin-bottom:16px}
+  .configcard h3{font-size:14.5px;margin-bottom:4px}
+  .configcard p.hint{font-size:12.5px;color:var(--text-muted);margin-bottom:10px}
+  .toast{position:fixed;bottom:18px;right:18px;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  @media (max-width:860px){
+    .app{flex-direction:column}
+    .sidebar{width:100%;flex:none;height:auto;position:sticky;top:0;flex-direction:row;align-items:center;overflow-x:auto;padding:8px 10px;z-index:20}
+    .brand{padding:0 10px;flex:0 0 auto}
+    .brand p{display:none}
+    nav.navlist{flex-direction:row;flex:1;overflow-x:auto}
+    .navbtn{white-space:nowrap}
+    .sidefoot{display:none}
+    main.content{padding:18px 16px 60px}
+  }
+</style>
+</head>
+<body>
+
+<svg class="sr-only" aria-hidden="true">
+  <symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></symbol>
+  <symbol id="ic-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6v13l6-2 6 2 4-2V4l-4 2-6-2-6 2z"/></symbol>
+  <symbol id="ic-tasks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></symbol>
+  <symbol id="ic-log" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h14v16l-4-2-3 2-3-2-4 2z"/><path d="M8 9h8M8 13h5"/></symbol>
+  <symbol id="ic-decision" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3M12 18v3M4.2 7l2.6 1.5M17.2 15.5l2.6 1.5M4.2 17l2.6-1.5M17.2 8.5l2.6-1.5"/><circle cx="12" cy="12" r="3.3"/></symbol>
+  <symbol id="ic-metric" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.3-2-3.4-2.3.7a7.6 7.6 0 0 0-1.7-1l-.4-2.4h-4l-.4 2.4a7.6 7.6 0 0 0-1.7 1l-2.3-.7-2 3.4L6.6 11a7.6 7.6 0 0 0 0 2l-2 1.3 2 3.4 2.3-.7a7.6 7.6 0 0 0 1.7 1l.4 2.4h4l.4-2.4a7.6 7.6 0 0 0 1.7-1l2.3.7 2-3.4z"/></symbol>
+  <symbol id="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="ic-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Librook</h1>
+      <p>Panel de lanzamiento</p>
+    </div>
+    <nav class="navlist" aria-label="Secciones del panel">
+      <button class="navbtn" data-view="inicio"><svg><use href="#ic-home"/></svg>Inicio</button>
+      <button class="navbtn" data-view="roadmap"><svg><use href="#ic-map"/></svg>Hoja de ruta</button>
+      <button class="navbtn" data-view="tareas"><svg><use href="#ic-tasks"/></svg>Tareas</button>
+      <button class="navbtn" data-view="bitacora"><svg><use href="#ic-log"/></svg>Bitácora</button>
+      <button class="navbtn" data-view="decisiones"><svg><use href="#ic-decision"/></svg>Decisiones</button>
+      <button class="navbtn" data-view="metricas"><svg><use href="#ic-metric"/></svg>Métricas</button>
+      <button class="navbtn" data-view="config"><svg><use href="#ic-settings"/></svg>Configuración</button>
+    </nav>
+    <div class="sidefoot">
+      <div class="savebox" id="saveindicator" role="status" aria-live="polite">
+        <span class="savedot" id="savedot"></span>
+        <span id="savetext">Sin cambios todavía</span>
+      </div>
+      <button class="themebtn" id="themetoggle" type="button"></button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <section id="view-inicio" class="view"></section>
+    <section id="view-roadmap" class="view" hidden></section>
+    <section id="view-tareas" class="view" hidden></section>
+    <section id="view-bitacora" class="view" hidden></section>
+    <section id="view-decisiones" class="view" hidden></section>
+    <section id="view-metricas" class="view" hidden></section>
+    <section id="view-config" class="view" hidden></section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "librook_admin_panel_v1";
+  var BACKUP_KEY = "librook_admin_panel_v1_backup";
+  var THEME_KEY = "librook_admin_panel_theme";
+
+  var PHASES = [
+    {id:"f1", name:"Fase 1 — Auditoría y preparación"},
+    {id:"f2", name:"Fase 2 — Preparación del producto"},
+    {id:"f3", name:"Fase 3 — Publicación técnica"},
+    {id:"f4", name:"Fase 4 — Identidad y comunicación"},
+    {id:"f5", name:"Fase 5 — Primeros lectores"},
+    {id:"f6", name:"Fase 6 — Validación"},
+    {id:"f7", name:"Fase 7 — Crecimiento"}
+  ];
+
+  // Datos semilla: reflejan la auditoría real del repo hecha el 27/10/2026
+  // (tests corridos, DOCUMENTACION.md, memoria de sesiones previas). No son
+  // ejemplos — son el punto de partida real del proyecto.
+  function seedData(){
+    return {
+      schemaVersion: 1,
+      project: {
+        name: "Librook",
+        lastUpdated: "2026-10-27",
+        nextAction: {
+          text: "Decidir y configurar el almacenamiento de fotos del Mercado en el VPS (UPLOADS_DIR) — hoy bloquea probar venta/intercambio con fotos en producción.",
+          taskId: "f2-3"
+        }
+      },
+      tasks: [
+        {id:"f1-1",phaseId:"f1",name:"Revisar el estado funcional de Librook",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Confirmar que build, lint y las pruebas automatizadas pasan antes de dar nada por cerrado.",evidence:"Build OK, lint 0 errores (6 warnings preexistentes), 104/104 tests unitarios frontend, 154/155 backend (1 skip preexistente), 161/161 E2E — corridos el 27/10/2026.",notes:"",dependsOn:""},
+        {id:"f1-2",phaseId:"f1",name:"Verificar que las funcionalidades principales existen de verdad",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Biblioteca, reconocimiento de libros, Comunidad, Catálogo público y Mercado.",evidence:"Código confirmado en src/ y server/routes/ para las 5 áreas; DOCUMENTACION.md las describe con el mismo detalle.",notes:"",dependsOn:""},
+        {id:"f1-3",phaseId:"f1",name:"Comprobar pruebas y errores pendientes",priority:"media",status:"completada",updatedAt:"2026-10-27",desc:"",evidence:"Mismo run del 27/10. Backend tiene 1 test marcado skip desde antes — no investigado, bajo riesgo.",notes:"",dependsOn:""},
+        {id:"f1-4",phaseId:"f1",name:"Revisar seguridad, privacidad y permisos",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Aislamiento entre usuarias, modo demo de solo lectura, sesión vencida/inválida.",evidence:"e2e/security-isolation.spec.ts, security-demo.spec.ts, security-admin.spec.ts, session-expired.spec.ts — todos pasan.",notes:"",dependsOn:""},
+        {id:"f1-5",phaseId:"f1",name:"Confirmar qué falta realmente para una prueba con usuarios",priority:"alta",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Quedan 4 huecos documentados en DOCUMENTACION.md (sección 8): catálogo público vacío en producción, fotos del Mercado no habilitadas en el servidor real, contacto opcional sin decidir, y escaneo/OCR nunca probado en un celular físico. Ver Fase 2.",dependsOn:""},
+
+        {id:"f2-1",phaseId:"f2",name:"Revisar registro e inicio de sesión",priority:"alta",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"auth.spec.ts y session-expired.spec.ts pasan; rate limit de /auth/* confirmado en producción (429 pasados 20 intentos/15min).",notes:"",dependsOn:""},
+        {id:"f2-2",phaseId:"f2",name:"Verificar catálogo, fichas y publicación de libros",priority:"alta",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"catalog.spec.ts y work-page.spec.ts pasan.",notes:"El catálogo público está VACÍO en producción: el backfill que llena las fichas de obra a partir de los libros con ISBN nunca se corrió contra datos reales. Hoy toda búsqueda cae en Open Library.",dependsOn:"Decisión: cuándo correr el backfill contra producción"},
+        {id:"f2-3",phaseId:"f2",name:"Comprobar venta, intercambio y contacto entre usuarios",priority:"alta",status:"bloqueada",updatedAt:"2026-10-27",desc:"",evidence:"marketplace-api.spec.ts y marketplace-ui.spec.ts pasan en local.",notes:"Bloqueo real: subir fotos al Mercado no funciona en producción — la carpeta UPLOADS_DIR no está configurada en el VPS (queda comentada/opcional en server/.env.example). Además, el dato de contacto sigue siendo opcional (ver Decisiones).",dependsOn:"f3-6 (almacenamiento de imágenes en el VPS)"},
+        {id:"f2-4",phaseId:"f2",name:"Revisar experiencia móvil",priority:"media",status:"en-curso",updatedAt:"2026-10-22",desc:"",evidence:"mobile.spec.ts pasa; desbordes horizontales reales encontrados y corregidos en 8 viewports (320–1440px) en una sesión anterior.",notes:"El escaneo de ISBN y el OCR de tapa nunca se probaron en un celular físico — solo con cámara y fotos simuladas.",dependsOn:""},
+        {id:"f2-5",phaseId:"f2",name:"Terminar o validar el tutorial de bienvenida",priority:"media",status:"completada",updatedAt:"2026-10-26",desc:"",evidence:"tour.spec.ts: 8 casos (roles, mobile, accesibilidad, reduced-motion) — todos pasan.",notes:"",dependsOn:""},
+        {id:"f2-6",phaseId:"f2",name:"Identificar fricciones para una persona que usa la app por primera vez",priority:"alta",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Todavía no hubo ninguna sesión de uso con una persona ajena al desarrollo — solo cuentas de prueba técnicas.",dependsOn:""},
+
+        {id:"f3-1",phaseId:"f3",name:"Evaluar el alojamiento existente y las alternativas gratuitas",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Ya hay un VPS propio funcionando (detrás de Cloudflare) y en uso — no se compararon alternativas gratuitas. Decisión pendiente: ¿conviene mantenerlo para el lanzamiento con lectores reales?",dependsOn:""},
+        {id:"f3-2",phaseId:"f3",name:"Revisar compatibilidad con backend y PostgreSQL",priority:"baja",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"Postgres 14.24 en el VPS vs 17 en local — compatibles, confirmado con un dump/restore real.",notes:"",dependsOn:""},
+        {id:"f3-3",phaseId:"f3",name:"Evaluar dominio gratuito, subdominio y eventual dominio propio",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Hoy corre bajo ailonline.com.ar/librook — un dominio que no es exclusivo del proyecto. Sin decisión tomada.",dependsOn:""},
+        {id:"f3-4",phaseId:"f3",name:"Preparar configuración de producción sin exponer secretos",priority:"media",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:".env.example en ambas carpetas sin secretos reales.",notes:"deploy.sh pasa DATABASE_URL completo como argumento de psql en las migraciones inline — funciona, pero queda visible en ps aux del VPS (riesgo bajo: solo root tiene shell ahí). No es la práctica más prolija.",dependsOn:""},
+        {id:"f3-5",phaseId:"f3",name:"Definir copias de seguridad y recuperación",priority:"alta",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"Backup real de producción hecho y restaurado en una base aislada para comparar conteos (2026-10-21); procedimiento con nombre de archivo exacto (sin glob) documentado.",notes:"",dependsOn:""},
+        {id:"f3-6",phaseId:"f3",name:"Verificar HTTPS, autenticación, permisos y almacenamiento de imágenes",priority:"alta",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"HTTPS (Cloudflare + nginx), autenticación y permisos por usuario ya verificados en producción real.",notes:"Falta: configurar el almacenamiento de imágenes del Mercado (UPLOADS_DIR) en el VPS — hoy no está habilitado ahí. Ver f2-3.",dependsOn:""},
+        {id:"f3-7",phaseId:"f3",name:"Preparar un checklist de despliegue",priority:"media",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"deploy.sh con set -euo pipefail, backup automático antes de copiar archivos, doble health check (API + base) y rollback automático de código si falla — confirmado funcionando en despliegues reales.",notes:"",dependsOn:""},
+
+        {id:"f4-1",phaseId:"f4",name:"Definir la propuesta de valor",priority:"alta",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f4-2",phaseId:"f4",name:"Preparar un Instagram propio de Librook",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f4-3",phaseId:"f4",name:"Definir descripción, identidad visual y enlace",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Ya existe una dirección visual propia para la app (tokens de color y tipografía, 'Segunda edición') — se puede reutilizar como base para redes.",dependsOn:""},
+        {id:"f4-4",phaseId:"f4",name:"Crear las primeras publicaciones",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f4-5",phaseId:"f4",name:"Preparar una presentación sencilla del proyecto",priority:"baja",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"DOCUMENTACION.md ya tiene una base de contenido reutilizable (qué hace la app, comparación con 3 apps similares).",dependsOn:""},
+
+        {id:"f5-1",phaseId:"f5",name:"Preparar una invitación para lectores de Rosario y alrededores",priority:"alta",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f5-2",phaseId:"f5",name:"Conseguir los primeros usuarios de prueba",priority:"alta",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Producción ya tiene usuarios registrados (5, según el backup del 21/10) — falta confirmar si son cuentas de prueba propias o lectores reales antes de contarlos como 'primeros lectores'. Ver Decisiones.",dependsOn:""},
+        {id:"f5-3",phaseId:"f5",name:"Ayudarles a publicar libros y realizar acciones útiles",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f5-4",phaseId:"f5",name:"Registrar sus dificultades y sugerencias",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f5-5",phaseId:"f5",name:"Contactar bibliotecas, clubes de lectura y espacios culturales",priority:"baja",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+
+        {id:"f6-1",phaseId:"f6",name:"Medir registros",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+        {id:"f6-2",phaseId:"f6",name:"Medir publicaciones de libros",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+        {id:"f6-3",phaseId:"f6",name:"Medir contactos e intercambios concretados",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+        {id:"f6-4",phaseId:"f6",name:"Comprobar cuántos usuarios regresan",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+        {id:"f6-5",phaseId:"f6",name:"Identificar los principales obstáculos",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+        {id:"f6-6",phaseId:"f6",name:"Priorizar mejoras según evidencia real",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 5"},
+
+        {id:"f7-1",phaseId:"f7",name:"Reforzar los canales que generan usuarios activos",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 6"},
+        {id:"f7-2",phaseId:"f7",name:"Mejorar la experiencia a partir del feedback",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 6"},
+        {id:"f7-3",phaseId:"f7",name:"Evaluar colaboraciones y actividades presenciales",priority:"baja",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 6"},
+        {id:"f7-4",phaseId:"f7",name:"Considerar dominio propio o publicidad solo con una razón concreta",priority:"baja",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:"Fase 6"}
+      ],
+      log: [
+        {id:"l1",date:"2026-08-04",text:"Se agrega la función Comunidad: reflexiones públicas por libro, con comentarios y 'me gusta'.",taskId:null},
+        {id:"l2",date:"2026-08-13",text:"Se agrega el modo invitado 'Ver sin cuenta' (biblioteca de ejemplo).",taskId:null},
+        {id:"l3",date:"2026-10-21",text:"Auditoría completa: el modo invitado pasa a solo lectura, rate limiting en /auth, diseño y primera implementación del catálogo público (obras/autores/ediciones), backup real de producción y deploy de la dirección visual 'Segunda edición' al catálogo.",taskId:null},
+        {id:"l4",date:"2026-10-22",text:"Migración visual al resto de la app + auditoría integral: dependencias a 0 vulnerabilidades, focus-trap en los modales, tablas accesibles para los gráficos del panel de usuarias, revisión con axe-core, Lighthouse de 82 a 97, e inicio de la suite E2E con Playwright.",taskId:null},
+        {id:"l5",date:"2026-10-26",text:"Auditoría autónoma: se corrige un bug real (la biblioteca se rompía con un libro sin autor), la suite E2E pasa de 33/161 a 161/161, y se suman el Mercado de libros, el reconocimiento de tapas por OCR, ZXing como respaldo de escaneo, el tutorial guiado y la documentación de producto.",taskId:null},
+        {id:"l6",date:"2026-10-27",text:"Se cierra con un PR la sección 'Descubrir' (161/161 E2E, 104/104 unitarios frontend, 154/155 backend) y se mergea a main — deploy automático disparado.",taskId:null},
+        {id:"l7",date:"2026-10-27",text:"Se audita el estado real del repo (sin inventar datos) y se crea este panel de administración local como centro de control del lanzamiento.",taskId:null}
+      ],
+      decisions: [
+        {id:"d1",topic:"Vínculo entre ediciones y obras del catálogo",decision:"Vincular solo por identificador real (ISBN o clave de Open Library), nunca por similitud de texto.",reason:"Evitar que se fusionen obras distintas por error.",date:"2026-10-21",status:"confirmada",consequences:"El script de backfill nunca fusiona por texto; las tablas nuevas son aditivas y no tocan los libros existentes."},
+        {id:"d2",topic:"Modo invitado ('Ver sin cuenta')",decision:"La cuenta demo compartida queda bloqueada para escritura (403) en el backend.",reason:"Evitar colisiones entre invitados simultáneos y que contaminen el feed de Comunidad.",date:"2026-10-21",status:"confirmada",consequences:"Middleware blockDemoWrites en books/community/settings; probado con 2 cuentas simultáneas."},
+        {id:"d3",topic:"Almacenamiento de fotos del Mercado",decision:"Guardarlas en el VPS propio (no un servicio externo), con nombres aleatorios y validación real del archivo.",reason:"Evitar depender de un servicio de pago y mantener control sobre los datos de las usuarias.",date:"2026-10-22",status:"confirmada",consequences:"Falta configurar UPLOADS_DIR en el VPS de producción para que funcione ahí (ver tarea f2-3/f3-6)."},
+        {id:"d4",topic:"Reconocimiento de tapas por foto",decision:"Tesseract.js corriendo en el navegador, sin mandar fotos a ningún servidor.",reason:"Gratis y no expone fotos de usuarias a terceros.",date:"2026-10-22",status:"confirmada",consequences:"Carga diferida (lazy-load) para no pesar el bundle inicial; precisión no probada en celulares físicos reales."},
+        {id:"d5",topic:"¿El contacto debe ser obligatorio en una publicación del Mercado?",decision:"Sin decidir todavía — hoy es opcional.",reason:"Puede ser intencional (nadie está obligado a compartir un dato propio) o un descuido.",date:"2026-10-26",status:"propuesta",consequences:"Si se decide exigirlo, hay que actualizar MarketplaceModal.tsx, listingInput.js y los E2E que hoy publican sin contacto."},
+        {id:"d6",topic:"Dominio y alojamiento para el lanzamiento público",decision:"Sin decidir todavía — hoy corre bajo ailonline.com.ar/librook.",reason:"Ese dominio no es exclusivo del proyecto; falta confirmar si conviene para una difusión más amplia en Rosario y alrededores.",date:"2026-10-27",status:"propuesta",consequences:"CONTRADICCIÓN A REVISAR: la app ya está desplegada y, según el backup del 21/10, tiene 5 usuarios y 15 libros reales en producción — confirmar si son cuentas de prueba propias o ya hay lectores reales antes de tratar esto como un 'pre-lanzamiento' desde cero."}
+      ],
+      metrics: {
+        counters: {invited:null, registered:null, publishedBook:null, usefulAction:null, contacts:null, exchanges:null, returned:null},
+        notes: []
+      }
+    };
+  }
+
+  var METRIC_LABELS = {
+    invited:"Personas invitadas",
+    registered:"Usuarios registrados",
+    publishedBook:"Publicaron al menos un libro",
+    usefulAction:"Realizaron una acción útil",
+    contacts:"Contactos entre lectores",
+    exchanges:"Intercambios concretados",
+    returned:"Usuarios que regresaron"
+  };
+
+  var MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  function fmtDate(iso){
+    if(!iso) return "";
+    var p = iso.split("-");
+    if(p.length!==3) return iso;
+    return parseInt(p[2],10)+" "+MESES[parseInt(p[1],10)-1]+" "+p[0];
+  }
+  function todayISO(){
+    var d=new Date();
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function escapeHtml(s){
+    if(s==null) return "";
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function uid(prefix){
+    return prefix+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  }
+
+  // ---------- Estado y persistencia ----------
+  var state = null;
+  var storageBroken = false;
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && Array.isArray(parsed.tasks)) return parsed;
+      }
+    }catch(e){ storageBroken = true; }
+    return seedData();
+  }
+
+  var saveTimer=null, lastSavedAt=null;
+  function scheduleSave(){
+    setSaveIndicator("saving");
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(persist,350);
+  }
+  function persist(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      lastSavedAt = Date.now();
+      storageBroken=false;
+      setSaveIndicator("saved");
+      showToast("Guardado");
+    }catch(e){
+      storageBroken=true;
+      setSaveIndicator("error");
+      showToast("No se pudo guardar — exportá un respaldo");
+    }
+  }
+  function snapshotBackup(){
+    try{ localStorage.setItem(BACKUP_KEY, JSON.stringify({savedAt:new Date().toISOString(), data:state})); }catch(e){}
+  }
+
+  function setSaveIndicator(kind){
+    var dot=document.getElementById("savedot"), txt=document.getElementById("savetext");
+    dot.className="savedot"+(kind==="saved"?" saved":kind==="error"?" error":"");
+    if(kind==="saving") txt.textContent="Guardando…";
+    else if(kind==="error") txt.textContent="Error al guardar";
+    else updateSavedAgo();
+  }
+  setInterval(function(){ if(lastSavedAt) updateSavedAgo(); }, 5000);
+  function updateSavedAgo(){
+    var txt=document.getElementById("savetext");
+    if(!lastSavedAt){ txt.textContent="Sin cambios todavía"; return; }
+    var s=Math.round((Date.now()-lastSavedAt)/1000);
+    txt.textContent = s<3 ? "Guardado ✓" : s<60 ? "Guardado hace "+s+"s" : "Guardado hace "+Math.round(s/60)+"min";
+  }
+
+  var toastTimer=null;
+  function showToast(msg){
+    var t=document.getElementById("toast");
+    t.textContent=msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){ t.classList.remove("show"); },1800);
+  }
+
+  // ---------- Cálculos derivados ----------
+  function computeStats(){
+    var total=state.tasks.length, done=0;
+    var byPhase={};
+    PHASES.forEach(function(p){ byPhase[p.id]={total:0,done:0}; });
+    state.tasks.forEach(function(t){
+      byPhase[t.phaseId].total++;
+      if(t.status==="completada"){ done++; byPhase[t.phaseId].done++; }
+    });
+    var percent = total? Math.round(done/total*100):0;
+    var currentPhase = null;
+    for(var i=0;i<PHASES.length;i++){
+      var ph=byPhase[PHASES[i].id];
+      if(ph.total>0 && ph.done<ph.total){ currentPhase=PHASES[i]; break; }
+    }
+    if(!currentPhase) currentPhase = PHASES[PHASES.length-1];
+    var blockers = state.tasks.filter(function(t){ return t.status==="bloqueada"; });
+    return {total:total, done:done, percent:percent, byPhase:byPhase, currentPhase:currentPhase, blockers:blockers};
+  }
+
+  function suggestNextAction(){
+    var prio={alta:0,media:1,baja:2};
+    var candidates = state.tasks.filter(function(t){ return t.status==="bloqueada"; })
+      .sort(function(a,b){ return prio[a.priority]-prio[b.priority]; });
+    if(!candidates.length) candidates = state.tasks.filter(function(t){ return t.status==="en-curso"; })
+      .sort(function(a,b){ return prio[a.priority]-prio[b.priority]; });
+    if(!candidates.length) candidates = state.tasks.filter(function(t){ return t.status==="pendiente"; })
+      .sort(function(a,b){ return prio[a.priority]-prio[b.priority]; });
+    return candidates[0] || null;
+  }
+
+  // ---------- Vistas ----------
+  var VIEWS=["inicio","roadmap","tareas","bitacora","decisiones","metricas","config"];
+  var activeView="inicio";
+
+  function switchView(id){
+    activeView=id;
+    VIEWS.forEach(function(v){
+      document.getElementById("view-"+v).hidden = v!==id;
+    });
+    document.querySelectorAll(".navbtn").forEach(function(b){
+      if(b.getAttribute("data-view")===id) b.setAttribute("aria-current","page");
+      else b.removeAttribute("aria-current");
+    });
+    renderActive();
+  }
+  function renderActive(){
+    if(activeView==="inicio") renderInicio();
+    else if(activeView==="roadmap") renderRoadmap();
+    else if(activeView==="tareas") renderTareas();
+    else if(activeView==="bitacora") renderBitacora();
+    else if(activeView==="decisiones") renderDecisiones();
+    else if(activeView==="metricas") renderMetricas();
+    else if(activeView==="config") renderConfig();
+  }
+
+  function taskById(id){ return state.tasks.filter(function(t){return t.id===id;})[0]; }
+
+  function statusLabel(s){
+    return {pendiente:"Pendiente","en-curso":"En curso",bloqueada:"Bloqueada",completada:"Completada"}[s]||s;
+  }
+  function prioLabel(p){ return {alta:"Prioridad alta",media:"Prioridad media",baja:"Prioridad baja"}[p]||p; }
+
+  function renderInicio(){
+    var st=computeStats();
+    var next=state.project.nextAction;
+    var nextTask = next && next.taskId ? taskById(next.taskId) : null;
+    var html = "";
+    html += '<div class="hero">';
+    html += '  <div class="hero-top">';
+    html += '    <div>';
+    html += '      <h2 style="font-size:22px">'+escapeHtml(state.project.name)+'</h2>';
+    html += '      <p style="color:var(--text-muted);font-size:13px">Última actualización: '+fmtDate(state.project.lastUpdated)+' · Fase actual: <b>'+escapeHtml(st.currentPhase.name)+'</b></p>';
+    html += '    </div>';
+    html += '    <div style="text-align:right">';
+    html += '      <div class="pct">'+st.percent+'%</div>';
+    html += '      <div style="font-size:11.5px;color:var(--text-muted)">'+st.done+' de '+st.total+' tareas completadas</div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="progressbar"><span style="width:'+st.percent+'%"></span></div>';
+    html += '</div>';
+
+    html += '<div class="nextaction" style="margin-bottom:14px">';
+    html += '  <div class="tag">Próxima acción</div>';
+    html += '  <p>'+escapeHtml(next ? next.text : "Sin definir — elegí una tarea en Tareas o Hoja de ruta.")+'</p>';
+    if(nextTask){
+      html += '  <p style="margin-top:6px;font-size:12px;color:var(--text-muted)">Tarea vinculada: '+escapeHtml(nextTask.name)+'</p>';
+    }
+    html += '  <div style="margin-top:10px;display:flex;gap:8px">';
+    html += '    <button class="btn btn-ghost btn-sm" data-action="suggest-next">Sugerir automáticamente</button>';
+    html += '    <button class="btn btn-ghost btn-sm" data-action="edit-next">Editar</button>';
+    html += '  </div>';
+    html += '  <div id="nextedit" hidden style="margin-top:10px">';
+    html += '    <textarea id="nextedit-text" rows="2" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--surface);color:var(--text)">'+escapeHtml(next?next.text:"")+'</textarea>';
+    html += '    <div style="margin-top:6px"><button class="btn btn-primary btn-sm" data-action="save-next">Guardar</button> <button class="btn btn-ghost btn-sm" data-action="cancel-next">Cancelar</button></div>';
+    html += '  </div>';
+    html += '</div>';
+
+    if(st.blockers.length){
+      html += '<div class="blockerbox" style="margin-bottom:14px">';
+      html += '  <div class="tag">Bloqueos ('+st.blockers.length+')</div>';
+      html += '  <ul>';
+      st.blockers.forEach(function(t){
+        html += '<li>'+escapeHtml(t.name)+(t.notes? ' — '+escapeHtml(t.notes.slice(0,120))+(t.notes.length>120?"…":"") : '')+'</li>';
+      });
+      html += '  </ul>';
+      html += '</div>';
+    }
+
+    html += '<div class="cardrow" style="margin-bottom:16px">';
+    html += statCard("Hoja de ruta", st.done+"/"+st.total+" tareas", "roadmap");
+    html += statCard("Decisiones abiertas", state.decisions.filter(function(d){return d.status==="propuesta";}).length+" sin confirmar", "decisiones");
+    html += statCard("Entradas de bitácora", state.log.length, "bitacora");
+    html += '</div>';
+
+    html += '<details class="helpbox"><summary>¿Cómo usar este panel?</summary>';
+    html += '  <div class="helpbody">';
+    html += '  <ul>';
+    html += '    <li>Marcá el avance real en <b>Tareas</b> o <b>Hoja de ruta</b> — una tarea solo pasa a "Completada" cuando tengas evidencia concreta.</li>';
+    html += '    <li>Anotá lo que vayas haciendo en <b>Bitácora</b>, y las decisiones grandes en <b>Decisiones</b>.</li>';
+    html += '    <li>Los datos se guardan solos en este navegador. Hacé un respaldo en <b>Configuración</b> de tanto en tanto, y siempre antes de cambiar de computadora.</li>';
+    html += '  </ul>';
+    html += '  </div></details>';
+
+    document.getElementById("view-inicio").innerHTML = html;
+  }
+  function statCard(label, value, view){
+    return '<div class="card" style="cursor:pointer" data-action="goto" data-view="'+view+'">'+
+      '<div class="stat"><span class="label">'+label+'</span><span class="value">'+escapeHtml(String(value))+'</span></div></div>';
+  }
+
+  function taskRow(t){
+    var html = '<div class="task" data-taskid="'+t.id+'">';
+    html += '<div class="task-top">';
+    html += '  <div class="task-main">';
+    html += '    <div class="task-name">'+escapeHtml(t.name)+'</div>';
+    html += '    <div class="task-meta">';
+    html += '      <span class="badge prio-'+t.priority+'">'+prioLabel(t.priority)+'</span>';
+    html += '      <span>Actualizada: '+fmtDate(t.updatedAt)+'</span>';
+    if(t.dependsOn) html += '      <span>Depende de: '+escapeHtml(t.dependsOn)+'</span>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '  <div class="task-controls">';
+    html += '    <span class="badge st-'+t.status+'"><span class="dot"></span>'+statusLabel(t.status)+'</span>';
+    html += '    <label class="sr-only" for="sel-'+t.id+'">Estado de "'+escapeHtml(t.name)+'"</label>';
+    html += '    <select class="statusselect" id="sel-'+t.id+'" data-action="set-status" data-taskid="'+t.id+'">';
+    ["pendiente","en-curso","bloqueada","completada"].forEach(function(s){
+      html += '<option value="'+s+'"'+(t.status===s?" selected":"")+'>'+statusLabel(s)+'</option>';
+    });
+    html += '    </select>';
+    html += '  </div>';
+    html += '</div>';
+    html += '<details class="taskdetail"><summary>Notas y evidencia</summary><div class="tbody">';
+    if(t.desc) html += '<div>'+escapeHtml(t.desc)+'</div>';
+    if(t.evidence) html += '<div><b>Evidencia:</b> '+escapeHtml(t.evidence)+'</div>';
+    if(t.notes) html += '<div><b>Notas:</b> '+escapeHtml(t.notes)+'</div>';
+    html += '<label for="notes-'+t.id+'">Agregar o editar nota</label>';
+    html += '<textarea id="notes-'+t.id+'" data-action="edit-notes" data-taskid="'+t.id+'">'+escapeHtml(t.notes)+'</textarea>';
+    html += '</div></details>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderRoadmap(){
+    var st=computeStats();
+    var html='<div class="sectionhead"><div><h2>Hoja de ruta</h2><div class="sub">Lanzamiento organizado en 7 fases. Abrí una fase para ver y editar sus tareas.</div></div></div>';
+    PHASES.forEach(function(p, idx){
+      var ph=st.byPhase[p.id];
+      var openAttr = (p.id===st.currentPhase.id) ? " open" : "";
+      html += '<details class="phase"'+openAttr+'>';
+      html += '  <summary><span class="ph-left">'+escapeHtml(p.name)+'</span><span class="phase-progress">'+ph.done+'/'+ph.total+' completadas</span></summary>';
+      html += '  <div class="phasebody">';
+      state.tasks.filter(function(t){return t.phaseId===p.id;}).forEach(function(t){ html+=taskRow(t); });
+      html += '  </div>';
+      html += '</details>';
+    });
+    document.getElementById("view-roadmap").innerHTML = html;
+  }
+
+  var taskFilters = {q:"", phase:"all", status:"all", priority:"all"};
+  function renderTareas(){
+    var html = '<div class="sectionhead"><div><h2>Tareas</h2><div class="sub">Todas las tareas del lanzamiento, filtrables.</div></div></div>';
+    html += '<div class="filters">';
+    html += '  <input type="search" id="task-q" placeholder="Buscar por nombre…" value="'+escapeHtml(taskFilters.q)+'" aria-label="Buscar tareas">';
+    html += '  <select id="task-f-phase" aria-label="Filtrar por fase"><option value="all">Todas las fases</option>';
+    PHASES.forEach(function(p){ html+='<option value="'+p.id+'"'+(taskFilters.phase===p.id?" selected":"")+'>'+escapeHtml(p.name)+'</option>'; });
+    html += '  </select>';
+    html += '  <select id="task-f-status" aria-label="Filtrar por estado"><option value="all">Todos los estados</option>';
+    ["pendiente","en-curso","bloqueada","completada"].forEach(function(s){ html+='<option value="'+s+'"'+(taskFilters.status===s?" selected":"")+'>'+statusLabel(s)+'</option>'; });
+    html += '  </select>';
+    html += '  <select id="task-f-prio" aria-label="Filtrar por prioridad"><option value="all">Toda prioridad</option>';
+    ["alta","media","baja"].forEach(function(s){ html+='<option value="'+s+'"'+(taskFilters.priority===s?" selected":"")+'>'+prioLabel(s)+'</option>'; });
+    html += '  </select>';
+    html += '</div>';
+    html += '<div id="tareas-results"></div>';
+    document.getElementById("view-tareas").innerHTML = html;
+    renderTareaResults();
+  }
+  // Actualiza solo la lista filtrada, sin reconstruir la barra de filtros:
+  // reconstruirla en cada tecla le hacía perder el foco al buscador.
+  function renderTareaResults(){
+    var container = document.getElementById("tareas-results");
+    if(!container){ renderTareas(); return; }
+    var list = state.tasks.filter(function(t){
+      if(taskFilters.phase!=="all" && t.phaseId!==taskFilters.phase) return false;
+      if(taskFilters.status!=="all" && t.status!==taskFilters.status) return false;
+      if(taskFilters.priority!=="all" && t.priority!==taskFilters.priority) return false;
+      if(taskFilters.q && t.name.toLowerCase().indexOf(taskFilters.q.toLowerCase())===-1) return false;
+      return true;
+    });
+    var html = '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">'+list.length+' tarea'+(list.length===1?"":"s")+'</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    if(!list.length) html += '<p style="color:var(--text-muted);font-size:13px">Ninguna tarea coincide con el filtro.</p>';
+    list.forEach(function(t){ html+=taskRow(t); });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function renderBitacora(){
+    var html = '<div class="sectionhead"><div><h2>Bitácora</h2><div class="sub">Qué hiciste, qué cambió, qué quedó pendiente.</div></div></div>';
+    html += '<div class="card" style="margin-bottom:16px">';
+    html += '  <div class="form-grid">';
+    html += '    <div class="field"><label for="log-date">Fecha</label><input type="date" id="log-date" value="'+todayISO()+'"></div>';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="log-task">Vincular a una tarea (opcional)</label><select id="log-task"><option value="">— ninguna —</option>';
+    state.tasks.forEach(function(t){ html+='<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>'; });
+    html += '    </select></div>';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="log-text">Entrada</label><textarea id="log-text" placeholder="Qué hiciste, qué comprobaste, qué quedó pendiente…"></textarea></div>';
+    html += '  </div>';
+    html += '  <button class="btn btn-primary" data-action="add-log">Agregar entrada</button>';
+    html += '</div>';
+
+    var sorted = state.log.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
+    sorted.forEach(function(e){
+      var t = e.taskId ? taskById(e.taskId) : null;
+      html += '<div class="entry">';
+      html += '  <div class="entry-head"><span class="entry-date">'+fmtDate(e.date)+'</span></div>';
+      html += '  <div class="entry-text">'+escapeHtml(e.text)+'</div>';
+      html += '  <div class="entry-foot">';
+      html += '    <span class="entry-link">'+(t?('Vinculada a: '+escapeHtml(t.name)):'')+'</span>';
+      html += '    <button class="btn btn-ghost-danger btn-sm" data-action="del-log" data-id="'+e.id+'">Borrar</button>';
+      html += '  </div>';
+      html += '</div>';
+    });
+    document.getElementById("view-bitacora").innerHTML = html;
+  }
+
+  function renderDecisiones(){
+    var html = '<div class="sectionhead"><div><h2>Decisiones y documentación</h2><div class="sub">Qué se decidió, por qué, y qué sigue abierto.</div></div></div>';
+    html += '<div class="card" style="margin-bottom:16px">';
+    html += '  <div class="form-grid">';
+    html += '    <div class="field"><label for="dec-topic">Tema</label><input id="dec-topic" placeholder="Ej: dominio del proyecto"></div>';
+    html += '    <div class="field"><label for="dec-date">Fecha</label><input type="date" id="dec-date" value="'+todayISO()+'"></div>';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="dec-decision">Decisión tomada</label><textarea id="dec-decision"></textarea></div>';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="dec-reason">Motivo</label><textarea id="dec-reason"></textarea></div>';
+    html += '    <div class="field"><label for="dec-status">Estado</label><select id="dec-status"><option value="propuesta">Propuesta</option><option value="confirmada">Confirmada</option><option value="reemplazada">Reemplazada</option></select></div>';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="dec-consequences">Consecuencias o tareas relacionadas</label><textarea id="dec-consequences"></textarea></div>';
+    html += '  </div>';
+    html += '  <button class="btn btn-primary" data-action="add-decision">Agregar decisión</button>';
+    html += '</div>';
+
+    var sorted = state.decisions.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
+    sorted.forEach(function(d){
+      html += '<div class="decision">';
+      html += '  <h3>'+escapeHtml(d.topic)+'</h3>';
+      html += '  <div class="meta">'+fmtDate(d.date)+' · <span class="badge st-'+(d.status==="confirmada"?"completada":d.status==="propuesta"?"en-curso":"bloqueada")+'">'+escapeHtml(d.status)+'</span></div>';
+      html += '  <div class="row"><b>Decisión:</b> '+escapeHtml(d.decision)+'</div>';
+      html += '  <div class="row"><b>Motivo:</b> '+escapeHtml(d.reason)+'</div>';
+      if(d.consequences) html += '  <div class="row"><b>Consecuencias:</b> '+escapeHtml(d.consequences)+'</div>';
+      html += '  <div style="margin-top:8px"><button class="btn btn-ghost-danger btn-sm" data-action="del-decision" data-id="'+d.id+'">Borrar</button></div>';
+      html += '</div>';
+    });
+
+    html += '<div class="card" style="margin-top:8px"><h3 style="font-size:14px">Documentación del repositorio</h3>';
+    html += '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">';
+    html += '<li><code>DOCUMENTACION.md</code> — qué hace Librook hoy, y la sección 8 "Lo que falta" (fuente de varios de los huecos listados en este panel).</li>';
+    html += '<li><code>docs/arquitectura-catalogo-publico.md</code> — diseño del catálogo público (obras/autores/ediciones).</li>';
+    html += '<li><code>docs/marketplace-imagenes.md</code> y <code>docs/reconocimiento-libros.md</code> — specs del Mercado y del OCR/escaneo.</li>';
+    html += '<li><code>CONTINUE.md</code> (raíz del repo) — continuidad entre sesiones de trabajo.</li>';
+    html += '</ul></div>';
+
+    document.getElementById("view-decisiones").innerHTML = html;
+  }
+
+  function renderMetricas(){
+    var m = state.metrics;
+    var html = '<div class="sectionhead"><div><h2>Métricas y validación</h2><div class="sub">Resultados reales de la prueba con lectores. Sin campaña todavía, así que está todo vacío — y así debe quedar hasta que haya datos de verdad.</div></div></div>';
+    html += '<div class="metricgrid">';
+    Object.keys(METRIC_LABELS).forEach(function(k){
+      var v = m.counters[k];
+      html += '<div class="metriccard">';
+      html += '  <span class="label">'+METRIC_LABELS[k]+'</span>';
+      html += '  <div class="valrow">';
+      html += '    <span class="big'+(v==null?" empty":"")+'">'+(v==null? "Sin datos todavía" : v)+'</span>';
+      html += '  </div>';
+      html += '  <div class="valrow"><label class="sr-only" for="m-'+k+'">Actualizar '+METRIC_LABELS[k]+'</label><input type="number" min="0" id="m-'+k+'" placeholder="0"> <button class="btn btn-ghost btn-sm" data-action="set-metric" data-key="'+k+'">Registrar</button></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    html += '<div class="card">';
+    html += '  <h3 style="font-size:14.5px">Comentarios y problemas detectados</h3>';
+    html += '  <div class="form-grid" style="margin-top:8px">';
+    html += '    <div class="field" style="grid-column:1/-1"><label for="mn-text">Nueva nota</label><textarea id="mn-text" placeholder="Qué dijo o qué le costó a quien probó la app…"></textarea></div>';
+    html += '  </div>';
+    html += '  <button class="btn btn-primary btn-sm" data-action="add-metric-note">Agregar</button>';
+    html += '</div>';
+
+    if(!m.notes.length){
+      html += '<p style="color:var(--text-muted);font-size:13px;margin-top:10px">Sin datos todavía.</p>';
+    }else{
+      var sorted = m.notes.slice().sort(function(a,b){ return a.date<b.date?1:-1; });
+      sorted.forEach(function(n){
+        html += '<div class="entry">';
+        html += '  <div class="entry-head"><span class="entry-date">'+fmtDate(n.date)+'</span></div>';
+        html += '  <div class="entry-text">'+escapeHtml(n.text)+'</div>';
+        html += '  <div class="entry-foot"><span></span><button class="btn btn-ghost-danger btn-sm" data-action="del-metric-note" data-id="'+n.id+'">Borrar</button></div>';
+        html += '</div>';
+      });
+    }
+    document.getElementById("view-metricas").innerHTML = html;
+  }
+
+  function renderConfig(){
+    var html = '<div class="sectionhead"><div><h2>Configuración y respaldo</h2></div></div>';
+
+    if(storageBroken){
+      html += '<div class="banner danger">Este navegador no está guardando los cambios (almacenamiento local bloqueado o lleno). Exportá un respaldo manual antes de cerrar la pestaña.</div>';
+    }
+
+    html += '<div class="card configcard">';
+    html += '  <h3>Exportar respaldo</h3>';
+    html += '  <p class="hint">Descarga todo lo de este panel (tareas, bitácora, decisiones, métricas) en un archivo JSON.</p>';
+    html += '  <button class="btn btn-primary" data-action="export-json">Exportar JSON</button>';
+    html += '</div>';
+
+    html += '<div class="card configcard">';
+    html += '  <h3>Importar respaldo</h3>';
+    html += '  <p class="hint">Reemplaza los datos actuales por los de un archivo exportado antes. Se guarda automáticamente una copia de lo que había antes de importar.</p>';
+    html += '  <input type="file" id="import-file" accept="application/json">';
+    html += '  <div id="import-preview"></div>';
+    html += '</div>';
+
+    var backupRaw = null;
+    try{ backupRaw = localStorage.getItem(BACKUP_KEY); }catch(e){}
+    if(backupRaw){
+      var backup = JSON.parse(backupRaw);
+      html += '<div class="card configcard">';
+      html += '  <h3>Respaldo automático anterior</h3>';
+      html += '  <p class="hint">Se guarda solo, antes de cada importación o reinicio. Último: '+new Date(backup.savedAt).toLocaleString("es-AR")+'.</p>';
+      html += '  <button class="btn btn-ghost" data-action="restore-auto-backup">Restaurar este respaldo</button>';
+      html += '</div>';
+    }
+
+    html += '<div class="card configcard">';
+    html += '  <h3>Reiniciar todo</h3>';
+    html += '  <p class="hint">Borra tus cambios y vuelve a los datos de partida de este panel. Hacé un respaldo antes.</p>';
+    html += '  <button class="btn btn-ghost-danger" data-action="reset-confirm">Reiniciar</button>';
+    html += '  <div id="reset-confirm-box"></div>';
+    html += '</div>';
+
+    html += '<div class="card configcard">';
+    html += '  <h3>Dónde viven estos datos</h3>';
+    html += '  <p class="hint">Se guardan en el almacenamiento local de este navegador, en esta computadora, para esta carpeta del proyecto. No se sincronizan solos con otro navegador ni con otra máquina — para eso, exportá e importá el JSON. No guardes contraseñas, tokens ni datos personales sensibles en este panel.</p>';
+    html += '</div>';
+
+    document.getElementById("view-config").innerHTML = html;
+
+    document.getElementById("import-file").addEventListener("change", onImportFileChosen);
+  }
+
+  var pendingImport = null;
+  function onImportFileChosen(ev){
+    var file = ev.target.files[0];
+    pendingImport = null;
+    var box = document.getElementById("import-preview");
+    box.innerHTML="";
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try{ parsed = JSON.parse(reader.result); }
+      catch(e){ box.innerHTML = '<div class="confirmbox">El archivo no es un JSON válido.</div>'; return; }
+      if(!parsed || !Array.isArray(parsed.tasks)){
+        box.innerHTML = '<div class="confirmbox">El archivo no tiene el formato esperado de este panel.</div>'; return;
+      }
+      pendingImport = parsed;
+      box.innerHTML = '<div class="confirmbox">Este archivo tiene '+parsed.tasks.length+' tareas, '+(parsed.log||[]).length+' entradas de bitácora y '+(parsed.decisions||[]).length+' decisiones.'+
+        ' Va a <b>reemplazar</b> lo que tenés ahora (se guarda un respaldo automático antes).'+
+        '<div class="actions"><button class="btn btn-primary btn-sm" data-action="confirm-import">Importar y reemplazar</button> <button class="btn btn-ghost btn-sm" data-action="cancel-import">Cancelar</button></div></div>';
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- Eventos ----------
+  document.querySelectorAll(".navbtn").forEach(function(b){
+    b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+  });
+
+  document.body.addEventListener("click", function(ev){
+    var el = ev.target.closest("[data-action]");
+    if(!el) return;
+    var action = el.getAttribute("data-action");
+
+    if(action==="goto"){ switchView(el.getAttribute("data-view")); return; }
+
+    if(action==="suggest-next"){
+      var s = suggestNextAction();
+      if(s){
+        state.project.nextAction = {taskId:s.id, text:(s.status==="bloqueada"?"Desbloquear: ":"Avanzar: ")+s.name+(s.notes?" — "+s.notes:"")};
+        scheduleSave(); renderInicio();
+      }
+      return;
+    }
+    if(action==="edit-next"){ document.getElementById("nextedit").hidden=false; return; }
+    if(action==="cancel-next"){ document.getElementById("nextedit").hidden=true; return; }
+    if(action==="save-next"){
+      var txt = document.getElementById("nextedit-text").value.trim();
+      state.project.nextAction = {taskId:null, text: txt || "Sin definir."};
+      scheduleSave(); renderInicio();
+      return;
+    }
+
+    if(action==="add-log"){
+      var date = document.getElementById("log-date").value || todayISO();
+      var text = document.getElementById("log-text").value.trim();
+      var taskId = document.getElementById("log-task").value || null;
+      if(!text) return;
+      state.log.push({id:uid("l"), date:date, text:text, taskId:taskId});
+      scheduleSave(); renderBitacora();
+      return;
+    }
+    if(action==="del-log"){
+      state.log = state.log.filter(function(e){ return e.id!==el.getAttribute("data-id"); });
+      scheduleSave(); renderBitacora();
+      return;
+    }
+
+    if(action==="add-decision"){
+      var topic=document.getElementById("dec-topic").value.trim();
+      var decision=document.getElementById("dec-decision").value.trim();
+      if(!topic || !decision) return;
+      state.decisions.push({
+        id:uid("d"), topic:topic, decision:decision,
+        reason:document.getElementById("dec-reason").value.trim(),
+        date:document.getElementById("dec-date").value || todayISO(),
+        status:document.getElementById("dec-status").value,
+        consequences:document.getElementById("dec-consequences").value.trim()
+      });
+      scheduleSave(); renderDecisiones();
+      return;
+    }
+    if(action==="del-decision"){
+      state.decisions = state.decisions.filter(function(d){ return d.id!==el.getAttribute("data-id"); });
+      scheduleSave(); renderDecisiones();
+      return;
+    }
+
+    if(action==="set-metric"){
+      var key = el.getAttribute("data-key");
+      var input = document.getElementById("m-"+key);
+      var val = parseInt(input.value,10);
+      if(isNaN(val) || val<0) return;
+      state.metrics.counters[key]=val;
+      scheduleSave(); renderMetricas();
+      return;
+    }
+    if(action==="add-metric-note"){
+      var mtext = document.getElementById("mn-text").value.trim();
+      if(!mtext) return;
+      state.metrics.notes.push({id:uid("mn"), date:todayISO(), text:mtext});
+      scheduleSave(); renderMetricas();
+      return;
+    }
+    if(action==="del-metric-note"){
+      state.metrics.notes = state.metrics.notes.filter(function(n){ return n.id!==el.getAttribute("data-id"); });
+      scheduleSave(); renderMetricas();
+      return;
+    }
+
+    if(action==="export-json"){
+      var blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      var stamp = new Date().toISOString().replace(/[:.]/g,"-").slice(0,16);
+      a.href=url; a.download = "librook-panel-"+stamp+".json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      showToast("Respaldo exportado");
+      return;
+    }
+    if(action==="confirm-import"){
+      if(!pendingImport) return;
+      snapshotBackup();
+      state = pendingImport;
+      pendingImport = null;
+      persist();
+      renderActive();
+      renderConfig();
+      showToast("Importado");
+      return;
+    }
+    if(action==="cancel-import"){
+      pendingImport = null;
+      document.getElementById("import-preview").innerHTML="";
+      document.getElementById("import-file").value="";
+      return;
+    }
+    if(action==="restore-auto-backup"){
+      try{
+        var b = JSON.parse(localStorage.getItem(BACKUP_KEY));
+        state = b.data;
+        persist();
+        renderActive();
+        showToast("Respaldo restaurado");
+      }catch(e){}
+      return;
+    }
+    if(action==="reset-confirm"){
+      document.getElementById("reset-confirm-box").innerHTML =
+        '<div class="confirmbox">¿Reiniciar de verdad? Se borran tus cambios (queda un respaldo automático).'+
+        '<div class="actions"><button class="btn btn-ghost-danger btn-sm" data-action="reset-do">Sí, reiniciar</button> <button class="btn btn-ghost btn-sm" data-action="reset-cancel">Cancelar</button></div></div>';
+      return;
+    }
+    if(action==="reset-cancel"){ document.getElementById("reset-confirm-box").innerHTML=""; return; }
+    if(action==="reset-do"){
+      snapshotBackup();
+      state = seedData();
+      persist();
+      renderActive();
+      renderConfig();
+      showToast("Reiniciado");
+      return;
+    }
+  });
+
+  document.body.addEventListener("change", function(ev){
+    var el = ev.target;
+    if(el.matches('[data-action="set-status"]')){
+      var t = taskById(el.getAttribute("data-taskid"));
+      if(t){
+        t.status = el.value; t.updatedAt = todayISO(); scheduleSave();
+        if(activeView==="tareas") renderTareaResults(); else renderActive();
+      }
+      return;
+    }
+    if(el.id==="task-q"){ taskFilters.q = el.value; renderTareaResults(); return; }
+    if(el.id==="task-f-phase"){ taskFilters.phase = el.value; renderTareaResults(); return; }
+    if(el.id==="task-f-status"){ taskFilters.status = el.value; renderTareaResults(); return; }
+    if(el.id==="task-f-prio"){ taskFilters.priority = el.value; renderTareaResults(); return; }
+  });
+  document.body.addEventListener("input", function(ev){
+    var el = ev.target;
+    if(el.id==="task-q"){ taskFilters.q = el.value; renderTareaResults(); return; }
+    if(el.matches('[data-action="edit-notes"]')){
+      var t = taskById(el.getAttribute("data-taskid"));
+      if(t){ t.notes = el.value; scheduleSave(); }
+      return;
+    }
+  });
+
+  // ---------- Tema ----------
+  function applyTheme(mode){
+    var root=document.documentElement;
+    if(mode==="light") root.setAttribute("data-theme","light");
+    else if(mode==="dark") root.setAttribute("data-theme","dark");
+    else root.removeAttribute("data-theme");
+    var btn=document.getElementById("themetoggle");
+    var icon = mode==="light"?"#ic-sun":mode==="dark"?"#ic-moon":"#ic-auto";
+    var label = mode==="light"?"Claro":mode==="dark"?"Oscuro":"Automático";
+    btn.innerHTML = '<svg><use href="'+icon+'"/></svg>Tema: '+label;
+  }
+  function currentThemeMode(){
+    try{ return localStorage.getItem(THEME_KEY) || "auto"; }catch(e){ return "auto"; }
+  }
+  document.getElementById("themetoggle").addEventListener("click", function(){
+    var order=["auto","light","dark"];
+    var cur=currentThemeMode();
+    var next=order[(order.indexOf(cur)+1)%order.length];
+    try{ localStorage.setItem(THEME_KEY,next); }catch(e){}
+    applyTheme(next);
+  });
+
+  // ---------- Init ----------
+  state = loadState();
+  applyTheme(currentThemeMode());
+  switchView("inicio");
+
+})();
+</script>
+</body>
+</html>
