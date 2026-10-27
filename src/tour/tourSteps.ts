@@ -79,10 +79,10 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'Todo lo demás',
     targets: ['more-actions'],
     body: ({ variant }) => variant === 'mobile'
-      ? 'En «Más opciones» (los tres puntos) están tus Estadísticas y la meta del año, la Comunidad, ' +
-        'el Mercado de libros para vender o intercambiar, Exportar y Cerrar sesión.'
-      : 'Estos íconos abren tus Estadísticas y la meta del año, la Comunidad, el Mercado de libros ' +
-        'para vender o intercambiar, el Catálogo público, Exportar y Cerrar sesión. Pasá el mouse por encima para ver el nombre de cada uno.',
+      ? 'En «Más opciones» (los tres puntos) están Descubrir, tus Estadísticas y la meta del año, ' +
+        'la Comunidad, el Mercado de libros para vender o intercambiar, Exportar y Cerrar sesión.'
+      : 'Estos íconos abren Descubrir, tus Estadísticas y la meta del año, la Comunidad, el Mercado ' +
+        'de libros para vender o intercambiar, el Catálogo público, Exportar y Cerrar sesión. Pasá el mouse por encima para ver el nombre de cada uno.',
   },
   {
     id: 'admin',

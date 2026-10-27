@@ -13,6 +13,7 @@ import BookDetailModal from './components/BookDetailModal'
 import BookSearchModal from './components/BookSearchModal'
 import StatsModal from './components/StatsModal'
 import CommunityModal from './components/CommunityModal'
+import DiscoverModal from './components/DiscoverModal'
 import MarketplaceModal from './components/MarketplaceModal'
 import VoiceEntryFlow from './components/VoiceEntryFlow'
 import ToastContainer from './components/Toast'
@@ -44,6 +45,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const [detailBook, setDetailBook] = useState<Book | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
+  const [discoverOpen, setDiscoverOpen] = useState(false)
   const [communityOpen, setCommunityOpen] = useState(false)
   const [marketplaceOpen, setMarketplaceOpen] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
@@ -52,6 +54,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
   const openAdd = useCallback(() => setModal({ mode: 'add' }), [])
   const openSearch = useCallback(() => setSearchOpen(true), [])
   const openStats = useCallback(() => setStatsOpen(true), [])
+  const openDiscover = useCallback(() => setDiscoverOpen(true), [])
   const openCommunity = useCallback(() => setCommunityOpen(true), [])
   const openMarketplace = useCallback(() => setMarketplaceOpen(true), [])
   const openVoice = useCallback(() => setVoiceOpen(true), [])
@@ -176,6 +179,7 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
         onEditBook={(book) => setModal({ mode: 'edit', book })}
         onDeleteBook={handleDelete}
         onShowStats={openStats}
+        onOpenDiscover={openDiscover}
         onOpenCommunity={openCommunity}
         onOpenMarketplace={openMarketplace}
         isAdmin={isAdmin}
@@ -242,6 +246,13 @@ export default function LibraryMain({ user, onLogout, dark, onToggleTheme, onOpe
           }}
           onToggleCommunity={share => handleToggleCommunity(detailBook, share)}
           sharingToCommunity={sharingBookId === detailBook.id}
+        />
+      )}
+
+      {discoverOpen && (
+        <DiscoverModal
+          onClose={() => setDiscoverOpen(false)}
+          onOpenCommunity={() => { setDiscoverOpen(false); openCommunity() }}
         />
       )}
 
