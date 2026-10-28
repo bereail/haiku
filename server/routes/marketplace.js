@@ -51,7 +51,7 @@ function toListing(row, admin) {
     canDelete: row.is_mine || admin,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    photos: row.photos.map(p => ({ id: p.id, url: `/librook-api/uploads/${p.filename}`, width: p.width, height: p.height })),
+    photos: row.photos.map(p => ({ id: p.id, url: `/haiku-api/uploads/${p.filename}`, width: p.width, height: p.height })),
   }
 }
 

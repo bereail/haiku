@@ -29,7 +29,7 @@ const transporter = MAIL_OUTBOX_FILE
 
 // Base de los links que van en los mails. Configurable para que en local apunten al
 // entorno local y no a producción.
-const APP_URL = process.env.APP_URL || 'https://ailonline.com.ar/librook/'
+const APP_URL = process.env.APP_URL || 'https://ailonline.com.ar/haiku/'
 
 // En la base se guarda solo el hash del token de reset: el token en claro viaja únicamente
 // en el mail. Si la tabla se filtrara, los links pendientes no servirían.
@@ -137,13 +137,13 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
     // Si el envío falla, la respuesta es la misma que para un email inexistente: un 500 solo
     // para cuentas reales permitía averiguar qué emails están registrados.
     await transporter.sendMail({
-      from: `"Librook" <${process.env.EMAIL_USER}>`,
+      from: `"Haiku" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: 'Recuperar contraseña — Librook',
+      subject: 'Recuperar contraseña — Haiku',
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
           <h2 style="color: #2d4a3e;">Recuperar contraseña</h2>
-          <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Librook.</p>
+          <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Haiku.</p>
           <p>
             <a href="${resetUrl}"
                style="display:inline-block;padding:12px 24px;background:#2d4a3e;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">

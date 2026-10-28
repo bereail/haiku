@@ -3,7 +3,7 @@ const os = require('os')
 const path = require('path')
 
 process.env.JWT_SECRET = 'test-secret-key'
-const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'librook-uploads-'))
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'haiku-uploads-'))
 process.env.UPLOADS_DIR = TMP
 
 jest.mock('../db', () => ({ query: jest.fn() }))
@@ -33,7 +33,7 @@ afterAll(() => fs.rmSync(TMP, { recursive: true, force: true }))
 describe('POST /uploads', () => {
   it('sin sesión → 401; cuenta demo → 403; nada en disco', async () => {
     expect((await request(app).post('/uploads').set('Content-Type', 'image/jpeg').send(jpeg())).status).toBe(401)
-    expect((await upload(jpeg(), 'image/jpeg', token({ email: 'demo@librook.app' }))).status).toBe(403)
+    expect((await upload(jpeg(), 'image/jpeg', token({ email: 'demo@haiku.app' }))).status).toBe(403)
     expect(files()).toHaveLength(0)
   })
 
@@ -44,7 +44,7 @@ describe('POST /uploads', () => {
     const res = await upload(jpeg({ width: 1200, height: 900 }))
     expect(res.status).toBe(201)
     expect(res.body).toMatchObject({ id: 'up-1', width: 1200, height: 900 })
-    expect(res.body.url).toMatch(/^\/librook-api\/uploads\/[0-9a-f]{32}\.jpg$/)
+    expect(res.body.url).toMatch(/^\/haiku-api\/uploads\/[0-9a-f]{32}\.jpg$/)
 
     const [name] = files()
     expect(res.body.url.endsWith(name)).toBe(true)

@@ -1,6 +1,6 @@
-# Librook — Biblioteca personal de libros
+# Haiku — Biblioteca personal de libros
 
-![Demo de Librook](docs/screenshots/demo.gif)
+![Demo de Haiku](docs/screenshots/demo.gif)
 
 Aplicación full-stack para llevar tu biblioteca de libros: qué leíste, qué estás leyendo y qué
 tenés pendiente, con búsqueda de catálogo real vía OpenLibrary y escaneo de ISBN por cámara.
@@ -10,7 +10,7 @@ PWA instalable, con modo oscuro y diseño propio.
 ## El problema que resuelve
 
 Las listas de "libros para leer" sueltas en notas o apps genéricas se pierden fácil y no
-registran nada del recorrido de lectura. Librook da un lugar propio para toda la biblioteca,
+registran nada del recorrido de lectura. Haiku da un lugar propio para toda la biblioteca,
 con datos reales del libro (portada, autor/a, editorial, año) traídos de OpenLibrary al
 agregarlo, seguimiento de página actual, puntaje en estrellas, notas y fechas de inicio/fin —
 y la posibilidad de compartir esas reflexiones con otros lectores.
@@ -18,7 +18,7 @@ y la posibilidad de compartir esas reflexiones con otros lectores.
 ## Funcionalidades
 
 - **Registro por voz**: contá en lenguaje natural qué leíste ("Terminé Dune de Frank Herbert,
-  le doy cinco estrellas") y Librook interpreta título, autor, estado, puntaje, reseña y
+  le doy cinco estrellas") y Haiku interpreta título, autor, estado, puntaje, reseña y
   progreso, busca el libro y te deja confirmar antes de guardar. Usa la Web Speech API nativa
   del navegador (gratis, sin backend de por medio) y un parser de lenguaje natural propio, sin
   depender de ningún servicio de IA pago.

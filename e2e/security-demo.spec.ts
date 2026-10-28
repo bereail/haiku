@@ -5,7 +5,7 @@ import { API_URL, OUTBOX_FILE, bearer, storageStatePath } from './accounts'
 // La cuenta demo es compartida por todos los visitantes: tiene que ser de
 // solo lectura SIEMPRE, se entre como se entre.
 
-const DEMO_EMAIL = 'demo@librook.app'
+const DEMO_EMAIL = 'demo@haiku.app'
 const READ_ONLY = /solo lectura/i
 
 let demoBookId: string

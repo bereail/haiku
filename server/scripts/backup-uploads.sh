@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Backup de las imágenes subidas (marketplace). Pensado para cron en el VPS, p. ej. diario:
-#   15 3 * * * /var/www/librook-api/scripts/backup-uploads.sh
+#   15 3 * * * /var/www/haiku-api/scripts/backup-uploads.sh
 # Guarda un .tar.gz por corrida y conserva los últimos KEEP_DAYS días. NO se instala solo.
 #
 # La carpeta es la MISMA que usa el servidor: UPLOADS_DIR del entorno o, si no está, la del
-# .env del servidor (../.env). Sin default propio: antes asumía /var/lib/librook/uploads y,
+# .env del servidor (../.env). Sin default propio: antes asumía /var/lib/haiku/uploads y,
 # si el servidor usaba otra, respaldaba una carpeta equivocada sin avisar.
 set -euo pipefail
 
@@ -15,7 +15,7 @@ fi
 SRC="${UPLOADS_DIR:-}"
 [ -n "$SRC" ] || { echo "UPLOADS_DIR no está configurada (ni en el entorno ni en $ENV_FILE)" >&2; exit 1; }
 case "$SRC" in /*) ;; *) echo "UPLOADS_DIR tiene que ser una ruta absoluta (es \"$SRC\")" >&2; exit 1 ;; esac
-DEST="${BACKUP_DIR:-/root/librook-backups/uploads}"
+DEST="${BACKUP_DIR:-/root/haiku-backups/uploads}"
 KEEP_DAYS="${KEEP_DAYS:-14}"
 
 [ -d "$SRC" ] || { echo "No existe $SRC" >&2; exit 1; }

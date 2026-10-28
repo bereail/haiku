@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 // Misma lógica que el script inline de index.html, que aplica el tema antes del
 // primer cuadro (sin destello claro). Si se cambia una, cambiar la otra.
-const KEY = 'librook_theme'
+const KEY = 'haiku_theme'
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
 // Solo se guarda una elección EXPLÍCITA (el botón). Antes se guardaba también el

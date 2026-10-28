@@ -3,7 +3,7 @@ import { api } from '../api'
 
 interface Goal { year: number; count: number }
 
-const LS_KEY = 'librook_goal'
+const LS_KEY = 'haiku_goal'
 
 export function useGoal() {
   const currentYear = new Date().getFullYear()

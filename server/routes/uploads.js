@@ -65,7 +65,7 @@ router.post('/', auth, blockDemoWrites, uploadLimiter, (req, res, next) => {
     )
     res.status(201).json({
       id: result.rows[0].id,
-      url: `/librook-api/uploads/${filename}`,
+      url: `/haiku-api/uploads/${filename}`,
       width: image.width,
       height: image.height,
       bytes: image.bytes,

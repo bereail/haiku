@@ -8,7 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <BrowserRouter basename="/librook">
+      <BrowserRouter basename="/haiku">
         <App />
       </BrowserRouter>
     </ErrorBoundary>

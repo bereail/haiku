@@ -22,7 +22,7 @@ function Header({ dark, onToggleTheme }: { dark: boolean; onToggleTheme: () => v
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
-        <Link to="/" className={styles.logo}>Librook</Link>
+        <Link to="/" className={styles.logo}>Haiku</Link>
         <nav className={styles.nav}>
           <button
             type="button"
@@ -63,7 +63,7 @@ export default function WorkPage() {
     setLoading(true)
     setError(null)
 
-    fetch(`/librook-api/catalog/works/${id}`)
+    fetch(`/haiku-api/catalog/works/${id}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(res.status === 404 ? 'No encontramos esta obra.' : 'Error al cargar la obra')
         return res.json()
@@ -77,10 +77,10 @@ export default function WorkPage() {
 
   useEffect(() => {
     if (!work) return
-    document.title = `${work.title} — Librook`
+    document.title = `${work.title} — Haiku`
     const meta = document.querySelector('meta[name="description"]')
     const authorNames = work.authors.map((a) => a.name).join(', ')
-    if (meta) meta.setAttribute('content', `${work.title}${authorNames ? ` de ${authorNames}` : ''} — ficha, ediciones y reseñas de la comunidad en Librook.`)
+    if (meta) meta.setAttribute('content', `${work.title}${authorNames ? ` de ${authorNames}` : ''} — ficha, ediciones y reseñas de la comunidad en Haiku.`)
   }, [work])
 
   if (loading) {

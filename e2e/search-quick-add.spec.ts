@@ -59,7 +59,7 @@ test.describe('Guardado rápido desde Open Library', () => {
     // terminado y "toBeDisabled" fallaba de forma intermitente.
     let release!: () => void
     const held = new Promise<void>(r => { release = r })
-    await page.route('**/librook-api/books', async route => {
+    await page.route('**/haiku-api/books', async route => {
       if (route.request().method() === 'POST') await held
       await route.continue()
     })
@@ -120,7 +120,7 @@ test.describe('Guardado rápido desde Open Library', () => {
     await mockOpenLibrary(page)
     const results = await openSearch(page)
     let failNext = true
-    await page.route('**/librook-api/books', async route => {
+    await page.route('**/haiku-api/books', async route => {
       if (route.request().method() === 'POST' && failNext) {
         failNext = false
         return route.fulfill({ status: 500, json: { error: 'Error al guardar el libro' } })

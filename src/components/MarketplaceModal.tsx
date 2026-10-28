@@ -248,7 +248,7 @@ export default function MarketplaceModal({ onClose, onToast }: MarketplaceModalP
                 <label className={styles.label} htmlFor="mk-contact">Contacto</label>
                 <input id="mk-contact" className={styles.input} value={form.contact} maxLength={200}
                   onChange={e => set('contact', e.target.value)} aria-describedby="mk-contact-hint" />
-                <p className={styles.hint} id="mk-contact-hint">Lo ven todas las personas con cuenta en Librook. No pongas datos que no quieras compartir.</p>
+                <p className={styles.hint} id="mk-contact-hint">Lo ven todas las personas con cuenta en Haiku. No pongas datos que no quieras compartir.</p>
               </div>
             </div>
 

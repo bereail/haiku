@@ -22,7 +22,7 @@ export default async function globalSetup() {
   const body = health && health.ok() ? await health.json() : null
   if (!body?.db) {
     throw new Error(
-      'global-setup: el backend local no responde en /librook-api/health. ' +
+      'global-setup: el backend local no responde en /haiku-api/health. ' +
       '¿Vite corre con VITE_LOCAL_API=1 y el backend local está levantado?'
     )
   }
@@ -57,7 +57,7 @@ function markTourSeen(name: AccountName) {
   const file = storageStatePath(name)
   const state = JSON.parse(fs.readFileSync(file, 'utf8'))
   const ls = state.origins[0].localStorage as { name: string; value: string }[]
-  const email = JSON.parse(ls.find(i => i.name === 'librook_auth')!.value).email as string
+  const email = JSON.parse(ls.find(i => i.name === 'haiku_auth')!.value).email as string
   if (ls.some(i => i.name === tourKey(email))) return
   ls.push({ name: tourKey(email), value: 'dismissed' })
   fs.writeFileSync(file, JSON.stringify(state, null, 2))
@@ -68,7 +68,7 @@ async function hasValidSession(api: Awaited<ReturnType<typeof request.newContext
   if (!fs.existsSync(file)) return false
   try {
     const ls = JSON.parse(fs.readFileSync(file, 'utf8')).origins[0].localStorage
-    const token = ls.find((i: { name: string }) => i.name === 'librook_token').value
+    const token = ls.find((i: { name: string }) => i.name === 'haiku_token').value
     const res = await api.get(`${API_URL}/books`, { headers: { Authorization: `Bearer ${token}` } })
     return res.ok()
   } catch {
@@ -83,8 +83,8 @@ function saveSession(name: AccountName, data: { token: string; email: string; is
     origins: [{
       origin,
       localStorage: [
-        { name: 'librook_token', value: data.token },
-        { name: 'librook_auth', value: JSON.stringify({ email: data.email, isDemo: !!data.isDemo }) },
+        { name: 'haiku_token', value: data.token },
+        { name: 'haiku_auth', value: JSON.stringify({ email: data.email, isDemo: !!data.isDemo }) },
       ],
     }],
   }

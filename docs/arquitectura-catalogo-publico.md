@@ -212,7 +212,7 @@ que la justifique.
 
 1. **Backup antes que nada.** `pg_dump` completo de la base de producción antes de aplicar
    cualquier cambio de esquema. Comando a ejecutar (por vos o con tu autorización explícita, vía
-   SSH al VPS): `pg_dump "$DATABASE_URL" -F c -f librook_backup_$(date +%Y%m%d).dump`.
+   SSH al VPS): `pg_dump "$DATABASE_URL" -F c -f haiku_backup_$(date +%Y%m%d).dump`.
 2. **Paso aditivo único.** Las sentencias de la sección 2 (`CREATE TABLE ... obras/autores/
    obra_autores/ediciones`, más los dos `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`) son 100%
    aditivas: crean tablas nuevas y agregan columnas nullable a tablas existentes. **No se
@@ -245,7 +245,7 @@ que la justifique.
   reseñas públicas ya existentes (`community_posts`, que ya son públicas por diseño desde que se
   construyó la sección Comunidad). **Nunca** se expone `books` (el ejemplar personal) a través de
   estas rutas — ni directamente ni en un JOIN. Como mucho, un conteo agregado tipo "N personas en
-  Librook tienen este libro" (`COUNT(*)`), nunca una lista de quiénes.
+  Haiku tienen este libro" (`COUNT(*)`), nunca una lista de quiénes.
 - Ninguna ruta de escritura (`POST`/`PUT`/`DELETE`) deja de requerir `auth` — un visitante sin
   cuenta puede leer el catálogo pero no puede agregar libros a una biblioteca, dejar reseñas ni
   tocar nada autenticado. Esto es una extensión directa de los permisos que ya existen hoy
@@ -277,10 +277,10 @@ GET /catalog/authors/:id                    → obra de un autor (se puede difer
 ```
 
 La búsqueda del catálogo público es **local-first**: busca en `obras`/`ediciones` ya importadas
-por la propia comunidad de Librook (rápido, gratis, sin llamadas externas). Si no hay resultados
+por la propia comunidad de Haiku (rápido, gratis, sin llamadas externas). Si no hay resultados
 locales, se puede ofrecer una sección aparte y claramente distinguida "Buscar también en Open
 Library" que reutiliza `useBookSearch.ts` tal cual existe — pero dejando visualmente claro que esos
-resultados externos todavía no tienen reseñas ni están en ninguna biblioteca de Librook, para no
+resultados externos todavía no tienen reseñas ni están en ninguna biblioteca de Haiku, para no
 prometer una cobertura que no existe.
 
 ### Endpoints existentes, extendidos (no duplicados)
@@ -338,7 +338,7 @@ Siguiendo el estilo ya usado en `server/tests/` (Jest + Supertest):
    dependencia nueva y un cambio de arquitectura en cómo navega toda la app, no solo el catálogo.
    Sin esto, el catálogo público no puede tener URLs indexables por buscadores.
 2. **Alcance de la búsqueda pública**: ¿catálogo local-first con fallback a Open Library (como
-   propongo), o restringir la búsqueda pública solo a lo que ya está en Librook? Afecta cuánto
+   propongo), o restringir la búsqueda pública solo a lo que ya está en Haiku? Afecta cuánto
    "poder de descubrimiento" tiene un visitante sin cuenta desde el día uno.
 3. **Cuándo correr el backfill de ediciones** (paso 4 del plan de migración) — es opcional y no
    bloqueante, pero toca la API externa en lote; mejor decidir el momento con vos en vez de

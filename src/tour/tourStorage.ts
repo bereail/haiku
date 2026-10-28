@@ -3,8 +3,8 @@
 
 export type TourPreference = 'done' | 'dismissed'
 
-const PREFIX = 'librook_tour_v1:'
-const POSTPONED = 'librook_tour_postponed'
+const PREFIX = 'haiku_tour_v1:'
+const POSTPONED = 'haiku_tour_postponed'
 
 export function tourKey(email: string): string {
   let h = 0x811c9dc5

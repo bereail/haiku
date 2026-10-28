@@ -1,12 +1,12 @@
-const API_BASE = '/librook-api'
+const API_BASE = '/haiku-api'
 
 // Se dispara cuando la API rechaza el token guardado (vencido o inválido).
 // useAuth lo escucha para volver al login en vez de dejar la app "logueada"
 // con errores que ningún reintento puede resolver.
-export const SESSION_EXPIRED_EVENT = 'librook:session-expired'
+export const SESSION_EXPIRED_EVENT = 'haiku:session-expired'
 
 async function request(path: string, options?: RequestInit) {
-  const token = localStorage.getItem('librook_token')
+  const token = localStorage.getItem('haiku_token')
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -15,8 +15,8 @@ async function request(path: string, options?: RequestInit) {
     ...options,
   })
   if (res.status === 401 && token) {
-    localStorage.removeItem('librook_token')
-    localStorage.removeItem('librook_auth')
+    localStorage.removeItem('haiku_token')
+    localStorage.removeItem('haiku_auth')
     window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
   }
   if (!res.ok) {
@@ -33,7 +33,7 @@ async function request(path: string, options?: RequestInit) {
 // Subida de un archivo crudo (p. ej. una imagen): mismo manejo de sesión y errores que
 // request(), pero con el Content-Type del archivo en vez de JSON.
 async function upload(path: string, file: Blob) {
-  const token = localStorage.getItem('librook_token')
+  const token = localStorage.getItem('haiku_token')
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     headers: {
@@ -43,8 +43,8 @@ async function upload(path: string, file: Blob) {
     body: file,
   })
   if (res.status === 401 && token) {
-    localStorage.removeItem('librook_token')
-    localStorage.removeItem('librook_auth')
+    localStorage.removeItem('haiku_token')
+    localStorage.removeItem('haiku_auth')
     window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
   }
   if (!res.ok) {

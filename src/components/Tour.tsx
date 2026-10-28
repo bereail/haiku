@@ -325,7 +325,7 @@ interface InviteProps {
 export function TourInvite({ onStart, onLater, onDismiss }: InviteProps) {
   return (
     <section className={styles.invite} aria-labelledby="tour-invite-title">
-      <h2 id="tour-invite-title" className={styles.inviteTitle}>¿Primera vez en Librook?</h2>
+      <h2 id="tour-invite-title" className={styles.inviteTitle}>¿Primera vez en Haiku?</h2>
       <p className={styles.inviteBody}>Te muestro cómo usarla en menos de un minuto, sobre la pantalla real.</p>
       <div className={styles.inviteActions}>
         <button type="button" className={styles.primaryBtn} onClick={onStart}>Ver el tutorial</button>

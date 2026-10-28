@@ -4,7 +4,7 @@ const TOKEN = 'test-jwt-token'
 
 beforeEach(() => {
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) =>
-    key === 'librook_token' ? TOKEN : null
+    key === 'haiku_token' ? TOKEN : null
   )
 })
 
@@ -24,7 +24,7 @@ describe('api module', () => {
     await api.get('/books')
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/librook-api/books',
+      '/haiku-api/books',
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: `Bearer ${TOKEN}`,

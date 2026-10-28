@@ -28,7 +28,7 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
         <div className={styles.header}>
           <div>
             <h2 className={styles.title} id="discover-title">Descubrir</h2>
-            <p className={styles.subtitle}>Lo que está leyendo la comunidad de Librook.</p>
+            <p className={styles.subtitle}>Lo que está leyendo la comunidad de Haiku.</p>
           </div>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Cerrar">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -50,7 +50,7 @@ export default function DiscoverModal({ onClose, onOpenCommunity }: DiscoverModa
                 </svg>
                 <p className={styles.emptyTitle}>El catálogo todavía no tiene fichas propias acá</p>
                 <p className={styles.emptyHint}>
-                  A medida que se agreguen libros con ISBN, Librook va a armar fichas de obra
+                  A medida que se agreguen libros con ISBN, Haiku va a armar fichas de obra
                   compartidas — y esta sección va a mostrar las más leídas entre todas las lectoras.
                 </p>
               </div>

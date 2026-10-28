@@ -174,7 +174,7 @@ describe('Modo invitado (demo) — solo lectura', () => {
 
     const res = await request(app)
       .get('/books')
-      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@librook.app', true)}`)
+      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@haiku.app', true)}`)
 
     expect(res.status).toBe(200)
   })
@@ -182,7 +182,7 @@ describe('Modo invitado (demo) — solo lectura', () => {
   it('bloquea crear libros con la cuenta demo', async () => {
     const res = await request(app)
       .post('/books')
-      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@librook.app', true)}`)
+      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@haiku.app', true)}`)
       .send({ title: 'Libro' })
 
     expect(res.status).toBe(403)
@@ -192,7 +192,7 @@ describe('Modo invitado (demo) — solo lectura', () => {
   it('bloquea editar libros con la cuenta demo', async () => {
     const res = await request(app)
       .put('/books/book-1')
-      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@librook.app', true)}`)
+      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@haiku.app', true)}`)
       .send({ title: 'Libro' })
 
     expect(res.status).toBe(403)
@@ -202,7 +202,7 @@ describe('Modo invitado (demo) — solo lectura', () => {
   it('bloquea borrar libros con la cuenta demo', async () => {
     const res = await request(app)
       .delete('/books/book-1')
-      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@librook.app', true)}`)
+      .set('Authorization', `Bearer ${authToken('demo-1', 'demo@haiku.app', true)}`)
 
     expect(res.status).toBe(403)
     expect(pool.query).not.toHaveBeenCalled()

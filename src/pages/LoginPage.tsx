@@ -95,7 +95,7 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
           </div>
         </div>
         <div className={styles.leftContent}>
-          <p className={styles.brand}>Librook</p>
+          <p className={styles.brand}>Haiku</p>
           <p className={styles.tagline}>Tu biblioteca personal.</p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function LoginPage({ onLogin, onRegister, onForgotPassword, onGue
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.formHeader}>
             {/* Brand shown only on mobile (hidden on desktop since it's in .left) */}
-            <span className={styles.brandMobile}>Librook</span>
+            <span className={styles.brandMobile}>Haiku</span>
             <h1 className={styles.welcome}>{titulo}</h1>
             <p className={styles.subtitle}>{subtitulo}</p>
           </div>

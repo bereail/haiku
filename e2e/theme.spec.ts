@@ -49,12 +49,12 @@ test.describe('sin elección explícita', () => {
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.reload()
     await expect(html(page)).toHaveAttribute('data-theme', 'dark')
-    expect(await page.evaluate(() => localStorage.getItem('librook_theme'))).toBeNull()
+    expect(await page.evaluate(() => localStorage.getItem('haiku_theme'))).toBeNull()
   })
 
   test('el primer cuadro ya tiene el tema guardado (sin destello claro)', async ({ page }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('librook_theme', 'dark')
+      localStorage.setItem('haiku_theme', 'dark')
       requestAnimationFrame(() => {
         (window as unknown as { __firstFrameTheme: string | null }).__firstFrameTheme =
           document.documentElement.getAttribute('data-theme')

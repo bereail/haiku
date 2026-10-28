@@ -51,7 +51,7 @@ test.describe('axe-core: sin sesión', () => {
     await page.goto('catalog')
     await expect(page.getByRole('heading', { name: 'Catálogo público' })).toBeVisible()
     await page.getByPlaceholder('Buscar por título...').fill('Obra E2E')
-    await expect(page.getByRole('heading', { name: 'En Librook', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'En Haiku', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: /Obra E2E accesibilidad/ })).toBeVisible()
     await expect(page.getByRole('heading', { name: /También en Open Library/ })).toBeVisible()
     await expect(page.getByText('Rayuela (simulado)')).toBeVisible()

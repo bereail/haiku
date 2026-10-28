@@ -4,21 +4,21 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Librook — Tu biblioteca personal. Registrá tus lecturas, organizá tu colección y seguí tu progreso lector." />
+    <meta name="description" content="Haiku — Tu biblioteca personal. Registrá tus lecturas, organizá tu colección y seguí tu progreso lector." />
     <meta name="theme-color" content="#2d4a3e" />
-    <meta property="og:title" content="Librook — Tu biblioteca personal" />
+    <meta property="og:title" content="Haiku — Tu biblioteca personal" />
     <meta property="og:description" content="Registrá tus lecturas, organizá tu colección y seguí tu progreso lector." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Librook" />
+    <meta name="twitter:title" content="Haiku" />
     <meta name="twitter:description" content="Tu biblioteca personal de libros." />
-    <title>Librook — Tu biblioteca personal</title>
+    <title>Haiku — Tu biblioteca personal</title>
     <!-- Tema antes del primer cuadro: sin esto la página se dibujaba en claro y
          recién después React aplicaba el oscuro (destello). Misma lógica que
          src/hooks/useTheme.ts: elección guardada o, si no hay, la del sistema. -->
     <script>
       try {
-        var t = localStorage.getItem('librook_theme')
+        var t = localStorage.getItem('haiku_theme')
         if (t !== 'dark' && t !== 'light') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         document.documentElement.setAttribute('data-theme', t)
       } catch (e) {}

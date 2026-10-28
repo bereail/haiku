@@ -275,7 +275,7 @@ export default function LibraryPage({
     <div className={styles.layout}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <h1 className={styles.logo}>Librook</h1>
+          <h1 className={styles.logo}>Haiku</h1>
 
           <nav className={styles.nav}>
             {/* Primary actions — always visible */}

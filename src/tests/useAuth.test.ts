@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
 vi.mock('../api', () => ({
-  SESSION_EXPIRED_EVENT: 'librook:session-expired',
+  SESSION_EXPIRED_EVENT: 'haiku:session-expired',
   api: {
     post: vi.fn(),
     get: vi.fn(),
@@ -43,7 +43,7 @@ describe('useAuth', () => {
     })
 
     expect(result.current.user).toEqual({ email: 'user@test.com', isDemo: false })
-    expect(mockLocalStorage['librook_token']).toBe('jwt-123')
+    expect(mockLocalStorage['haiku_token']).toBe('jwt-123')
   })
 
   it('login fallido devuelve error', async () => {
@@ -63,8 +63,8 @@ describe('useAuth', () => {
   })
 
   it('logout limpia el estado y el localStorage', async () => {
-    mockLocalStorage['librook_token'] = 'jwt-123'
-    mockLocalStorage['librook_auth'] = JSON.stringify({ email: 'user@test.com' })
+    mockLocalStorage['haiku_token'] = 'jwt-123'
+    mockLocalStorage['haiku_auth'] = JSON.stringify({ email: 'user@test.com' })
 
     const { api } = await import('../api')
     vi.mocked(api.post).mockResolvedValueOnce({ token: 'jwt-123', email: 'user@test.com' })
@@ -81,7 +81,7 @@ describe('useAuth', () => {
     })
 
     expect(result.current.user).toBeNull()
-    expect(mockLocalStorage['librook_token']).toBeUndefined()
+    expect(mockLocalStorage['haiku_token']).toBeUndefined()
   })
 
   it('register devuelve error de la API', async () => {
@@ -107,7 +107,7 @@ describe('useAuth', () => {
     await act(async () => { await result.current.login('user@test.com', 'pass123') })
     expect(result.current.user).not.toBeNull()
 
-    act(() => { window.dispatchEvent(new Event('librook:session-expired')) })
+    act(() => { window.dispatchEvent(new Event('haiku:session-expired')) })
     expect(result.current.user).toBeNull()
     expect(result.current.sessionExpired).toBe(true)
 

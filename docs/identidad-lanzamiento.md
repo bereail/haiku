@@ -1,8 +1,8 @@
-# Identidad y comunicación — Librook
+# Identidad y comunicación — Haiku
 
 > Borrador de trabajo para la Fase 4 del lanzamiento (ver `admin-local/index.html`). Pensado
 > para que Berenice lo edite y recorte — no es un texto final, es un punto de partida real,
-> basado en lo que Librook hace hoy (`DOCUMENTACION.md`), no en lo que podría hacer algún día.
+> basado en lo que Haiku hace hoy (`DOCUMENTACION.md`), no en lo que podría hacer algún día.
 
 ## 1. Propuesta de valor
 
@@ -12,7 +12,7 @@
 
 **Por qué importa (el problema real):**
 Las listas de "libros para leer" sueltas en notas o apps genéricas se pierden fácil y no
-registran nada del recorrido de lectura. Librook junta en un solo lugar lo que ya hacían tres
+registran nada del recorrido de lectura. Haiku junta en un solo lugar lo que ya hacían tres
 apps separadas — llevar tu biblioteca, compartir reseñas con otras lectoras, y vender o
 intercambiar libros usados — pensado desde el principio para que cargar un libro sea rápido: a
 mano, por voz, escaneando el código de barras o con una foto de la tapa.
@@ -33,11 +33,11 @@ mano, por voz, escaneando el código de barras o con una foto de la tapa.
 > vendé o intercambiá los tuyos. Arrancando en Rosario y alrededores.
 
 **Versión sin emoji, para un enlace o firma:**
-> Librook: biblioteca personal, comunidad de lectoras y mercado de intercambio de libros
+> Haiku: biblioteca personal, comunidad de lectoras y mercado de intercambio de libros
 > usados, todo en un mismo lugar.
 
 **Una frase más larga, para una publicación de presentación:**
-> Librook es donde registro lo que leo, descubro lo que leen otras, y encuentro (o le doy una
+> Haiku es donde registro lo que leo, descubro lo que leen otras, y encuentro (o le doy una
 > segunda vida a) libros usados — hecho pensando en lectoras de Rosario y alrededores.
 
 ## 3. Identidad visual (reutilizar lo que ya existe, no crear de cero)
@@ -66,7 +66,7 @@ tarea aparte, chica, que no estaba en el alcance de esta sesión.
 
 ## 4. Presentación sencilla del proyecto (para compartir con alguien nuevo)
 
-> **Librook — tu biblioteca, en texto propio**
+> **Haiku — tu biblioteca, en texto propio**
 >
 > Registrás lo que leíste, lo que estás leyendo y lo que querés leer — a mano, por voz,
 > escaneando el código de barras o con una foto de la tapa. A partir de ahí, lo que quieras
@@ -80,7 +80,7 @@ tarea aparte, chica, que no estaba en el alcance de esta sesión.
 > - Publicar un libro en venta o intercambio, con fotos, y coordinar el contacto a tu manera.
 > - Instalarla en el celular como una app (PWA), con modo oscuro.
 >
-> **Dónde está hoy:** [ailonline.com.ar/librook](https://ailonline.com.ar/librook) — en uso,
+> **Dónde está hoy:** [ailonline.com.ar/haiku](https://ailonline.com.ar/haiku) — en uso,
 > todavía puliendo detalles antes de una difusión más amplia.
 
 (Fuente completa y detallada: `DOCUMENTACION.md` en la raíz del repo.)
@@ -90,7 +90,7 @@ tarea aparte, chica, que no estaba en el alcance de esta sesión.
 No es parte de esta Fase 4, pero conecta directo: antes de invitar gente de Rosario a usarla
 en serio, conviene resolver el bloqueo activo del Mercado (fotos no funcionan en producción
 todavía — `UPLOADS_DIR` sin configurar en el VPS) y decidir si el dominio actual
-(`ailonline.com.ar/librook`) es el que se quiere usar para la difusión, o si conviene uno
+(`ailonline.com.ar/haiku`) es el que se quiere usar para la difusión, o si conviene uno
 propio. Ver `admin-local/index.html` → Hoja de ruta → Fase 3.
 
 ---

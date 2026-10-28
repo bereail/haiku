@@ -6,7 +6,7 @@ const path = require('path')
 // externos). La carpeta va FUERA del webroot: nginx no la sirve directo; las imágenes salen
 // solo por la API, que controla nombre, tipo y cabeceras.
 //
-// UPLOADS_DIR: en producción algo como /var/lib/librook/uploads (configurarlo en el .env del
+// UPLOADS_DIR: en producción algo como /var/lib/haiku/uploads (configurarlo en el .env del
 // VPS; ver docs/marketplace-imagenes.md). Reglas:
 // - tiene que ser una ruta absoluta (una relativa dependería del directorio del servicio);
 // - no puede estar dentro de /var/www (lo sirve nginx) ni dentro del código del servidor

@@ -17,7 +17,7 @@ async function realJpegWithGps(page: Page, width = 800, height = 600): Promise<B
     c.width = w; c.height = h
     const ctx = c.getContext('2d')!
     ctx.fillStyle = '#2d4a3e'; ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = '#fff'; ctx.font = '48px serif'; ctx.fillText('Librook', 40, 120)
+    ctx.fillStyle = '#fff'; ctx.font = '48px serif'; ctx.fillText('Haiku', 40, 120)
     return c.toDataURL('image/jpeg', 0.8).split(',')[1]
   }, [width, height])
   const jpg = Buffer.from(b64, 'base64')

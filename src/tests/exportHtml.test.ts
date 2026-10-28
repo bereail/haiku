@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { Book } from '../types'
 
 vi.mock('../api', () => ({
-  SESSION_EXPIRED_EVENT: 'librook:session-expired',
+  SESSION_EXPIRED_EVENT: 'haiku:session-expired',
   api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }))
 
@@ -76,6 +76,6 @@ describe('exportar biblioteca a HTML', () => {
     vi.setSystemTime(new Date('2026-10-22T23:30:00-03:00'))
     vi.stubEnv('TZ', 'America/Argentina/Buenos_Aires')
     await exportHtml()
-    expect(filename).toBe('librook-2026-10-22.html')
+    expect(filename).toBe('haiku-2026-10-22.html')
   })
 })

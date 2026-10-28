@@ -2,7 +2,7 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
-const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'librook-cleanup-'))
+const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'haiku-cleanup-'))
 process.env.UPLOADS_DIR = TMP
 const { cleanupUploads } = require('../images/cleanup')
 

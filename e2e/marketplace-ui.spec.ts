@@ -60,7 +60,7 @@ test.describe('lectora1', () => {
   test('una foto grande se reduce antes de subir; cancelar la descarta del servidor', async ({ page, request }) => {
     const dialog = await openMarketplace(page)
     await dialog.getByRole('button', { name: 'Publicar un libro' }).click()
-    const uploaded = page.waitForResponse(r => r.url().endsWith('/librook-api/uploads') && r.request().method() === 'POST')
+    const uploaded = page.waitForResponse(r => r.url().endsWith('/haiku-api/uploads') && r.request().method() === 'POST')
     // Foto grande: el navegador la reduce a 1600 px de lado mayor antes de subirla
     await dialog.locator('input[type="file"]').setInputFiles({ name: 'tapa.jpg', mimeType: 'image/jpeg', buffer: await realJpeg(page, 3000, 2000) })
     const { url, width, height, bytes } = await (await uploaded).json()

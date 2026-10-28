@@ -22,9 +22,9 @@ export interface TourStep {
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Te damos la bienvenida a Librook',
+    title: 'Te damos la bienvenida a Haiku',
     body: ({ isDemo }) =>
-      'Librook es tu biblioteca personal: anotás lo que leíste, lo que estás leyendo y lo que querés leer. ' +
+      'Haiku es tu biblioteca personal: anotás lo que leíste, lo que estás leyendo y lo que querés leer. ' +
       'Te muestro lo principal en menos de un minuto.' +
       (isDemo ? ' Estás en la biblioteca de ejemplo: podés mirar todo, pero no se guardan cambios.' : ''),
   },

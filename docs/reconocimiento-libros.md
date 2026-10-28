@@ -22,7 +22,7 @@ ningún servidor. Solo el ISBN o el texto reconocido se usan para buscar en Open
 
 - Tesseract.js (`tesseract.js` 7, modelo de español `best_int`), cargado solo al usar
   "Identificar por foto".
-- Archivos servidos por el sitio en `/librook/ocr/` (plugin `ocrAssets` de `vite.config.js`,
+- Archivos servidos por el sitio en `/haiku/ocr/` (plugin `ocrAssets` de `vite.config.js`,
   copiados de `node_modules` al build): `worker.min.js` (111 kB), núcleo LSTM con y sin SIMD
   (3,9 MB c/u; se baja uno), `spa.traineddata.gz` (2,1 MB). **~10 MB más en el webroot.**
   Excluidos del precache de la PWA: solo los baja quien usa el OCR (~6 MB la primera vez).

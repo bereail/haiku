@@ -3,7 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import type { Book } from '../types'
 
 vi.mock('../api', () => ({
-  SESSION_EXPIRED_EVENT: 'librook:session-expired',
+  SESSION_EXPIRED_EVENT: 'haiku:session-expired',
   api: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }))
 

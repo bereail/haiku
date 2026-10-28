@@ -12,7 +12,7 @@ set -e
 USER=${1:-root}
 HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
-REMOTE="/var/www/librook-api"
+REMOTE="/var/www/haiku-api"
 SSH="ssh -p $PORT $USER@$HOST"
 SCP="scp -P $PORT"
 
@@ -44,7 +44,7 @@ echo "==> Copiando schema SQL..."
 $SCP server/schema_analytics.sql $USER@$HOST:$REMOTE/schema_analytics.sql
 
 echo "==> Reiniciando servicio..."
-$SSH "sudo systemctl restart librook-api && sleep 1 && sudo systemctl status librook-api --no-pager | head -8"
+$SSH "sudo systemctl restart haiku-api && sleep 1 && sudo systemctl status haiku-api --no-pager | head -8"
 
 echo ""
 echo "✓ Deploy completado. Probá el panel admin."

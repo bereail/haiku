@@ -33,8 +33,8 @@ async function openWithToken(page: Page, token: string) {
     // Solo la primera carga: si la app limpia la sesión, no reinyectarla.
     if (sessionStorage.getItem('e2e-injected')) return
     sessionStorage.setItem('e2e-injected', '1')
-    localStorage.setItem('librook_token', t)
-    localStorage.setItem('librook_auth', JSON.stringify({ email, isDemo: false }))
+    localStorage.setItem('haiku_token', t)
+    localStorage.setItem('haiku_auth', JSON.stringify({ email, isDemo: false }))
   }, [token, ACCOUNTS.lectora1.email])
   await page.goto(BASE_URL)
 }
@@ -45,8 +45,8 @@ async function expectBackAtLogin(page: Page) {
   await expect(page.getByPlaceholder('Buscar por título o autor...')).toHaveCount(0)
   // Un aviso que explique por qué volvió al login
   await expect(page.getByText(/sesión (expiró|venció|no es válida)/i)).toBeVisible()
-  expect(await page.evaluate(() => localStorage.getItem('librook_token'))).toBeNull()
-  expect(await page.evaluate(() => localStorage.getItem('librook_auth'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('haiku_token'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('haiku_auth'))).toBeNull()
 }
 
 test.describe('Sesión vencida o inválida', () => {

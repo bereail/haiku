@@ -17,7 +17,7 @@ const MOBILE = { width: 390, height: 844 }
 function firstTimeState(name: AccountName) {
   const state = JSON.parse(fs.readFileSync(storageStatePath(name), 'utf8'))
   const ls = state.origins[0].localStorage as { name: string; value: string }[]
-  state.origins[0].localStorage = ls.filter(i => !i.name.startsWith('librook_tour_v1:'))
+  state.origins[0].localStorage = ls.filter(i => !i.name.startsWith('haiku_tour_v1:'))
   return state
 }
 
@@ -32,8 +32,8 @@ async function freshDemoState(request: APIRequestContext) {
     origins: [{
       origin: new URL(BASE_URL).origin,
       localStorage: [
-        { name: 'librook_token', value: token },
-        { name: 'librook_auth', value: JSON.stringify({ email, isDemo: true }) },
+        { name: 'haiku_token', value: token },
+        { name: 'haiku_auth', value: JSON.stringify({ email, isDemo: true }) },
       ],
     }],
   }
@@ -50,12 +50,12 @@ async function openAs(browser: Browser, who: AccountName | State, viewport = DES
   page.on('pageerror', e => errors.push(e.message))
   await mockOpenLibrary(page)
   await page.goto('')
-  await expect(page.getByRole('heading', { name: 'Librook', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Haiku', exact: true })).toBeVisible()
   return { page, context, errors }
 }
 
 const tour = (page: Page) => page.getByRole('dialog').filter({ has: page.getByText(/^Paso \d+ de \d+$/) })
-const invite = (page: Page) => page.getByRole('region', { name: '¿Primera vez en Librook?' })
+const invite = (page: Page) => page.getByRole('region', { name: '¿Primera vez en Haiku?' })
 
 async function stepInfo(page: Page) {
   const dlg = tour(page)
@@ -113,7 +113,7 @@ test.describe('Tutorial', () => {
       await expect(invite(page)).toHaveCount(0)
 
       let s = await stepInfo(page)
-      expect(s).toMatchObject({ n: 1, title: 'Te damos la bienvenida a Librook' })
+      expect(s).toMatchObject({ n: 1, title: 'Te damos la bienvenida a Haiku' })
       await expect(tour(page).getByRole('button', { name: 'Empezar' })).toBeFocused()
       // Mientras el tutorial está abierto los atajos de teclado no abren nada encima
       await page.keyboard.press('n')
@@ -152,7 +152,7 @@ test.describe('Tutorial', () => {
       await page.getByRole('button', { name: 'Leídos', exact: true }).click()
       await expect(page.getByRole('button', { name: 'Leídos', exact: true })).toHaveAttribute('aria-pressed', 'true')
       await page.reload()
-      await expect(page.getByRole('heading', { name: 'Librook', exact: true })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Haiku', exact: true })).toBeVisible()
       await expect(page.getByRole('article').first().or(page.getByText('Tu biblioteca está vacía'))).toBeVisible()
       await expect(invite(page)).toHaveCount(0)
       expect(await page.evaluate(k => localStorage.getItem(k), tourKey('lectora1@test.dev'))).toBe('done')
@@ -179,7 +179,7 @@ test.describe('Tutorial', () => {
     await tour(page).getByRole('button', { name: 'Omitir' }).click()
     await expect(page.getByRole('dialog')).toHaveCount(0)
     await page.reload()
-    await expect(page.getByRole('heading', { name: 'Librook', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Haiku', exact: true })).toBeVisible()
     await expect(page.getByRole('article').first().or(page.getByText('Tu biblioteca está vacía'))).toBeVisible()
     await expect(invite(page)).toHaveCount(0)
     await context.close()
@@ -188,7 +188,7 @@ test.describe('Tutorial', () => {
     await invite(page).getByRole('button', { name: 'No, gracias' }).click()
     await expect(invite(page)).toHaveCount(0)
     await page.reload()
-    await expect(page.getByRole('heading', { name: 'Librook', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Haiku', exact: true })).toBeVisible()
     await expect(page.getByRole('article').first().or(page.getByText('Tu biblioteca está vacía'))).toBeVisible()
     await expect(invite(page)).toHaveCount(0)
     await context.close()

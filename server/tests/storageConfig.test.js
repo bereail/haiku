@@ -40,14 +40,14 @@ describe('resolveUploadsDir', () => {
   })
 
   it('rechaza carpetas que nginx sirve o que el deploy reemplaza', () => {
-    for (const dir of ['/var/www', '/var/www/html/librook/uploads', '/var/www/.uploads', path.join(SERVER_DIR, 'uploads'), SERVER_DIR]) {
+    for (const dir of ['/var/www', '/var/www/html/haiku/uploads', '/var/www/.uploads', path.join(SERVER_DIR, 'uploads'), SERVER_DIR]) {
       expect(storage.resolveUploadsDir({ UPLOADS_DIR: dir }, prod).error).toMatch(/no puede estar dentro/)
     }
   })
 
   it('acepta una ruta absoluta fuera de esas carpetas (sin confundir prefijos)', () => {
-    expect(storage.resolveUploadsDir({ UPLOADS_DIR: '/var/lib/librook/uploads' }, prod))
-      .toEqual({ dir: path.resolve('/var/lib/librook/uploads') })
+    expect(storage.resolveUploadsDir({ UPLOADS_DIR: '/var/lib/haiku/uploads' }, prod))
+      .toEqual({ dir: path.resolve('/var/lib/haiku/uploads') })
     expect(storage.resolveUploadsDir({ UPLOADS_DIR: '/var/www-uploads' }, prod).error).toBeUndefined()
   })
 })
@@ -95,7 +95,7 @@ describe('checkUploadsConfig (arranque)', () => {
   })
 
   it('con una carpeta válida la crea (700) y confirma que se puede escribir', () => {
-    const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'librook-cfg-')), 'uploads')
+    const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'haiku-cfg-')), 'uploads')
     process.env.UPLOADS_DIR = dir
     const l = log()
     expect(storage.checkUploadsConfig(l)).toEqual({ ok: true, dir })
@@ -105,7 +105,7 @@ describe('checkUploadsConfig (arranque)', () => {
   })
 
   ;(process.platform === 'win32' ? it.skip : it)('avisa si la carpeta existente tiene permisos abiertos', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'librook-cfg-'))
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'haiku-cfg-'))
     fs.chmodSync(dir, 0o755)
     process.env.UPLOADS_DIR = dir
     const l = log()

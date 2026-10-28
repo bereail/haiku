@@ -7,8 +7,8 @@ externos ni costos recurrentes).
 
 | Aspecto | Decisión |
 |---|---|
-| Dónde | `UPLOADS_DIR` (fuera del webroot). nginx **no** la sirve: las imágenes salen solo por la API (`GET /librook-api/uploads/<nombre>`). |
-| Subida | `POST /librook-api/uploads` con la imagen cruda (sin multipart, sin dependencias). Requiere sesión; la cuenta demo no puede. |
+| Dónde | `UPLOADS_DIR` (fuera del webroot). nginx **no** la sirve: las imágenes salen solo por la API (`GET /haiku-api/uploads/<nombre>`). |
+| Subida | `POST /haiku-api/uploads` con la imagen cruda (sin multipart, sin dependencias). Requiere sesión; la cuenta demo no puede. |
 | Validación | Tipo por firma binaria (JPEG/PNG/WebP; nunca por extensión ni por el Content-Type), dimensiones del encabezado, 50–6000 px por lado, 25 M píxeles, 5 MB. HTML, SVG, GIF, etc. se rechazan. |
 | Privacidad | Se quitan EXIF (incluida la **ubicación GPS** de las fotos de celular), XMP, IPTC y comentarios. Además el navegador achica la foto (1600 px, JPEG) antes de subirla. |
 | Nombres | 128 bits aleatorios (`<32 hex>.jpg|png|webp`). Se escriben con `wx` (nunca pisan otro archivo). Solo se sirve lo registrado en la base; cualquier otro nombre da 404 sin tocar el disco (sin path traversal). |
@@ -28,30 +28,30 @@ Antes de habilitar el marketplace en producción:
 1. **Medir el espacio disponible** y el uso actual:
    ```
    df -h / /var
-   du -sh /var/www/librook-api /var/www/html/librook
+   du -sh /var/www/haiku-api /var/www/html/haiku
    ```
-2. **Crear la carpeta** fuera del webroot, del usuario del servicio `librook-api`
-   (ver `User=` en `systemctl cat librook-api`):
+2. **Crear la carpeta** fuera del webroot, del usuario del servicio `haiku-api`
+   (ver `User=` en `systemctl cat haiku-api`):
    ```
-   mkdir -p /var/lib/librook/uploads
-   chown <usuario-del-servicio>: /var/lib/librook/uploads
-   chmod 700 /var/lib/librook/uploads
+   mkdir -p /var/lib/haiku/uploads
+   chown <usuario-del-servicio>: /var/lib/haiku/uploads
+   chmod 700 /var/lib/haiku/uploads
    ```
-3. En `/var/www/librook-api/.env`: `UPLOADS_DIR=/var/lib/librook/uploads` y reiniciar
-   `librook-api`. **Es obligatoria**: tiene que ser una ruta absoluta, fuera de `/var/www`
+3. En `/var/www/haiku-api/.env`: `UPLOADS_DIR=/var/lib/haiku/uploads` y reiniciar
+   `haiku-api`. **Es obligatoria**: tiene que ser una ruta absoluta, fuera de `/var/www`
    (lo sirve nginx) y fuera del código de la API (cada deploy lo reemplaza). Si falta o no
    cumple eso, la API arranca igual pero **deshabilita solo la subida de fotos** (responde
    503 "no está disponible por ahora"), lo dice en el log al arrancar
-   (`journalctl -u librook-api | grep uploads`) y `/health` devuelve `"uploads": false`;
+   (`journalctl -u haiku-api | grep uploads`) y `/health` devuelve `"uploads": false`;
    `deploy.sh` muestra un AVISO en ese caso. En una copia de desarrollo (con `.git`) el
    valor por defecto es `<repo>/.uploads`.
 4. **nginx**: el límite por defecto de un pedido es 1 MB (`client_max_body_size`). El
    navegador apunta a fotos de menos de 900 KB, así que funciona sin cambios; si se quiere
-   aceptar fotos más pesadas, subirlo solo para `/librook-api/uploads` (máximo 6m).
+   aceptar fotos más pesadas, subirlo solo para `/haiku-api/uploads` (máximo 6m).
 5. **Cron** (diario):
    ```
-   10 3 * * * cd /var/www/librook-api && node scripts/cleanup-uploads.js
-   15 3 * * * /var/www/librook-api/scripts/backup-uploads.sh
+   10 3 * * * cd /var/www/haiku-api && node scripts/cleanup-uploads.js
+   15 3 * * * /var/www/haiku-api/scripts/backup-uploads.sh
    ```
 
 ## Backup y restauración
@@ -59,10 +59,10 @@ Antes de habilitar el marketplace en producción:
 `scripts/backup-uploads.sh` respalda la misma carpeta que usa la API: toma `UPLOADS_DIR` del
 entorno o, si no está, del `.env` de la API (no tiene un valor por defecto propio; si no la
 encuentra o no es absoluta, sale con error). Genera `uploads_AAAAMMDD_HHMMSS.tar.gz` en `BACKUP_DIR`
-(por defecto `/root/librook-backups/uploads`, `0700`) y conserva 14 días. Las tablas
+(por defecto `/root/haiku-backups/uploads`, `0700`) y conserva 14 días. Las tablas
 `uploads` y `marketplace_listings` van con el backup habitual de la base.
 
-Restaurar: `tar xzf uploads_<fecha>.tar.gz -C /var/lib/librook/uploads` (con la base del mismo
+Restaurar: `tar xzf uploads_<fecha>.tar.gz -C /var/lib/haiku/uploads` (con la base del mismo
 momento, para que los nombres coincidan). Las imágenes que queden sin registro las borra la
 limpieza.
 

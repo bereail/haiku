@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# deploy.sh — Despliega Librook en el VPS
+# deploy.sh — Despliega Haiku en el VPS
 # Uso: bash deploy.sh [usuario_ssh]
 # Ejemplo: bash deploy.sh root
 #
@@ -22,17 +22,17 @@ node scripts/check-deploy-files.mjs
 USER=${1:-root}
 HOST="${VPS_HOST:?Falta VPS_HOST. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
 PORT="${VPS_PORT:?Falta VPS_PORT. Copiá .env.deploy.local.example a .env.deploy.local y completalo.}"
-API_DIR="/var/www/librook-api"
+API_DIR="/var/www/haiku-api"
 SSH="ssh -p $PORT $USER@$HOST"
 SCP="scp -P $PORT"
 
 echo "==> Backup rápido del estado actual en el VPS (para poder volver atrás)..."
 # Nada de esto toca producción — es una copia de lo que YA está corriendo, antes de pisarlo.
 BACKUP_TAG=$(date +%Y%m%d_%H%M%S)
-$SSH "mkdir -p /root/librook-deploy-backups && \
-  tar czf /root/librook-deploy-backups/api_$BACKUP_TAG.tar.gz -C /var/www librook-api && \
-  tar czf /root/librook-deploy-backups/web_$BACKUP_TAG.tar.gz -C /var/www/html librook"
-echo "==> Backup guardado en el VPS: /root/librook-deploy-backups/{api,web}_$BACKUP_TAG.tar.gz"
+$SSH "mkdir -p /root/haiku-deploy-backups && \
+  tar czf /root/haiku-deploy-backups/api_$BACKUP_TAG.tar.gz -C /var/www haiku-api && \
+  tar czf /root/haiku-deploy-backups/web_$BACKUP_TAG.tar.gz -C /var/www/html haiku"
+echo "==> Backup guardado en el VPS: /root/haiku-deploy-backups/{api,web}_$BACKUP_TAG.tar.gz"
 
 # Revierte el código (no la base) al estado de ANTES de este deploy y reinicia. Es seguro
 # aunque la migración de base ya se haya aplicado: el código viejo nunca lee/escribe las
@@ -40,11 +40,11 @@ echo "==> Backup guardado en el VPS: /root/librook-deploy-backups/{api,web}_$BAC
 rollback_and_exit() {
   echo ""
   echo "==> Revirtiendo código al estado previo a este deploy (backup $BACKUP_TAG)..."
-  $SSH "cd /var/www && tar xzf /root/librook-deploy-backups/api_$BACKUP_TAG.tar.gz && \
-        cd /var/www/html && rm -rf librook && tar xzf /root/librook-deploy-backups/web_$BACKUP_TAG.tar.gz && \
-        sudo systemctl restart librook-api" \
+  $SSH "cd /var/www && tar xzf /root/haiku-deploy-backups/api_$BACKUP_TAG.tar.gz && \
+        cd /var/www/html && rm -rf haiku && tar xzf /root/haiku-deploy-backups/web_$BACKUP_TAG.tar.gz && \
+        sudo systemctl restart haiku-api" \
     && echo "==> Código revertido y servicio reiniciado." \
-    || echo "¡ATENCIÓN! La reversión automática también falló — hace falta intervención manual. Backup intacto en /root/librook-deploy-backups/{api,web}_$BACKUP_TAG.tar.gz"
+    || echo "¡ATENCIÓN! La reversión automática también falló — hace falta intervención manual. Backup intacto en /root/haiku-deploy-backups/{api,web}_$BACKUP_TAG.tar.gz"
   echo "==> Deploy ABORTADO. El sitio debería estar de nuevo en la versión anterior."
   exit 1
 }
@@ -250,7 +250,7 @@ $SCP server/package-lock.json $USER@$HOST:$API_DIR/package-lock.json
 $SSH "cd $API_DIR && npm ci --omit=dev"
 
 echo "==> Reiniciando API..."
-$SSH "sudo systemctl restart librook-api"
+$SSH "sudo systemctl restart haiku-api"
 
 echo "==> Verificando que la API responda (health check real, no solo el estado de systemd)..."
 HEALTH_OK=false
@@ -266,7 +266,7 @@ done
 if [ "$HEALTH_OK" = false ]; then
   echo ""
   echo "¡ATENCIÓN! La API no respondió /health después de reiniciar."
-  echo "Logs: ssh -p $PORT $USER@$HOST 'sudo journalctl -u librook-api -n 50 --no-pager'"
+  echo "Logs: ssh -p $PORT $USER@$HOST 'sudo journalctl -u haiku-api -n 50 --no-pager'"
   rollback_and_exit
 fi
 echo "==> API respondiendo OK (/health, confirmado contra la base real)."
@@ -280,7 +280,7 @@ else
   echo ""
   echo "AVISO: la subida de fotos del Mercado está DESHABILITADA: falta UPLOADS_DIR en"
   echo "$API_DIR/.env o no es válida (ruta absoluta, fuera de /var/www). Pasos en"
-  echo "docs/marketplace-imagenes.md. El detalle está en: journalctl -u librook-api | grep uploads"
+  echo "docs/marketplace-imagenes.md. El detalle está en: journalctl -u haiku-api | grep uploads"
   echo ""
 fi
 
@@ -300,14 +300,14 @@ else
   rollback_and_exit
 fi
 
-$SSH "sudo systemctl status librook-api --no-pager | head -6"
+$SSH "sudo systemctl status haiku-api --no-pager | head -6"
 
 echo "==> Copiando frontend al directorio web..."
-# Confirmado con `nginx -T`: el bloque "location /librook/" usa alias hacia esta ruta.
+# Confirmado con `nginx -T`: el bloque "location /haiku/" usa alias hacia esta ruta.
 # (La detección automática anterior buscaba "root" en la config, pero nginx usa "alias" acá,
 # así que nunca lo encontraba y caía a un fallback que a veces elegía una carpeta vieja
 # equivocada que nginx ni siquiera sirve.)
-WEBROOT="/var/www/html/librook"
+WEBROOT="/var/www/html/haiku"
 echo "==> Webroot: $WEBROOT"
 # `scp -r dist/.` solo agrega/pisa archivos — nunca borra. Vite nombra cada bundle con un
 # hash de contenido distinto en cada build, así que sin este paso los bundles de builds
@@ -320,8 +320,8 @@ $SCP -r dist/. $USER@$HOST:$WEBROOT/
 echo "==> Frontend copiado correctamente (assets viejos eliminados antes de copiar)."
 
 echo ""
-echo "Deploy completado. Verificá en https://ailonline.com.ar/librook/"
-echo "(nginx ya tiene el fallback de SPA correcto para /librook/ — confirmado con nginx -T"
+echo "Deploy completado. Verificá en https://ailonline.com.ar/haiku/"
+echo "(nginx ya tiene el fallback de SPA correcto para /haiku/ — confirmado con nginx -T"
 echo " el 2026-10-21, las rutas nuevas /catalog y /catalog/obra/:id deberían andar sin tocar nada ahí)"
 echo ""
 echo "RECORDATORIO: el sitio está detrás de Cloudflare (confirmado por los headers de respuesta,"

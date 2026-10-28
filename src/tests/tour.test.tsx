@@ -277,7 +277,7 @@ describe('<TourInvite>', () => {
   it('ofrece empezar, posponer o no volver a mostrar, sin llevarse el foco', async () => {
     const onStart = vi.fn(), onLater = vi.fn(), onDismiss = vi.fn()
     render(<TourInvite onStart={onStart} onLater={onLater} onDismiss={onDismiss} />)
-    const region = screen.getByRole('region', { name: '¿Primera vez en Librook?' })
+    const region = screen.getByRole('region', { name: '¿Primera vez en Haiku?' })
     expect(region).not.toContainElement(document.activeElement as HTMLElement)
     const user = userEvent.setup()
     await user.click(screen.getByRole('button', { name: 'Ver el tutorial' }))

@@ -1,4 +1,4 @@
-name: Deploy Librook
+name: Deploy Haiku
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
         run: ssh-keyscan -H -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy frontend via rsync
-        run: rsync -avzr --delete -e "ssh -p ${{ secrets.SSH_PORT }}" dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/librook/
+        run: rsync -avzr --delete -e "ssh -p ${{ secrets.SSH_PORT }}" dist/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/html/haiku/
 
       - name: Deploy server files via rsync
         run: |
@@ -39,14 +39,14 @@ jobs:
             -e "ssh -p ${{ secrets.SSH_PORT }}" \
             --exclude='node_modules' \
             --exclude='.env' \
-            server/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/librook-api/
+            server/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/haiku-api/
 
       - name: Aplicar schema, instalar dependencias y reiniciar
         run: |
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            cd /var/www/librook-api &&
+            cd /var/www/haiku-api &&
             npm install --omit=dev &&
             DATABASE_URL=\$(grep DATABASE_URL .env | cut -d= -f2-) &&
             psql \"\$DATABASE_URL\" -f schema.sql &&
-            systemctl restart librook-api
+            systemctl restart haiku-api
           "

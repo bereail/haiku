@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de lanzamiento — Librook</title>
+<title>Panel de lanzamiento — Haiku</title>
 <style>
   :root{
     --bg:#f6f5f1;
@@ -256,7 +256,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <h1>Librook</h1>
+      <h1>Haiku</h1>
       <p>Panel de lanzamiento</p>
     </div>
     <nav class="navlist" aria-label="Secciones del panel">
@@ -296,9 +296,9 @@
 (function(){
   "use strict";
 
-  var STORAGE_KEY = "librook_admin_panel_v1";
-  var BACKUP_KEY = "librook_admin_panel_v1_backup";
-  var THEME_KEY = "librook_admin_panel_theme";
+  var STORAGE_KEY = "haiku_admin_panel_v1";
+  var BACKUP_KEY = "haiku_admin_panel_v1_backup";
+  var THEME_KEY = "haiku_admin_panel_theme";
 
   var PHASES = [
     {id:"f1", name:"Fase 1 — Auditoría y preparación"},
@@ -317,7 +317,7 @@
     return {
       schemaVersion: 1,
       project: {
-        name: "Librook",
+        name: "Haiku",
         lastUpdated: "2026-10-27",
         nextAction: {
           text: "Decidir y configurar el almacenamiento de fotos del Mercado en el VPS (UPLOADS_DIR) — hoy bloquea probar venta/intercambio con fotos en producción.",
@@ -325,7 +325,7 @@
         }
       },
       tasks: [
-        {id:"f1-1",phaseId:"f1",name:"Revisar el estado funcional de Librook",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Confirmar que build, lint y las pruebas automatizadas pasan antes de dar nada por cerrado.",evidence:"Build OK, lint 0 errores (6 warnings preexistentes), 104/104 tests unitarios frontend, 154/155 backend (1 skip preexistente), 161/161 E2E — corridos el 27/10/2026.",notes:"",dependsOn:""},
+        {id:"f1-1",phaseId:"f1",name:"Revisar el estado funcional de Haiku",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Confirmar que build, lint y las pruebas automatizadas pasan antes de dar nada por cerrado.",evidence:"Build OK, lint 0 errores (6 warnings preexistentes), 104/104 tests unitarios frontend, 154/155 backend (1 skip preexistente), 161/161 E2E — corridos el 27/10/2026.",notes:"",dependsOn:""},
         {id:"f1-2",phaseId:"f1",name:"Verificar que las funcionalidades principales existen de verdad",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Biblioteca, reconocimiento de libros, Comunidad, Catálogo público y Mercado.",evidence:"Código confirmado en src/ y server/routes/ para las 5 áreas; DOCUMENTACION.md las describe con el mismo detalle.",notes:"",dependsOn:""},
         {id:"f1-3",phaseId:"f1",name:"Comprobar pruebas y errores pendientes",priority:"media",status:"completada",updatedAt:"2026-10-27",desc:"",evidence:"Mismo run del 27/10. Backend tiene 1 test marcado skip desde antes — no investigado, bajo riesgo.",notes:"",dependsOn:""},
         {id:"f1-4",phaseId:"f1",name:"Revisar seguridad, privacidad y permisos",priority:"alta",status:"completada",updatedAt:"2026-10-27",desc:"Aislamiento entre usuarias, modo demo de solo lectura, sesión vencida/inválida.",evidence:"e2e/security-isolation.spec.ts, security-demo.spec.ts, security-admin.spec.ts, session-expired.spec.ts — todos pasan.",notes:"",dependsOn:""},
@@ -340,14 +340,14 @@
 
         {id:"f3-1",phaseId:"f3",name:"Evaluar el alojamiento existente y las alternativas gratuitas",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Ya hay un VPS propio funcionando (detrás de Cloudflare) y en uso — no se compararon alternativas gratuitas. Decisión pendiente: ¿conviene mantenerlo para el lanzamiento con lectores reales?",dependsOn:""},
         {id:"f3-2",phaseId:"f3",name:"Revisar compatibilidad con backend y PostgreSQL",priority:"baja",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"Postgres 14.24 en el VPS vs 17 en local — compatibles, confirmado con un dump/restore real.",notes:"",dependsOn:""},
-        {id:"f3-3",phaseId:"f3",name:"Evaluar dominio gratuito, subdominio y eventual dominio propio",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Hoy corre bajo ailonline.com.ar/librook — un dominio que no es exclusivo del proyecto. Sin decisión tomada.",dependsOn:""},
+        {id:"f3-3",phaseId:"f3",name:"Evaluar dominio gratuito, subdominio y eventual dominio propio",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"Hoy corre bajo ailonline.com.ar/haiku — un dominio que no es exclusivo del proyecto. Sin decisión tomada.",dependsOn:""},
         {id:"f3-4",phaseId:"f3",name:"Preparar configuración de producción sin exponer secretos",priority:"media",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:".env.example en ambas carpetas sin secretos reales.",notes:"deploy.sh pasa DATABASE_URL completo como argumento de psql en las migraciones inline — funciona, pero queda visible en ps aux del VPS (riesgo bajo: solo root tiene shell ahí). No es la práctica más prolija.",dependsOn:""},
         {id:"f3-5",phaseId:"f3",name:"Definir copias de seguridad y recuperación",priority:"alta",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"Backup real de producción hecho y restaurado en una base aislada para comparar conteos (2026-10-21); procedimiento con nombre de archivo exacto (sin glob) documentado.",notes:"",dependsOn:""},
         {id:"f3-6",phaseId:"f3",name:"Verificar HTTPS, autenticación, permisos y almacenamiento de imágenes",priority:"alta",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"HTTPS (Cloudflare + nginx), autenticación y permisos por usuario ya verificados en producción real.",notes:"Falta: configurar el almacenamiento de imágenes del Mercado (UPLOADS_DIR) en el VPS — hoy no está habilitado ahí. Ver f2-3.",dependsOn:""},
         {id:"f3-7",phaseId:"f3",name:"Preparar un checklist de despliegue",priority:"media",status:"completada",updatedAt:"2026-10-21",desc:"",evidence:"deploy.sh con set -euo pipefail, backup automático antes de copiar archivos, doble health check (API + base) y rollback automático de código si falla — confirmado funcionando en despliegues reales.",notes:"",dependsOn:""},
 
         {id:"f4-1",phaseId:"f4",name:"Definir la propuesta de valor",priority:"alta",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"Primer borrador en docs/identidad-lanzamiento.md (sección 1), a partir de DOCUMENTACION.md — nada inventado.",notes:"Falta que Berenice lo lea, recorte y confirme la versión final.",dependsOn:""},
-        {id:"f4-2",phaseId:"f4",name:"Preparar un Instagram propio de Librook",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
+        {id:"f4-2",phaseId:"f4",name:"Preparar un Instagram propio de Haiku",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
         {id:"f4-3",phaseId:"f4",name:"Definir descripción, identidad visual y enlace",priority:"media",status:"en-curso",updatedAt:"2026-10-27",desc:"",evidence:"Bio corta para Instagram y tabla de tokens reales (color/tipografía) reutilizados del sistema visual 'Segunda edición' en docs/identidad-lanzamiento.md (secciones 2 y 3).",notes:"No existe todavía un logo/ícono dedicado para redes — la app usa un ícono genérico de libro en el manifest PWA.",dependsOn:""},
         {id:"f4-4",phaseId:"f4",name:"Crear las primeras publicaciones",priority:"media",status:"pendiente",updatedAt:"2026-10-27",desc:"",evidence:"",notes:"",dependsOn:""},
         {id:"f4-5",phaseId:"f4",name:"Preparar una presentación sencilla del proyecto",priority:"baja",status:"completada",updatedAt:"2026-10-27",desc:"",evidence:"Presentación de una página en docs/identidad-lanzamiento.md (sección 4), basada en DOCUMENTACION.md.",notes:"",dependsOn:""},
@@ -386,7 +386,7 @@
         {id:"d3",topic:"Almacenamiento de fotos del Mercado",decision:"Guardarlas en el VPS propio (no un servicio externo), con nombres aleatorios y validación real del archivo.",reason:"Evitar depender de un servicio de pago y mantener control sobre los datos de las usuarias.",date:"2026-10-22",status:"confirmada",consequences:"Falta configurar UPLOADS_DIR en el VPS de producción para que funcione ahí (ver tarea f2-3/f3-6)."},
         {id:"d4",topic:"Reconocimiento de tapas por foto",decision:"Tesseract.js corriendo en el navegador, sin mandar fotos a ningún servidor.",reason:"Gratis y no expone fotos de usuarias a terceros.",date:"2026-10-22",status:"confirmada",consequences:"Carga diferida (lazy-load) para no pesar el bundle inicial; precisión no probada en celulares físicos reales."},
         {id:"d5",topic:"¿El contacto debe ser obligatorio en una publicación del Mercado?",decision:"Sin decidir todavía — hoy es opcional.",reason:"Puede ser intencional (nadie está obligado a compartir un dato propio) o un descuido.",date:"2026-10-26",status:"propuesta",consequences:"Si se decide exigirlo, hay que actualizar MarketplaceModal.tsx, listingInput.js y los E2E que hoy publican sin contacto."},
-        {id:"d6",topic:"Dominio y alojamiento para el lanzamiento público",decision:"Sin decidir todavía — hoy corre bajo ailonline.com.ar/librook.",reason:"Ese dominio no es exclusivo del proyecto; falta confirmar si conviene para una difusión más amplia en Rosario y alrededores.",date:"2026-10-27",status:"propuesta",consequences:"CONTRADICCIÓN A REVISAR: la app ya está desplegada y, según el backup del 21/10, tiene 5 usuarios y 15 libros reales en producción — confirmar si son cuentas de prueba propias o ya hay lectores reales antes de tratar esto como un 'pre-lanzamiento' desde cero."}
+        {id:"d6",topic:"Dominio y alojamiento para el lanzamiento público",decision:"Sin decidir todavía — hoy corre bajo ailonline.com.ar/haiku.",reason:"Ese dominio no es exclusivo del proyecto; falta confirmar si conviene para una difusión más amplia en Rosario y alrededores.",date:"2026-10-27",status:"propuesta",consequences:"CONTRADICCIÓN A REVISAR: la app ya está desplegada y, según el backup del 21/10, tiene 5 usuarios y 15 libros reales en producción — confirmar si son cuentas de prueba propias o ya hay lectores reales antes de tratar esto como un 'pre-lanzamiento' desde cero."}
       ],
       metrics: {
         counters: {invited:null, registered:null, publishedBook:null, usefulAction:null, contacts:null, exchanges:null, returned:null},
@@ -762,7 +762,7 @@
 
     html += '<div class="card" style="margin-top:8px"><h3 style="font-size:14px">Documentación del repositorio</h3>';
     html += '<ul style="margin:6px 0 0;padding-left:18px;font-size:13px">';
-    html += '<li><code>DOCUMENTACION.md</code> — qué hace Librook hoy, y la sección 8 "Lo que falta" (fuente de varios de los huecos listados en este panel).</li>';
+    html += '<li><code>DOCUMENTACION.md</code> — qué hace Haiku hoy, y la sección 8 "Lo que falta" (fuente de varios de los huecos listados en este panel).</li>';
     html += '<li><code>docs/arquitectura-catalogo-publico.md</code> — diseño del catálogo público (obras/autores/ediciones).</li>';
     html += '<li><code>docs/marketplace-imagenes.md</code> y <code>docs/reconocimiento-libros.md</code> — specs del Mercado y del OCR/escaneo.</li>';
     html += '<li><code>CONTINUE.md</code> (raíz del repo) — continuidad entre sesiones de trabajo.</li>';
@@ -972,7 +972,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       var stamp = new Date().toISOString().replace(/[:.]/g,"-").slice(0,16);
-      a.href=url; a.download = "librook-panel-"+stamp+".json";
+      a.href=url; a.download = "haiku-panel-"+stamp+".json";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
       showToast("Respaldo exportado");

@@ -10,7 +10,7 @@ import { writeEan13Y4m } from './fixtures/ean13-video'
 // generado con el código de barras EAN-13 del ISBN.
 
 const ISBN = '9788437604947' // Cien años de soledad (Cátedra)
-const VIDEO = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'librook-cam-')), 'ean13.y4m')
+const VIDEO = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'haiku-cam-')), 'ean13.y4m')
 writeEan13Y4m(VIDEO, ISBN)
 
 test.use({

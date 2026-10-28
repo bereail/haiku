@@ -7,7 +7,7 @@ const SERVER_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..',
 // Corre SQL contra la base LOCAL (la misma que usa la API, DATABASE_URL de server/.env)
 // para preparar datos que no tienen endpoint propio (ej. el catálogo, de solo lectura).
 // Un proceso `node` corto con el driver `pg` que ya trae el backend — sin depender de
-// Docker ni de tener psql en el PATH (antes: `docker exec librook-pg psql ...`, que
+// Docker ni de tener psql en el PATH (antes: `docker exec haiku-pg psql ...`, que
 // solo funcionaba si Postgres corría en un contenedor con ese nombre exacto).
 // Nunca contra producción: usa el mismo DATABASE_URL que la API del stack E2E, que
 // global-setup ya valida que sea local.

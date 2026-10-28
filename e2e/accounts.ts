@@ -22,8 +22,8 @@ export type AccountName = keyof typeof ACCOUNTS | 'demo'
 // E2E_ORIGIN permite correr la suite contra un stack local aparte (otro Vite y
 // otro backend), sin tocar el servidor de desarrollo. Por defecto, el de siempre.
 export const E2E_ORIGIN = process.env.E2E_ORIGIN || 'http://localhost:5173'
-export const BASE_URL = `${E2E_ORIGIN}/librook/`
-export const API_URL = `${E2E_ORIGIN}/librook-api`
+export const BASE_URL = `${E2E_ORIGIN}/haiku/`
+export const API_URL = `${E2E_ORIGIN}/haiku-api`
 // Las sesiones guardadas son por origen (localStorage es por origen)
 export const AUTH_DIR = path.join(E2E_DIR, '.auth', new URL(E2E_ORIGIN).port || 'default')
 export const OUTBOX_FILE = path.join(E2E_DIR, '.outbox.jsonl')
@@ -36,7 +36,7 @@ export function storageStatePath(name: AccountName) {
 export function tokenOf(name: AccountName): string {
   const state = JSON.parse(fs.readFileSync(storageStatePath(name), 'utf8'))
   const ls = state.origins[0].localStorage as { name: string; value: string }[]
-  return ls.find(i => i.name === 'librook_token')!.value
+  return ls.find(i => i.name === 'haiku_token')!.value
 }
 
 export function bearer(name: AccountName) {

@@ -16,8 +16,8 @@ export interface ImportResult {
 // puede traer otras. En ese caso el libro se importa igual, sin tapa.
 const COVER_REJECTED = /tapa/i
 
-const LEGACY_KEYS = ['librook_books', 'books']
-const MIGRATED_KEY = 'librook_migrated_v3'
+const LEGACY_KEYS = ['haiku_books', 'books']
+const MIGRATED_KEY = 'haiku_migrated_v3'
 
 export function useBooks(userEmail: string) {
   const [books, setBooks] = useState<Book[]>([])
@@ -94,7 +94,7 @@ export function useBooks(userEmail: string) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `librook-backup-${todayLocal()}.json`
+    a.download = `haiku-backup-${todayLocal()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -138,7 +138,7 @@ export function useBooks(userEmail: string) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mi biblioteca — Librook</title>
+  <title>Mi biblioteca — Haiku</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Georgia,serif;color:#1a1a18;background:#faf9f6;padding:2rem 1rem}
@@ -178,7 +178,7 @@ export function useBooks(userEmail: string) {
   ${reading.length > 0 ? `<h2>Leyendo<span class="count">${reading.length}</span></h2>${table(reading, readingCols)}` : ''}
   ${pending.length > 0 ? `<h2>Pendientes<span class="count">${pending.length}</span></h2>${table(pending, pendingCols)}` : ''}
   ${abandoned.length > 0 ? `<h2>Abandonados<span class="count">${abandoned.length}</span></h2>${table(abandoned, abandonedCols)}` : ''}
-  <footer>Generado por Librook</footer>
+  <footer>Generado por Haiku</footer>
 </div>
 </body>
 </html>`
@@ -187,7 +187,7 @@ export function useBooks(userEmail: string) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `librook-${todayLocal()}.html`
+    a.download = `haiku-${todayLocal()}.html`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -201,7 +201,7 @@ export function useBooks(userEmail: string) {
       const data = JSON.parse(await file.text())
       imported = Array.isArray(data) ? data : data?.books
     } catch {
-      throw new Error('No se pudo leer el archivo. Verificá que sea un backup válido de Librook.')
+      throw new Error('No se pudo leer el archivo. Verificá que sea un backup válido de Haiku.')
     }
     if (!Array.isArray(imported) || imported.length === 0) {
       throw new Error('El archivo está vacío o tiene un formato inválido')

@@ -72,7 +72,7 @@ start('api', 'node', ['index.js'], {
   env: {
     ...process.env,
     PORT: String(API_PORT),
-    APP_URL: `${ORIGIN}/librook/`,
+    APP_URL: `${ORIGIN}/haiku/`,
     // Solo local: la suite completa hace más de 20 logins en 15 minutos
     AUTH_RATE_LIMIT_MAX: '1000',
     // Tiene que coincidir con VITE_ADMIN_EMAIL de abajo: ese solo decide si el
@@ -101,7 +101,7 @@ if (devMode) {
 let code = 1
 try {
   await waitFor(`http://localhost:${API_PORT}/health`, 'Backend E2E')
-  await waitFor(`${ORIGIN}/librook-api/health`, 'Vite E2E (proxy a la API)')
+  await waitFor(`${ORIGIN}/haiku-api/health`, 'Vite E2E (proxy a la API)')
   console.log(`Stack E2E listo en ${ORIGIN} (API :${API_PORT})`)
   if (serveOnly) {
     await new Promise(() => {}) // hasta Ctrl+C

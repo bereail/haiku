@@ -73,7 +73,7 @@ describe('Cuenta demo en /auth', () => {
   it('forgot-password para la demo responde ok pero no crea token ni manda mail', async () => {
     pool.query.mockResolvedValueOnce({ rows: [{ id: 'demo-id' }] })
 
-    const res = await request(app).post('/auth/forgot-password').send({ email: 'Demo@Librook.app' })
+    const res = await request(app).post('/auth/forgot-password').send({ email: 'Demo@Haiku.app' })
 
     expect(res.status).toBe(200)
     expect(res.body).toEqual({ ok: true })

@@ -17,10 +17,10 @@ const OCR_FILES = {
 }
 function ocrAssets() {
   return {
-    name: 'librook-ocr-assets',
+    name: 'haiku-ocr-assets',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const m = req.url && req.url.match(/^\/librook\/ocr\/([^?]+)/)
+        const m = req.url && req.url.match(/^\/haiku\/ocr\/([^?]+)/)
         const src = m && OCR_FILES[m[1]]
         if (!src) return next()
         res.setHeader('Content-Type', m[1].endsWith('.js') ? 'text/javascript' : 'application/octet-stream')
@@ -43,18 +43,18 @@ export default defineConfig({
     isolate: true,
     include: ['src/tests/**/*.test.{ts,tsx}'],
   },
-  base: '/librook/',
+  base: '/haiku/',
   // Caché propia por servidor: dos dev servers con la misma caché se pisan
   cacheDir: process.env.VITE_CACHE_DIR || 'node_modules/.vite',
   server: {
     proxy: {
-      '/librook-api': process.env.VITE_LOCAL_API === '1' ? {
-        // Backend local (server/): no usa el prefijo /librook-api en sus rutas
+      '/haiku-api': process.env.VITE_LOCAL_API === '1' ? {
+        // Backend local (server/): no usa el prefijo /haiku-api en sus rutas
         // LOCAL_API_PORT: para levantar un segundo stack (p. ej. el de E2E) sin
         // tocar el de desarrollo
         target: `http://localhost:${process.env.LOCAL_API_PORT || 3001}`,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/librook-api/, ''),
+        rewrite: (path) => path.replace(/^\/haiku-api/, ''),
       } : {
         target: 'https://ailonline.com.ar',
         changeOrigin: true,
@@ -68,14 +68,14 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Librook',
-        short_name: 'Librook',
+        name: 'Haiku',
+        short_name: 'Haiku',
         description: 'Tu biblioteca personal de libros',
         theme_color: '#2d4a3e',
         background_color: '#faf9f7',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/librook/',
+        start_url: '/haiku/',
         icons: [
           {
             src: 'icon-192.png',

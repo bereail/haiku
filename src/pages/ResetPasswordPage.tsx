@@ -45,7 +45,7 @@ export default function ResetPasswordPage({ token, onReset, onDone }: Props) {
           </div>
         </div>
         <div className={styles.leftContent}>
-          <p className={styles.brand}>Librook</p>
+          <p className={styles.brand}>Haiku</p>
           <p className={styles.tagline}>Tu biblioteca personal.</p>
         </div>
       </div>

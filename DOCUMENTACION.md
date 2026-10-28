@@ -1,9 +1,9 @@
-# Documentación de Librook
+# Documentación de Haiku
 
 > Qué hace la app hoy, qué le falta de verdad, y las apps más parecidas que existen.
 > Generado a partir del estado real del código (octubre 2026) — no es un folleto de marketing.
 
-Librook es tu biblioteca personal, en texto propio. Registrás lo que leíste, lo que estás
+Haiku es tu biblioteca personal, en texto propio. Registrás lo que leíste, lo que estás
 leyendo y lo que querés leer — a mano, por voz, escaneando el código de barras o con una foto
 de la tapa. A partir de ahí, lo que quieras compartir pasa a una comunidad de lectoras, a un
 catálogo público, o a un mercado para vender e intercambiar libros usados.
@@ -70,7 +70,7 @@ Una reseña pública por libro, completamente separada de tu biblioteca y de tus
 
 ## 4. Catálogo público
 
-La única parte de Librook visible sin crear cuenta. Búsqueda pública de libros (con las fichas
+La única parte de Haiku visible sin crear cuenta. Búsqueda pública de libros (con las fichas
 propias primero, Open Library como respaldo) y una página por obra que muestra cuántas
 lectoras la tienen y las reflexiones que se compartieron sobre ella — nunca biblioteca
 privada, fechas ni notas de nadie.
@@ -101,7 +101,7 @@ Venta e intercambio entre lectoras, completamente aparte de las reseñas de Comu
 
 ## 7. Cómo está hecho
 
-Para quien quiera el detalle: nada de esto hace falta para usar Librook.
+Para quien quiera el detalle: nada de esto hace falta para usar Haiku.
 
 | | |
 |---|---|
@@ -138,31 +138,31 @@ con la razón exacta.
 
 ## 9. Las 3 apps más parecidas
 
-No por tamaño, sino por hacer una combinación de cosas más cercana a la de Librook —
+No por tamaño, sino por hacer una combinación de cosas más cercana a la de Haiku —
 biblioteca propia, reseñas entre lectoras y (en un caso) intercambio de libros físicos.
 
 ### ① The StoryGraph — la más parecida en el día a día
 
 Seguimiento personal + estadísticas de lectura. Es la alternativa independiente a Goodreads
 que más se usa hoy: registrás lo que leíste, metas anuales, estados de lectura y estadísticas
-detalladas de tu año lector — el mismo corazón que tiene la Biblioteca de Librook. Lo que no
+detalladas de tu año lector — el mismo corazón que tiene la Biblioteca de Haiku. Lo que no
 tiene: catálogo navegable sin cuenta, ni nada parecido a un mercado de libros usados.
 
 ### ② Bookwyrm — la más parecida en filosofía
 
 Comunidad de reseñas, sin publicidad ni venta de datos. Proyecto chico y de código abierto,
 pensado como una red social de lectoras sin fines de lucro — reseñas, estanterías propias y
-comentarios entre usuarias, igual que la Comunidad de Librook. Lo que no tiene: reconocimiento
+comentarios entre usuarias, igual que la Comunidad de Haiku. Lo que no tiene: reconocimiento
 de libros por cámara/foto ni mercado de compraventa.
 
 ### ③ LibraryThing — la más parecida en el Mercado
 
 Catalogación personal + intercambio entre miembros. Cataloga tu biblioteca con el mismo
 detalle (editorial, género, puntaje) y tiene una tradición larga de intercambiar libros entre
-sus miembros — la pieza que en Librook es el Mercado de venta e intercambio. Lo que no tiene:
+sus miembros — la pieza que en Haiku es el Mercado de venta e intercambio. Lo que no tiene:
 carga por voz ni escaneo de ISBN con la cámara del celular.
 
-| Función | Librook | StoryGraph | Bookwyrm | LibraryThing |
+| Función | Haiku | StoryGraph | Bookwyrm | LibraryThing |
 |---|---|---|---|---|
 | Biblioteca + estados de lectura | Sí | Sí | Sí | Sí |
 | Reseñas/comunidad entre usuarias | Sí | Parcial | Sí | Parcial |

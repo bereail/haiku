@@ -22,8 +22,8 @@ function getSessionId() {
 
 function trackView(path: string) {
   // El servidor toma el email del token (no se manda en el body: no confía en él)
-  const token = localStorage.getItem('librook_token')
-  fetch('/librook-api/analytics/track', {
+  const token = localStorage.getItem('haiku_token')
+  fetch('/haiku-api/analytics/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({

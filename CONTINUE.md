@@ -1,7 +1,7 @@
-# Continuidad del proyecto — Librook
+# Continuidad del proyecto — Haiku
 
 > Este archivo existe para que cualquiera (vos, en una sesión nueva; o Claude, sin memoria de
-> conversaciones anteriores) pueda retomar el lanzamiento de Librook sin tener que releer todo
+> conversaciones anteriores) pueda retomar el lanzamiento de Haiku sin tener que releer todo
 > el historial de chat. Se actualiza cuando cambia algo importante — no es una bitácora
 > detallada (eso vive en el panel, ver abajo).
 
@@ -47,7 +47,7 @@ ese archivo (`file://.../admin-local/index.html`). Eso significa:
 almacenamiento o que `localStorage` esté bloqueado (modo privado); el código tiene manejo de
 ese caso (banner de aviso) pero no se pudo forzar el escenario para verlo en pantalla.
 
-## Estado real de Librook al 27/10/2026 (resumen — el detalle vive en el panel)
+## Estado real de Haiku al 27/10/2026 (resumen — el detalle vive en el panel)
 
 - **Hoja de ruta: 9 de 38 tareas completadas (24%)**, fase actual: Fase 1 (Auditoría y
   preparación) — casi cerrada, falta confirmar contra la Fase 2.
@@ -65,7 +65,7 @@ ese caso (banner de aviso) pero no se pudo forzar el escenario para verlo en pan
 ## Riesgos y bloqueos conocidos
 
 - `UPLOADS_DIR` sin configurar en el VPS (bloquea Mercado con fotos en producción).
-- Dominio actual (`ailonline.com.ar/librook`) no es exclusivo del proyecto — decisión de
+- Dominio actual (`ailonline.com.ar/haiku`) no es exclusivo del proyecto — decisión de
   dominio/alojamiento para el lanzamiento público sigue abierta.
 - Escaneo de ISBN y OCR de tapas nunca se probaron en un celular físico real.
 - Contacto opcional en una publicación del Mercado — sin decidir si debería ser obligatorio.
@@ -79,7 +79,7 @@ concreto antes de pasar a identidad/comunicación y primeros lectores.
 ## Archivos relevantes
 
 - `admin-local/index.html` — el panel (este documento lo acompaña, no lo duplica).
-- `DOCUMENTACION.md` — qué hace Librook hoy y qué le falta (fuente de varios de los gaps del
+- `DOCUMENTACION.md` — qué hace Haiku hoy y qué le falta (fuente de varios de los gaps del
   panel).
 - `docs/arquitectura-catalogo-publico.md`, `docs/marketplace-imagenes.md`,
   `docs/reconocimiento-libros.md` — specs de diseño de esas features.

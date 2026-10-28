@@ -17,7 +17,7 @@ const MIN_LOCAL_RESULTS = 3
 // Búsqueda local-first: primero el catálogo propio (rápido, sin límites externos).
 // Solo si da pocos resultados, se completa con una búsqueda en vivo a Open Library
 // (reutilizando useBookSearch tal cual existe) — esos resultados externos todavía no
-// tienen reseñas ni biblioteca asociada en Librook, así que se devuelven aparte para que
+// tienen reseñas ni biblioteca asociada en Haiku, así que se devuelven aparte para que
 // la UI los distinga con claridad.
 export function useCatalogSearch() {
   const [localResults, setLocalResults] = useState<LocalWork[]>([])
@@ -45,7 +45,7 @@ export function useCatalogSearch() {
       const controller = new AbortController()
       abortRef.current = controller
       try {
-        const res = await fetch(`/librook-api/catalog/works?q=${encodeURIComponent(trimmed)}&limit=10`, {
+        const res = await fetch(`/haiku-api/catalog/works?q=${encodeURIComponent(trimmed)}&limit=10`, {
           signal: controller.signal,
         })
         if (!res.ok) throw new Error('No se pudo buscar en el catálogo')

@@ -13,9 +13,9 @@ export default function CatalogPage() {
   const { dark, toggle: toggleTheme } = useTheme()
 
   useEffect(() => {
-    document.title = 'Catálogo — Librook'
+    document.title = 'Catálogo — Haiku'
     const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', 'Explorá libros, reseñas y ediciones en el catálogo público de Librook, sin necesidad de registrarte.')
+    if (meta) meta.setAttribute('content', 'Explorá libros, reseñas y ediciones en el catálogo público de Haiku, sin necesidad de registrarte.')
     return () => clear()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -29,7 +29,7 @@ export default function CatalogPage() {
     <div className={styles.layout}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link to="/" className={styles.logo}>Librook</Link>
+          <Link to="/" className={styles.logo}>Haiku</Link>
           <nav className={styles.nav}>
             <button
               type="button"
@@ -58,7 +58,7 @@ export default function CatalogPage() {
         <div className={styles.intro}>
           <h1 className={styles.title}>Catálogo público</h1>
           <p className={styles.subtitle}>
-            Explorá los libros que ya forman parte de la comunidad de Librook — con reseñas
+            Explorá los libros que ya forman parte de la comunidad de Haiku — con reseñas
             reales de otros lectores. No hace falta una cuenta para buscar.
           </p>
         </div>
@@ -84,13 +84,13 @@ export default function CatalogPage() {
         {!loading && query.trim().length >= 2 && localResults.length === 0 && externalResults.length === 0 && (
           <div className={styles.empty}>
             <p className={styles.emptyTitle}>No encontramos «{query.trim()}» en el catálogo.</p>
-            <p className={styles.emptyHint}>Probá con otro título, o revisá que esté bien escrito — buscamos primero en Librook y después en Open Library.</p>
+            <p className={styles.emptyHint}>Probá con otro título, o revisá que esté bien escrito — buscamos primero en Haiku y después en Open Library.</p>
           </div>
         )}
 
         {localResults.length > 0 && (
           <section>
-            <h2 className={styles.sectionTitle}>En Librook</h2>
+            <h2 className={styles.sectionTitle}>En Haiku</h2>
             <div className={styles.grid}>
               {localResults.map((w) => <WorkCard key={w.id} work={w} />)}
             </div>
@@ -101,7 +101,7 @@ export default function CatalogPage() {
           <section>
             <h2 className={styles.sectionTitle}>
               También en Open Library
-              <span className={styles.sectionHint}>— todavía sin reseñas en Librook</span>
+              <span className={styles.sectionHint}>— todavía sin reseñas en Haiku</span>
             </h2>
             <div className={styles.grid}>
               {externalResults.map((b) => (

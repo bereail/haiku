@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, SESSION_EXPIRED_EVENT } from '../api'
 
-const TOKEN_KEY = 'librook_token'
-const AUTH_KEY = 'librook_auth'
+const TOKEN_KEY = 'haiku_token'
+const AUTH_KEY = 'haiku_auth'
 
 export function useAuth() {
   const [user, setUser] = useState<{ email: string; isDemo?: boolean } | null>(() => {
