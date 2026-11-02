@@ -85,6 +85,7 @@ $SCP server/images/cleanup.js            $USER@$HOST:$API_DIR/images/cleanup.js
 $SCP server/scripts/cleanup-uploads.js   $USER@$HOST:$API_DIR/scripts/cleanup-uploads.js
 $SCP server/scripts/backup-uploads.sh    $USER@$HOST:$API_DIR/scripts/backup-uploads.sh
 $SCP server/scripts/backfill-editions.js  $USER@$HOST:$API_DIR/scripts/backfill-editions.js
+$SCP server/scripts/seed-cuentas.js       $USER@$HOST:$API_DIR/scripts/seed-cuentas.js
 # server/rateLimit.js (el rate limiter casero original) quedó reemplazado por
 # server/middleware/rateLimiter.js (usa express-rate-limit) — limpiamos el archivo viejo
 # del VPS para que no quede código muerto ahí.
@@ -248,6 +249,19 @@ $SCP server/package-lock.json $USER@$HOST:$API_DIR/package-lock.json
 # Es más lento que un install incremental pero falla fuerte si package.json y el lockfile no
 # coinciden, en vez de resolver "como pueda" — mejor para un deploy que para desarrollo local.
 $SSH "cd $API_DIR && npm ci --omit=dev"
+
+echo "==> Fijando ADMIN_EMAIL=bereail en el .env del VPS..."
+# Reemplaza la línea si ya existe (login admin anterior, otro valor); la agrega si no.
+# seed-cuentas.js de abajo crea la cuenta "bereail" con esa misma contraseña, así que
+# tienen que coincidir o el panel admin le devuelve 403 a esa cuenta.
+$SSH "grep -q '^ADMIN_EMAIL=' $API_DIR/.env \
+  && sed -i 's/^ADMIN_EMAIL=.*/ADMIN_EMAIL=bereail/' $API_DIR/.env \
+  || echo 'ADMIN_EMAIL=bereail' >> $API_DIR/.env"
+
+echo "==> Creando/actualizando la cuenta admin (bereail) y la cuenta de prueba (prueba@haiku.app)..."
+# Independiente de que la API esté corriendo: se conecta directo a la base con las mismas
+# credenciales del .env. Correrlo de nuevo no duplica nada (upsert por email).
+$SSH "cd $API_DIR && node scripts/seed-cuentas.js"
 
 echo "==> Reiniciando API..."
 $SSH "sudo systemctl restart haiku-api"
