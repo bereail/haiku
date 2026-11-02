@@ -34,6 +34,12 @@ $SSH "mkdir -p /root/haiku-deploy-backups && \
   tar czf /root/haiku-deploy-backups/web_$BACKUP_TAG.tar.gz -C /var/www/html haiku"
 echo "==> Backup guardado en el VPS: /root/haiku-deploy-backups/{api,web}_$BACKUP_TAG.tar.gz"
 
+# Sin esto, cada deploy suma dos .tar.gz más y la carpeta crece sin límite. Se conservan los
+# últimos 5 de cada uno (api_ y web_) — igual al criterio de e2e-stack.mjs con sus evidencias.
+$SSH "cd /root/haiku-deploy-backups && \
+  ls -t api_*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f && \
+  ls -t web_*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f"
+
 # Revierte el código (no la base) al estado de ANTES de este deploy y reinicia. Es seguro
 # aunque la migración de base ya se haya aplicado: el código viejo nunca lee/escribe las
 # tablas/columnas nuevas (son aditivas), así que conviven sin problema.
